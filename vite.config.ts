@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tsconfigPaths from 'vite-tsconfig-paths';
 import path from "path";
-import { componentTagger } from "lovable-tagger";
+import ReactInspector from "vite-plugin-react-inspector";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tsconfigPaths(), // Keep the tsconfig paths plugin from the original config
-    mode === 'development' && componentTagger(),
+    mode === 'development' && ReactInspector(),
   ].filter(Boolean),
   resolve: {
     alias: {
