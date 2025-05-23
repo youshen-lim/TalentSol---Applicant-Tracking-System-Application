@@ -1,0 +1,86 @@
+import React from 'react';
+import { Search, Bell, User, ChevronDown, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+
+interface NavBarProps {
+  className?: string;
+}
+
+const NavBar = ({ className }: NavBarProps) => {
+  return (
+    <header className={cn("h-16 border-b bg-white sticky top-0 z-30 flex items-center justify-between px-6", className)}>
+      {/* Left side - Logo and Navigation */}
+      <div className="flex items-center space-x-4">
+        {/* Logo */}
+        <div className="h-8 w-8 bg-ats-blue text-white rounded flex items-center justify-center font-bold">
+          A
+        </div>
+
+        {/* Navigation Links */}
+        <div className="hidden md:flex items-center space-x-2">
+          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Pipeline</Button>
+          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Candidates</Button>
+          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Jobs</Button>
+          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Sourcing</Button>
+          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Reports</Button>
+          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Dashboards</Button>
+        </div>
+      </div>
+
+      {/* Right side - Search, Notifications, User */}
+      <div className="flex items-center space-x-4">
+        {/* Search */}
+        <div className="relative hidden md:block">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input
+            type="text"
+            placeholder="Search"
+            className="pl-10 py-2 pr-4 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ats-blue/20 focus:border-ats-blue"
+          />
+        </div>
+
+        {/* Notifications */}
+        <Button variant="ghost" size="icon">
+          <Bell className="h-5 w-5 text-gray-600 hover:text-ats-blue" />
+        </Button>
+
+        {/* Settings - Added from original navbar */}
+        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-ats-blue">
+          <Settings className="h-5 w-5" />
+        </Button>
+
+        {/* User Profile Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
+              <div className="h-8 w-8 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center">
+                <User className="h-4 w-4" />
+              </div>
+              <span className="hidden md:inline text-sm font-medium">Jane Doe</span>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
+  );
+};
+
+export default NavBar;
