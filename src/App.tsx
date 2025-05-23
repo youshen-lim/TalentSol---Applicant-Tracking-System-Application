@@ -10,9 +10,15 @@ import CandidatePipeline from "./pages/CandidatePipeline";
 import Interviews from "./pages/Interviews";
 import Jobs from "./pages/Jobs";
 import Messages from "./pages/Messages";
+import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
+import Analytics from "./pages/Analytics";
+import HiresCurrentQuarter from "./pages/analytics/reports/HiresCurrentQuarter";
+import PipelineMetrics from "./pages/analytics/reports/PipelineMetrics";
+import TimeToHire from "./pages/analytics/reports/TimeToHire";
+import SourceEffectiveness from "./pages/analytics/reports/SourceEffectiveness";
 
 // For example components (keeping these for development/testing purposes)
 import { ToastExample } from '@/components/examples/ToastExample';
@@ -73,6 +79,12 @@ const App = () => (
               <Route path="/interviews" element={<Interviews />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/documents" element={<Documents />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/analytics/reports/hires-current-quarter" element={<HiresCurrentQuarter />} />
+              <Route path="/analytics/reports/pipeline-metrics" element={<PipelineMetrics />} />
+              <Route path="/analytics/reports/time-to-hire" element={<TimeToHire />} />
+              <Route path="/analytics/reports/source-effectiveness" element={<SourceEffectiveness />} />
             </Route>
             <Route path="/examples" element={<ExamplesPage />} />
             <Route path="*" element={<NotFound />} />

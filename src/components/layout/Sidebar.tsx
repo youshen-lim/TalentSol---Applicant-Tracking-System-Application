@@ -51,11 +51,9 @@ const Sidebar = ({ className }: SidebarProps) => {
       href: '/interviews',
       icon: <Calendar className="h-5 w-5" />,
     },
-    // These routes don't exist yet, but we'll keep them in the sidebar
-    // and they'll redirect to NotFound page for now
     {
       title: 'Analytics',
-      href: '/dashboard', // Temporarily point to dashboard
+      href: '/analytics',
       icon: <BarChart2 className="h-5 w-5" />,
     },
     {
@@ -65,7 +63,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     },
     {
       title: 'Documents',
-      href: '/dashboard', // Temporarily point to dashboard
+      href: '/documents',
       icon: <FileText className="h-5 w-5" />,
     },
   ];

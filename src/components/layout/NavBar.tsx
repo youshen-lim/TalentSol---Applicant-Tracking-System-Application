@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, Bell, User, ChevronDown, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,21 +19,19 @@ interface NavBarProps {
 const NavBar = ({ className }: NavBarProps) => {
   return (
     <header className={cn("h-16 border-b bg-white sticky top-0 z-30 flex items-center justify-between px-6", className)}>
-      {/* Left side - Logo and Navigation */}
-      <div className="flex items-center space-x-4">
+      {/* Left side - Logo */}
+      <div className="flex items-center">
         {/* Logo */}
-        <div className="h-8 w-8 bg-ats-blue text-white rounded flex items-center justify-center font-bold">
-          A
-        </div>
+        <Link to="/dashboard">
+          <div className="h-8 w-8 bg-ats-purple text-white rounded flex items-center justify-center font-bold">
+            T
+          </div>
+        </Link>
 
-        {/* Navigation Links */}
-        <div className="hidden md:flex items-center space-x-2">
-          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Pipeline</Button>
-          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Candidates</Button>
-          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Jobs</Button>
-          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Sourcing</Button>
-          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Reports</Button>
-          <Button variant="ghost" className="text-sm font-medium hover:text-ats-blue">Dashboards</Button>
+        {/* App Name - visible on larger screens */}
+        <div className="ml-3 hidden md:block">
+          <h1 className="text-lg font-semibold text-gray-900">TalentSol</h1>
+          <p className="text-xs text-gray-500">Applicant Tracking System</p>
         </div>
       </div>
 

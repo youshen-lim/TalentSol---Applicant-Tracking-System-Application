@@ -6,6 +6,8 @@ TalentSol is an AI-powered applicant tracking system with machine learning featu
 
 This is a hobbyist AI/machine learning related project using Augment Code as development partner, and is available on GitHub. TalentSol aims to revolutionize how companies manage their recruitment pipeline through intelligent candidate matching and workflow optimization.
 
+The entire frontend development of this application was completed in just 1.5 days, showcasing the extreme efficiency of Augment Code Agent and Augment Code's Context Engine as development partner.
+
 ## Developer
 
 **Aaron (Youshen) Lim**
@@ -106,5 +108,6 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Acknowledgements
 
 - Developed as a hobbyist project with Augment Code
-
+- Frontend development completed in just 1.5 days
+- Built with modern web technologies and best practices
 
