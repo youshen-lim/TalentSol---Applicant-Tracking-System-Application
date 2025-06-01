@@ -94,9 +94,9 @@ const LandingPage = () => {
               <span className="mr-2">✨</span>
               <span>Rated #1 in applicant tracking systems by G2</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">What an ATS should be.</h1>
-            <p className="text-xl text-gray-600 mb-8">
-              A complete recruiting solution to help you find and hire the best talent quickly and efficiently.
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Turn recruitment chaos into hiring success.</h1>
+            <p className="text-xl text-gray-600 mb-4">
+              ✨Your AI co-recruiter that sorts, scores, and surfaces top talents automatically. Empowering HR teams to hire faster and fairer.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button
