@@ -1,14 +1,19 @@
-import { ArrowUpRight, Users, Briefcase, Clock, Calendar } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowUpRight, Users, Briefcase, Clock, Calendar, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/dashboard/StatCard";
 import LineChart from "@/components/dashboard/LineChart";
 import BarChart from "@/components/dashboard/BarChart";
+import ExportReportModal from "@/components/dashboard/ExportReportModal";
+import AddCandidateModal from "@/components/dashboard/AddCandidateModal";
 
 /**
  * Dashboard page component
  * Displays key metrics and charts for the TalentSol ATS
  */
 const Dashboard = () => {
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [addCandidateModalOpen, setAddCandidateModalOpen] = useState(false);
   // Enhanced recruitment data with applications, interviews, and offers
   const recruitmentData = [
     { name: 'Jan', applications: 65, interviews: 28, offers: 15 },
@@ -39,10 +44,21 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExportModalOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
             Export Report
           </Button>
-          <Button size="sm" className="bg-ats-blue hover:bg-ats-dark-blue">
+          <Button
+            size="sm"
+            className="bg-ats-blue hover:bg-ats-dark-blue flex items-center gap-2"
+            onClick={() => setAddCandidateModalOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
             Add Candidate
           </Button>
         </div>
@@ -207,6 +223,16 @@ const Dashboard = () => {
           </Button>
         </div>
       </div>
+
+      {/* Modals */}
+      <ExportReportModal
+        open={exportModalOpen}
+        onOpenChange={setExportModalOpen}
+      />
+      <AddCandidateModal
+        open={addCandidateModalOpen}
+        onOpenChange={setAddCandidateModalOpen}
+      />
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { DragDropContext } from 'react-beautiful-dnd';
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import CandidatePipeline from "./pages/CandidatePipeline";
@@ -15,6 +14,8 @@ import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 import HiresCurrentQuarter from "./pages/analytics/reports/HiresCurrentQuarter";
 import PipelineMetrics from "./pages/analytics/reports/PipelineMetrics";
 import TimeToHire from "./pages/analytics/reports/TimeToHire";
@@ -29,14 +30,7 @@ import { MobileDetectionExample } from '@/components/examples/MobileDetectionExa
 import { EnhancedToastExample } from '@/components/examples/EnhancedToastExample';
 import { UtilsExample } from '@/components/examples/UtilsExample';
 
-// Create a wrapper component for DragDropContext
-const DragDropContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const onDragEnd = () => {
-    // This is just a placeholder. The actual implementation will be in the KanbanBoard component
-  };
 
-  return <DragDropContext onDragEnd={onDragEnd}>{children}</DragDropContext>;
-};
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -67,30 +61,30 @@ const App = () => (
     <TooltipProvider>
       <Toaster variant="ats-blue" />
       <Sonner />
-      <DragDropContextProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route element={<Layout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/candidates/pipeline" element={<CandidatePipeline />} />
-              <Route path="/candidates/all" element={<CandidatePipeline />} />
-              <Route path="/interviews" element={<Interviews />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/analytics/reports/hires-current-quarter" element={<HiresCurrentQuarter />} />
-              <Route path="/analytics/reports/pipeline-metrics" element={<PipelineMetrics />} />
-              <Route path="/analytics/reports/time-to-hire" element={<TimeToHire />} />
-              <Route path="/analytics/reports/source-effectiveness" element={<SourceEffectiveness />} />
-            </Route>
-            <Route path="/examples" element={<ExamplesPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </DragDropContextProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/candidates/pipeline" element={<CandidatePipeline />} />
+            <Route path="/candidates/all" element={<CandidatePipeline />} />
+            <Route path="/interviews" element={<Interviews />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/documents" element={<Documents />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/analytics/reports/hires-current-quarter" element={<HiresCurrentQuarter />} />
+            <Route path="/analytics/reports/pipeline-metrics" element={<PipelineMetrics />} />
+            <Route path="/analytics/reports/time-to-hire" element={<TimeToHire />} />
+            <Route path="/analytics/reports/source-effectiveness" element={<SourceEffectiveness />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+          <Route path="/examples" element={<ExamplesPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
