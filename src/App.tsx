@@ -9,6 +9,9 @@ import CandidatePipeline from "./pages/CandidatePipeline";
 import Interviews from "./pages/Interviews";
 import Jobs from "./pages/Jobs";
 import Applications from "./pages/Applications";
+import ApplicationManagement from "./pages/ApplicationManagement";
+import ApplicationFormPreview from "./pages/ApplicationFormPreview";
+import ProfileManagement from "./pages/ProfileManagement";
 import Messages from "./pages/Messages";
 import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
@@ -74,6 +77,8 @@ const App = () => (
             <Route path="/interviews" element={<Interviews />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/applications" element={<Applications />} />
+            <Route path="/applications/management" element={<ApplicationManagement />} />
+            <Route path="/applications/preview" element={<ApplicationFormPreview />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/analytics" element={<Analytics />} />
@@ -83,6 +88,7 @@ const App = () => (
             <Route path="/analytics/reports/source-effectiveness" element={<SourceEffectiveness />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<ProfileEnhanced />} />
+            <Route path="/profile/management" element={<ProfileManagement />} />
             <Route path="/help" element={<Help />} />
           </Route>
           <Route path="/examples" element={<ExamplesPage />} />

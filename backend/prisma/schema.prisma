@@ -32,6 +32,9 @@ model User {
   lastName     String?  @map("last_name")
   role         String   @default("recruiter")
   companyId    String   @map("company_id")
+  avatarUrl    String?  @map("avatar_url")
+  phone        String?
+  bio          String?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -40,6 +43,8 @@ model User {
   createdJobs       Job[]         @relation("JobCreator")
   reviewedApps      Application[] @relation("ApplicationReviewer")
   createdInterviews Interview[]   @relation("InterviewCreator")
+  notifications     Notification[]
+  settings          UserSettings?
 
   @@map("users")
 }
@@ -282,4 +287,50 @@ model SkillExtraction {
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@map("skill_extractions")
+}
+
+// Notifications table for real-time notifications
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String   // 'new_application', 'status_change', 'system_alert', 'interview_reminder'
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  metadata  Json?    // Additional notification data
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// User settings table for enhanced preferences
+model UserSettings {
+  id                    String  @id @default(cuid())
+  userId                String  @unique @map("user_id")
+  emailNotifications    Boolean @default(true) @map("email_notifications")
+  pushNotifications     Boolean @default(true) @map("push_notifications")
+  browserNotifications  Boolean @default(true) @map("browser_notifications")
+  newApplications       Boolean @default(true) @map("new_applications")
+  interviewReminders    Boolean @default(true) @map("interview_reminders")
+  systemUpdates         Boolean @default(false) @map("system_updates")
+  weeklyReports         Boolean @default(true) @map("weekly_reports")
+  theme                 String  @default("light") // 'light', 'dark'
+  language              String  @default("en")
+  timezone              String  @default("UTC")
+  profileVisibility     String  @default("team") // 'public', 'team', 'private'
+  activityTracking      Boolean @default(true) @map("activity_tracking")
+  dataSharing           Boolean @default(false) @map("data_sharing")
+  analyticsOptIn        Boolean @default(true) @map("analytics_opt_in")
+  compactMode           Boolean @default(false) @map("compact_mode")
+  sidebarCollapsed      Boolean @default(false) @map("sidebar_collapsed")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }

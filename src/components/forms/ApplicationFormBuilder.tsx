@@ -20,7 +20,9 @@ import {
   Trash2,
   Copy,
   Move,
-  Edit3
+  Edit3,
+  ArrowLeft,
+  X
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 
 import { FormFieldType, FormField, FormSection, ApplicationFormSchema, FormFieldTemplate } from '@/types/application';
@@ -110,10 +113,39 @@ const FIELD_TEMPLATES: FormFieldTemplate[] = [
       required: false,
       order: 0,
       section: 'personal',
-      options: [
-        { value: 'option1', label: 'Option 1' },
-        { value: 'option2', label: 'Option 2' }
-      ]
+      options: ['Option 1', 'Option 2']
+    },
+    validationOptions: { required: false }
+  },
+  {
+    type: 'RADIO',
+    label: 'Radio Buttons',
+    icon: 'Circle',
+    description: 'Single choice selection',
+    defaultConfig: {
+      type: 'RADIO',
+      label: 'Choose One',
+      placeholder: 'Select an option...',
+      required: false,
+      order: 0,
+      section: 'personal',
+      options: ['Option 1', 'Option 2', 'Option 3']
+    },
+    validationOptions: { required: false }
+  },
+  {
+    type: 'CHECKBOX',
+    label: 'Checkboxes',
+    icon: 'Square',
+    description: 'Multiple choice selection',
+    defaultConfig: {
+      type: 'CHECKBOX',
+      label: 'Select All That Apply',
+      placeholder: 'Choose options...',
+      required: false,
+      order: 0,
+      section: 'personal',
+      options: ['Option 1', 'Option 2', 'Option 3']
     },
     validationOptions: { required: false }
   },
@@ -180,13 +212,17 @@ interface ApplicationFormBuilderProps {
   initialSchema?: ApplicationFormSchema;
   onSave: (schema: ApplicationFormSchema) => void;
   onPreview: (schema: ApplicationFormSchema) => void;
+  onClose?: () => void;
+  onNavigateToPreview?: () => void;
 }
 
 const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
   jobId,
   initialSchema,
   onSave,
-  onPreview
+  onPreview,
+  onClose,
+  onNavigateToPreview
 }) => {
   const { toast } = useToast();
   
@@ -261,12 +297,75 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
     }));
 
     setSelectedField(newField.id);
-    
+
     toast.atsBlue({
       title: 'Field Added',
       description: `${template.label} has been added to the form.`
     });
   }, [schema.sections, toast]);
+
+  // Drag and drop handler
+  const onDragEnd = useCallback((result: any) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    // If dropped in the same place, do nothing
+    if (destination.droppableId === source.droppableId && destination.index === source.index) {
+      return;
+    }
+
+    // Handle dragging from field library to sections
+    if (source.droppableId === 'field-library') {
+      const template = FIELD_TEMPLATES.find(t => t.type === draggableId);
+      if (template && destination.droppableId.startsWith('section-')) {
+        const sectionId = destination.droppableId.replace('section-', '');
+        addField(template, sectionId);
+      }
+      return;
+    }
+
+    // Handle reordering fields within sections or moving between sections
+    if (source.droppableId.startsWith('section-') && destination.droppableId.startsWith('section-')) {
+      const sourceSectionId = source.droppableId.replace('section-', '');
+      const destSectionId = destination.droppableId.replace('section-', '');
+
+      setSchema(prev => {
+        const newSections = [...prev.sections];
+        const sourceSection = newSections.find(s => s.id === sourceSectionId);
+        const destSection = newSections.find(s => s.id === destSectionId);
+
+        if (!sourceSection || !destSection) return prev;
+
+        // Remove field from source
+        const [movedField] = sourceSection.fields.splice(source.index, 1);
+
+        // Update field's section if moving between sections
+        if (sourceSectionId !== destSectionId) {
+          movedField.section = destSectionId;
+        }
+
+        // Add field to destination
+        destSection.fields.splice(destination.index, 0, movedField);
+
+        // Update field orders
+        sourceSection.fields.forEach((field, index) => {
+          field.order = index;
+        });
+        destSection.fields.forEach((field, index) => {
+          field.order = index;
+        });
+
+        return {
+          ...prev,
+          sections: newSections,
+          updatedAt: new Date().toISOString()
+        };
+      });
+    }
+  }, [addField]);
 
   const updateField = useCallback((fieldId: string, updates: Partial<FormField>) => {
     setSchema(prev => ({
@@ -310,47 +409,79 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
   };
 
   const handlePreview = () => {
-    onPreview(schema);
-    setPreviewMode(true);
+    // Save the current schema first
+    onSave(schema);
+
+    // Navigate to the preview page if handler is provided
+    if (onNavigateToPreview) {
+      onNavigateToPreview();
+    } else {
+      // Fallback to the original preview handler
+      onPreview(schema);
+      setPreviewMode(true);
+    }
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Field Library Panel */}
-      <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Form Fields</h2>
-          <p className="text-sm text-gray-500 mt-1">Drag fields to add them to your form</p>
-        </div>
-        
-        <div className="p-4 space-y-3">
-          {FIELD_TEMPLATES.map((template) => {
-            const IconComponent = getFieldIcon(template.type);
-            return (
-              <Card 
-                key={template.type}
-                className="cursor-pointer hover:shadow-md transition-shadow border-gray-200"
-                onClick={() => {
-                  // For now, add to first section. Later we'll implement drag & drop
-                  addField(template, 'personal');
-                }}
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="flex h-screen bg-gray-50">
+        {/* Field Library Panel */}
+        <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Form Fields</h2>
+            <p className="text-sm text-gray-500 mt-1">Drag fields to add them to your form</p>
+          </div>
+
+          <Droppable droppableId="field-library" isDropDisabled={true}>
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="p-4 space-y-3"
               >
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-ats-blue/10 rounded-md">
-                      <IconComponent className="h-4 w-4 text-ats-blue" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-sm text-gray-900">{template.label}</h3>
-                      <p className="text-xs text-gray-500">{template.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                {FIELD_TEMPLATES.map((template, index) => {
+                  const IconComponent = getFieldIcon(template.type);
+                  return (
+                    <Draggable
+                      key={template.type}
+                      draggableId={template.type}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <Card
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`cursor-pointer hover:shadow-md transition-shadow border-gray-200 ${
+                            snapshot.isDragging ? 'shadow-lg rotate-2' : ''
+                          }`}
+                          onClick={() => {
+                            if (!snapshot.isDragging) {
+                              addField(template, 'personal');
+                            }
+                          }}
+                        >
+                          <CardContent className="p-3">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-ats-blue/10 rounded-md">
+                                <IconComponent className="h-4 w-4 text-ats-blue" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-medium text-sm text-gray-900">{template.label}</h3>
+                                <p className="text-xs text-gray-500">{template.description}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
         </div>
-      </div>
 
       {/* Form Canvas */}
       <div className="flex-1 overflow-y-auto">
@@ -358,7 +489,15 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
           {/* Form Header */}
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold text-gray-900">Form Builder</h1>
+              <div className="flex items-center gap-4">
+                {onClose && (
+                  <Button variant="outline" size="sm" onClick={onClose}>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                )}
+                <h1 className="text-2xl font-bold text-gray-900">Form Builder</h1>
+              </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handlePreview}>
                   <Eye className="h-4 w-4 mr-2" />
@@ -414,66 +553,94 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
                 )}
               </CardHeader>
               <CardContent>
-                {section.fields.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No fields in this section yet.</p>
-                    <p className="text-sm">Click on a field type from the left panel to add it here.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {section.fields.map((field) => {
-                      const IconComponent = getFieldIcon(field.type);
-                      return (
-                        <div
-                          key={field.id}
-                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                            selectedField === field.id 
-                              ? 'border-ats-blue bg-ats-blue/5' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => setSelectedField(field.id)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <IconComponent className="h-4 w-4 text-gray-500" />
-                              <div>
-                                <h4 className="font-medium text-sm">{field.label}</h4>
-                                <p className="text-xs text-gray-500">{field.type}</p>
-                              </div>
-                              {field.required && (
-                                <Badge variant="destructive" className="text-xs">Required</Badge>
-                              )}
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedField(field.id);
-                                }}
-                              >
-                                <Edit3 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 text-red-500 hover:text-red-700"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeField(field.id);
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
+                <Droppable droppableId={`section-${section.id}`}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`min-h-[100px] ${
+                        snapshot.isDraggingOver
+                          ? 'bg-ats-blue/10 border-2 border-dashed border-ats-blue rounded-lg'
+                          : ''
+                      }`}
+                    >
+                      {section.fields.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <p>No fields in this section yet.</p>
+                          <p className="text-sm">Drag fields from the left panel to add them here.</p>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      ) : (
+                        <div className="space-y-3">
+                          {section.fields.map((field, index) => {
+                            const IconComponent = getFieldIcon(field.type);
+                            return (
+                              <Draggable key={field.id} draggableId={field.id} index={index}>
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                                      selectedField === field.id
+                                        ? 'border-ats-blue bg-ats-blue/5'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                    } ${
+                                      snapshot.isDragging ? 'shadow-lg rotate-1' : ''
+                                    }`}
+                                    onClick={() => setSelectedField(field.id)}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-3">
+                                        <div
+                                          {...provided.dragHandleProps}
+                                          className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <Move className="h-3 w-3 text-gray-400" />
+                                        </div>
+                                        <IconComponent className="h-4 w-4 text-gray-500" />
+                                        <div>
+                                          <h4 className="font-medium text-sm">{field.label}</h4>
+                                          <p className="text-xs text-gray-500">{field.type}</p>
+                                        </div>
+                                        {field.required && (
+                                          <Badge variant="destructive" className="text-xs">Required</Badge>
+                                        )}
+                                      </div>
+                                      <div className="flex gap-1">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedField(field.id);
+                                          }}
+                                        >
+                                          <Edit3 className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 text-red-500 hover:text-red-700"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeField(field.id);
+                                          }}
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </Draggable>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
               </CardContent>
             </Card>
           ))}
@@ -481,20 +648,148 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
       </div>
 
       {/* Field Settings Panel */}
-      {selectedField && (
-        <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Field Settings</h2>
-            <p className="text-sm text-gray-500 mt-1">Configure the selected field</p>
+      {selectedField && (() => {
+        const field = schema.sections
+          .flatMap(s => s.fields)
+          .find(f => f.id === selectedField);
+
+        if (!field) return null;
+
+        return (
+          <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Field Settings</h2>
+              <p className="text-sm text-gray-500 mt-1">Configure the selected field</p>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {/* Field Label */}
+              <div>
+                <Label htmlFor="field-label">Field Label</Label>
+                <Input
+                  id="field-label"
+                  value={field.label}
+                  onChange={(e) => updateField(field.id, { label: e.target.value })}
+                  placeholder="Enter field label"
+                />
+              </div>
+
+              {/* Field Placeholder */}
+              <div>
+                <Label htmlFor="field-placeholder">Placeholder Text</Label>
+                <Input
+                  id="field-placeholder"
+                  value={field.placeholder || ''}
+                  onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
+                  placeholder="Enter placeholder text"
+                />
+              </div>
+
+              {/* Required Toggle */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="field-required"
+                  checked={field.required}
+                  onCheckedChange={(checked) => updateField(field.id, { required: !!checked })}
+                />
+                <Label htmlFor="field-required">Required field</Label>
+              </div>
+
+              {/* Field Type Display */}
+              <div>
+                <Label>Field Type</Label>
+                <div className="p-2 bg-gray-50 rounded border text-sm text-gray-600">
+                  {field.type}
+                </div>
+              </div>
+
+              {/* Options for SELECT, RADIO, CHECKBOX fields */}
+              {(field.type === 'SELECT' || field.type === 'RADIO' || field.type === 'CHECKBOX') && (
+                <div>
+                  <Label>Options</Label>
+                  <div className="space-y-2">
+                    {field.options?.map((option, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={option}
+                          onChange={(e) => {
+                            const newOptions = [...(field.options || [])];
+                            newOptions[index] = e.target.value;
+                            updateField(field.id, { options: newOptions });
+                          }}
+                          placeholder={`Option ${index + 1}`}
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            const newOptions = field.options?.filter((_, i) => i !== index) || [];
+                            updateField(field.id, { options: newOptions });
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )) || []}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newOptions = [...(field.options || []), ''];
+                        updateField(field.id, { options: newOptions });
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Option
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* File validation for FILE fields */}
+              {field.type === 'FILE' && (
+                <div className="space-y-3">
+                  <div>
+                    <Label>Allowed File Types</Label>
+                    <Input
+                      value={field.validation?.fileTypes?.join(', ') || ''}
+                      onChange={(e) => {
+                        const fileTypes = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
+                        updateField(field.id, {
+                          validation: {
+                            ...field.validation,
+                            fileTypes
+                          }
+                        });
+                      }}
+                      placeholder=".pdf, .doc, .docx"
+                    />
+                  </div>
+                  <div>
+                    <Label>Max File Size (MB)</Label>
+                    <Input
+                      type="number"
+                      value={field.validation?.maxFileSize ? field.validation.maxFileSize / (1024 * 1024) : ''}
+                      onChange={(e) => {
+                        const maxFileSize = parseFloat(e.target.value) * 1024 * 1024;
+                        updateField(field.id, {
+                          validation: {
+                            ...field.validation,
+                            maxFileSize: isNaN(maxFileSize) ? undefined : maxFileSize
+                          }
+                        });
+                      }}
+                      placeholder="5"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="p-4">
-            {/* Field settings will be implemented in the next part */}
-            <p className="text-sm text-gray-500">Field configuration panel will be implemented here.</p>
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
+    </DragDropContext>
   );
 };
 

@@ -7,6 +7,11 @@ import BarChart from "@/components/dashboard/BarChart";
 import ExportReportModal from "@/components/dashboard/ExportReportModal";
 import AddCandidateModal from "@/components/dashboard/AddCandidateModal";
 
+// Import API hooks
+import { useDashboardStats, useRecruitmentData, useSourceData } from "@/hooks/useAnalytics";
+import { useUpcomingInterviews } from "@/hooks/useInterviews";
+import { applicationApi } from "@/services/api";
+
 /**
  * Dashboard page component
  * Displays key metrics and charts for the TalentSol ATS
@@ -14,8 +19,37 @@ import AddCandidateModal from "@/components/dashboard/AddCandidateModal";
 const Dashboard = () => {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [addCandidateModalOpen, setAddCandidateModalOpen] = useState(false);
-  // Enhanced recruitment data with applications, interviews, and offers
-  const recruitmentData = [
+
+  // API hooks for real data
+  const { stats: dashboardStats, loading: statsLoading } = useDashboardStats();
+  const { data: recruitmentData, loading: recruitmentLoading } = useRecruitmentData();
+  const { data: sourceData, loading: sourceLoading } = useSourceData();
+  const { interviews: upcomingInterviews, loading: interviewsLoading } = useUpcomingInterviews();
+
+  // State for recent applications
+  const [recentApplications, setRecentApplications] = React.useState<any[]>([]);
+  const [applicationsLoading, setApplicationsLoading] = React.useState(true);
+
+  // Load recent applications
+  React.useEffect(() => {
+    const loadRecentApplications = async () => {
+      try {
+        setApplicationsLoading(true);
+        const response = await applicationApi.getApplications({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' });
+        setRecentApplications(response.data || []);
+      } catch (error) {
+        console.error('Failed to load recent applications:', error);
+        setRecentApplications([]);
+      } finally {
+        setApplicationsLoading(false);
+      }
+    };
+
+    loadRecentApplications();
+  }, []);
+
+  // Fallback data for when API is not available
+  const fallbackRecruitmentData = [
     { name: 'Jan', applications: 65, interviews: 28, offers: 15 },
     { name: 'Feb', applications: 59, interviews: 32, offers: 12 },
     { name: 'Mar', applications: 80, interviews: 45, offers: 18 },
@@ -25,8 +59,7 @@ const Dashboard = () => {
     { name: 'Jul', applications: 40, interviews: 22, offers: 8 },
   ];
 
-  // Candidate source data
-  const sourceData = [
+  const fallbackSourceData = [
     { name: 'LinkedIn', candidates: 45 },
     { name: 'Indeed', candidates: 30 },
     { name: 'Referrals', candidates: 25 },
@@ -67,14 +100,14 @@ const Dashboard = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Candidates"
-          value="342"
+          value={statsLoading ? "..." : (dashboardStats?.totalCandidates?.toString() || "342")}
           description="Last 30 days"
           icon={<Users className="h-4 w-4 text-ats-blue" />}
           change={{ value: 12, positive: true }}
         />
         <StatCard
           title="Open Positions"
-          value="18"
+          value={statsLoading ? "..." : (dashboardStats?.activeJobs?.toString() || "18")}
           description="Across 5 departments"
           icon={<Briefcase className="h-4 w-4 text-ats-blue" />}
           change={{ value: 3, positive: true }}
@@ -88,7 +121,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Interviews This Week"
-          value="24"
+          value={interviewsLoading ? "..." : (upcomingInterviews?.length?.toString() || "24")}
           description="8 scheduled for today"
           icon={<Calendar className="h-4 w-4 text-ats-blue" />}
         />
@@ -98,7 +131,7 @@ const Dashboard = () => {
         <LineChart
           title="Recruitment Pipeline"
           description="Tracking applications, interviews, and offers"
-          data={recruitmentData}
+          data={recruitmentData?.data || fallbackRecruitmentData}
           lines={[
             { dataKey: "applications", stroke: "#3B82F6", name: "Applications" },
             { dataKey: "interviews", stroke: "#38BDF8", name: "Interviews" },
@@ -108,7 +141,7 @@ const Dashboard = () => {
         <BarChart
           title="Candidate Sources"
           description="Breakdown of candidates by source"
-          data={sourceData}
+          data={sourceData?.sources || fallbackSourceData}
           bars={[{ dataKey: "candidates", fill: "#3B82F6", name: "Candidates" }]}
           vertical={true}
         />
@@ -122,27 +155,50 @@ const Dashboard = () => {
           </div>
 
           <div className="space-y-3 mt-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-              <div>
-                <div className="font-medium">John Smith</div>
-                <div className="text-xs text-gray-500">React Developer • Technical Interview</div>
-              </div>
-              <div className="text-xs font-medium">Today, 2:00 PM</div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-              <div>
-                <div className="font-medium">Emma Johnson</div>
-                <div className="text-xs text-gray-500">Product Designer • Portfolio Review</div>
-              </div>
-              <div className="text-xs font-medium">Tomorrow, 11:00 AM</div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-              <div>
-                <div className="font-medium">Michael Brown</div>
-                <div className="text-xs text-gray-500">Marketing Lead • First Interview</div>
-              </div>
-              <div className="text-xs font-medium">Jul 23, 3:30 PM</div>
-            </div>
+            {interviewsLoading ? (
+              <div className="text-center text-gray-500 py-4">Loading interviews...</div>
+            ) : upcomingInterviews && upcomingInterviews.length > 0 ? (
+              upcomingInterviews.slice(0, 3).map((interview) => (
+                <div key={interview.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">{interview.candidateName}</div>
+                    <div className="text-xs text-gray-500">{interview.position} • {interview.type}</div>
+                  </div>
+                  <div className="text-xs font-medium">
+                    {new Date(interview.dateTime).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">John Smith</div>
+                    <div className="text-xs text-gray-500">React Developer • Technical Interview</div>
+                  </div>
+                  <div className="text-xs font-medium">Today, 2:00 PM</div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">Emma Johnson</div>
+                    <div className="text-xs text-gray-500">Product Designer • Portfolio Review</div>
+                  </div>
+                  <div className="text-xs font-medium">Tomorrow, 11:00 AM</div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">Michael Brown</div>
+                    <div className="text-xs text-gray-500">Marketing Lead • First Interview</div>
+                  </div>
+                  <div className="text-xs font-medium">Jul 23, 3:30 PM</div>
+                </div>
+              </>
+            )}
           </div>
 
           <Button variant="ghost" size="sm" className="justify-start w-fit px-0 text-ats-blue mt-3">
@@ -158,27 +214,48 @@ const Dashboard = () => {
           </div>
 
           <div className="space-y-3 mt-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-              <div>
-                <div className="font-medium">Sarah Wilson</div>
-                <div className="text-xs text-gray-500">UX/UI Designer</div>
-              </div>
-              <div className="text-xs font-medium">2 hours ago</div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-              <div>
-                <div className="font-medium">David Lee</div>
-                <div className="text-xs text-gray-500">Backend Engineer</div>
-              </div>
-              <div className="text-xs font-medium">Yesterday</div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-              <div>
-                <div className="font-medium">Lisa Chen</div>
-                <div className="text-xs text-gray-500">Product Manager</div>
-              </div>
-              <div className="text-xs font-medium">Jul 20</div>
-            </div>
+            {applicationsLoading ? (
+              <div className="text-center text-gray-500 py-4">Loading applications...</div>
+            ) : recentApplications && recentApplications.length > 0 ? (
+              recentApplications.slice(0, 3).map((application) => (
+                <div key={application.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">{application.candidateName || `${application.firstName} ${application.lastName}`}</div>
+                    <div className="text-xs text-gray-500">{application.jobTitle || application.position}</div>
+                  </div>
+                  <div className="text-xs font-medium">
+                    {new Date(application.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">Sarah Wilson</div>
+                    <div className="text-xs text-gray-500">UX/UI Designer</div>
+                  </div>
+                  <div className="text-xs font-medium">2 hours ago</div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">David Lee</div>
+                    <div className="text-xs text-gray-500">Backend Engineer</div>
+                  </div>
+                  <div className="text-xs font-medium">Yesterday</div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <div>
+                    <div className="font-medium">Lisa Chen</div>
+                    <div className="text-xs text-gray-500">Product Manager</div>
+                  </div>
+                  <div className="text-xs font-medium">Jul 20</div>
+                </div>
+              </>
+            )}
           </div>
 
           <Button variant="ghost" size="sm" className="justify-start w-fit px-0 text-ats-blue mt-3">

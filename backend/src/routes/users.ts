@@ -35,6 +35,29 @@ const updateProfileSchema = z.object({
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
   email: z.string().email().optional(),
+  phone: z.string().optional(),
+  bio: z.string().optional(),
+  avatarUrl: z.string().url().optional(),
+});
+
+// User settings schema
+const updateSettingsSchema = z.object({
+  emailNotifications: z.boolean().optional(),
+  pushNotifications: z.boolean().optional(),
+  browserNotifications: z.boolean().optional(),
+  newApplications: z.boolean().optional(),
+  interviewReminders: z.boolean().optional(),
+  systemUpdates: z.boolean().optional(),
+  weeklyReports: z.boolean().optional(),
+  theme: z.enum(['light', 'dark']).optional(),
+  language: z.string().optional(),
+  timezone: z.string().optional(),
+  profileVisibility: z.enum(['public', 'team', 'private']).optional(),
+  activityTracking: z.boolean().optional(),
+  dataSharing: z.boolean().optional(),
+  analyticsOptIn: z.boolean().optional(),
+  compactMode: z.boolean().optional(),
+  sidebarCollapsed: z.boolean().optional(),
 });
 
 router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -115,6 +138,43 @@ router.put('/password', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   res.json({
     message: 'Password changed successfully',
+  });
+}));
+
+// Get user settings
+router.get('/settings', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  let settings = await prisma.userSettings.findUnique({
+    where: { userId: req.user!.id },
+  });
+
+  // Create default settings if they don't exist
+  if (!settings) {
+    settings = await prisma.userSettings.create({
+      data: {
+        userId: req.user!.id,
+      },
+    });
+  }
+
+  res.json(settings);
+}));
+
+// Update user settings
+router.put('/settings', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const validatedData = updateSettingsSchema.parse(req.body);
+
+  const settings = await prisma.userSettings.upsert({
+    where: { userId: req.user!.id },
+    update: validatedData,
+    create: {
+      userId: req.user!.id,
+      ...validatedData,
+    },
+  });
+
+  res.json({
+    message: 'Settings updated successfully',
+    settings,
   });
 }));
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { 
-  Plus, 
-  Settings, 
-  Eye, 
-  Users, 
-  FileText, 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Plus,
+  Settings,
+  Eye,
+  Users,
+  FileText,
   BarChart3,
   Filter,
   Search,
@@ -25,8 +26,13 @@ import StandardApplicationForm from '@/components/forms/StandardApplicationForm'
 import ApplicationReviewDashboard from '@/components/forms/ApplicationReviewDashboard';
 import { ApplicationFormSchema, Application } from '@/types/application';
 
-// Mock job data
-const mockJob = {
+// Import API hooks
+import { applicationApi } from '@/services/api';
+import { useJobs } from '@/hooks/useJobs';
+import { useDashboardStats } from '@/hooks/useAnalytics';
+
+// Default job data for form building (will be replaced with API data)
+const defaultJob = {
   id: 'job_123',
   title: 'Senior Frontend Developer',
   company: 'TalentSol Inc.',
@@ -41,30 +47,54 @@ const mockJob = {
   }
 };
 
-// Mock application statistics
-const applicationStats = {
-  total: 156,
-  new: 23,
-  inReview: 45,
-  interviewed: 12,
-  hired: 3,
-  conversionRate: 15.4,
-  averageScore: 72,
-  topSources: [
-    { source: 'Company Website', count: 67, percentage: 43 },
-    { source: 'LinkedIn', count: 45, percentage: 29 },
-    { source: 'Indeed', count: 28, percentage: 18 },
-    { source: 'Referrals', count: 16, percentage: 10 }
-  ]
-};
-
 const Applications: React.FC = () => {
   const { toast } = useToast();
-  
+  const navigate = useNavigate();
+
+  // API hooks
+  const { jobs, loading: jobsLoading } = useJobs({ limit: 1, status: 'open' });
+  const { stats: dashboardStats, loading: statsLoading } = useDashboardStats();
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [formSchema, setFormSchema] = useState<ApplicationFormSchema | null>(null);
   const [showFormBuilder, setShowFormBuilder] = useState(false);
   const [showPublicForm, setShowPublicForm] = useState(false);
+  const [applicationStats, setApplicationStats] = useState<any>(null);
+
+  // Get the first available job or use default
+  const currentJob = jobs?.[0] || defaultJob;
+
+  // Load application statistics
+  useEffect(() => {
+    const loadApplicationStats = async () => {
+      try {
+        const response = await applicationApi.getStats();
+        setApplicationStats(response);
+      } catch (error) {
+        console.error('Failed to load application stats:', error);
+        // Use dashboard stats as fallback
+        if (dashboardStats) {
+          setApplicationStats({
+            total: dashboardStats.totalApplications,
+            new: dashboardStats.newApplications,
+            inReview: dashboardStats.applicationsByStatus?.find(s => s.status === 'in_review')?.count || 0,
+            interviewed: dashboardStats.applicationsByStatus?.find(s => s.status === 'interviewed')?.count || 0,
+            hired: dashboardStats.hires,
+            conversionRate: dashboardStats.conversionRate,
+            averageScore: dashboardStats.averageScore,
+            topSources: [
+              { source: 'Company Website', count: 67, percentage: 43 },
+              { source: 'LinkedIn', count: 45, percentage: 29 },
+              { source: 'Indeed', count: 28, percentage: 18 },
+              { source: 'Referrals', count: 16, percentage: 10 }
+            ]
+          });
+        }
+      }
+    };
+
+    loadApplicationStats();
+  }, [dashboardStats]);
 
   const handleSaveForm = (schema: ApplicationFormSchema) => {
     setFormSchema(schema);
@@ -81,15 +111,21 @@ const Applications: React.FC = () => {
   };
 
   const handleSubmitApplication = async (application: Partial<Application>) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.atsBlue({
-      title: 'Application Submitted',
-      description: 'Your application has been submitted successfully!'
-    });
-    
-    setShowPublicForm(false);
+    try {
+      await applicationApi.submitApplication(application);
+
+      toast.atsBlue({
+        title: 'Application Submitted',
+        description: 'Your application has been submitted successfully!'
+      });
+
+      setShowPublicForm(false);
+    } catch (error) {
+      toast.atsBlue({
+        title: 'Submission Failed',
+        description: 'Failed to submit application. Please try again.'
+      });
+    }
   };
 
   const handleApplicationAction = (applicationId: string, action: string) => {
@@ -103,30 +139,157 @@ const Applications: React.FC = () => {
   if (showFormBuilder) {
     return (
       <ApplicationFormBuilder
-        jobId={mockJob.id}
+        jobId={currentJob.id}
         initialSchema={formSchema || undefined}
         onSave={handleSaveForm}
         onPreview={handlePreviewForm}
+        onClose={() => setShowFormBuilder(false)}
+        onNavigateToPreview={() => {
+          setShowFormBuilder(false);
+          navigate('/applications/preview');
+        }}
       />
     );
   }
 
   if (showPublicForm) {
+    const defaultSchema = {
+      id: 'default_form',
+      jobId: mockJob.id,
+      title: 'Job Application Form',
+      description: 'Please fill out this form to apply for the position.',
+      sections: [
+        {
+          id: 'personal',
+          title: 'Personal Information',
+          description: 'Basic candidate details',
+          order: 0,
+          fields: [
+            {
+              id: 'firstName',
+              type: 'TEXT' as const,
+              label: 'First Name',
+              placeholder: 'Enter your first name',
+              required: true,
+              order: 0,
+              section: 'personal'
+            },
+            {
+              id: 'lastName',
+              type: 'TEXT' as const,
+              label: 'Last Name',
+              placeholder: 'Enter your last name',
+              required: true,
+              order: 1,
+              section: 'personal'
+            },
+            {
+              id: 'email',
+              type: 'EMAIL' as const,
+              label: 'Email Address',
+              placeholder: 'your.email@example.com',
+              required: true,
+              order: 2,
+              section: 'personal'
+            },
+            {
+              id: 'phone',
+              type: 'PHONE' as const,
+              label: 'Phone Number',
+              placeholder: '+1 (555) 123-4567',
+              required: false,
+              order: 3,
+              section: 'personal'
+            }
+          ]
+        },
+        {
+          id: 'professional',
+          title: 'Professional Information',
+          description: 'Work experience and skills',
+          order: 1,
+          fields: [
+            {
+              id: 'experience',
+              type: 'TEXTAREA' as const,
+              label: 'Work Experience',
+              placeholder: 'Describe your relevant work experience...',
+              required: true,
+              order: 0,
+              section: 'professional'
+            },
+            {
+              id: 'skills',
+              type: 'TEXTAREA' as const,
+              label: 'Skills',
+              placeholder: 'List your relevant skills...',
+              required: false,
+              order: 1,
+              section: 'professional'
+            }
+          ]
+        },
+        {
+          id: 'documents',
+          title: 'Documents',
+          description: 'Resume, cover letter, and other files',
+          order: 2,
+          fields: [
+            {
+              id: 'resume',
+              type: 'FILE' as const,
+              label: 'Resume',
+              placeholder: 'Upload your resume',
+              required: true,
+              order: 0,
+              section: 'documents',
+              validation: {
+                fileTypes: ['.pdf', '.doc', '.docx'],
+                maxFileSize: 5242880
+              }
+            },
+            {
+              id: 'coverLetter',
+              type: 'FILE' as const,
+              label: 'Cover Letter',
+              placeholder: 'Upload your cover letter (optional)',
+              required: false,
+              order: 1,
+              section: 'documents',
+              validation: {
+                fileTypes: ['.pdf', '.doc', '.docx'],
+                maxFileSize: 5242880
+              }
+            }
+          ]
+        }
+      ],
+      settings: {
+        allowSave: true,
+        autoSave: true,
+        showProgress: true,
+        multiStep: true,
+        requireLogin: false,
+        gdprCompliance: true,
+        eeocQuestions: false
+      },
+      emailSettings: {
+        confirmationTemplate: 'default',
+        autoResponse: true
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: 'current_user',
+      version: 1
+    };
+
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200 p-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <h1 className="text-xl font-semibold">Application Form Preview</h1>
-            <Button variant="outline" onClick={() => setShowPublicForm(false)}>
-              Close Preview
-            </Button>
-          </div>
-        </div>
-        <StandardApplicationForm
-          job={mockJob}
-          onSubmit={handleSubmitApplication}
-        />
-      </div>
+      <PublicApplicationForm
+        schema={formSchema || defaultSchema}
+        job={currentJob}
+        onSubmit={handleSubmitApplication}
+        onClose={() => setShowPublicForm(false)}
+      />
     );
   }
 
@@ -164,7 +327,9 @@ const Applications: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{applicationStats.total}</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? '...' : (applicationStats?.total || dashboardStats?.totalApplications || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
               +12% from last month
             </p>
@@ -177,7 +342,9 @@ const Applications: React.FC = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{applicationStats.new}</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? '...' : (applicationStats?.new || dashboardStats?.newApplications || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
               +5 this week
             </p>
@@ -190,7 +357,9 @@ const Applications: React.FC = () => {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{applicationStats.conversionRate}%</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? '...' : (applicationStats?.conversionRate || dashboardStats?.conversionRate || 0)}%
+            </div>
             <p className="text-xs text-muted-foreground">
               +2.1% from last month
             </p>
@@ -203,7 +372,9 @@ const Applications: React.FC = () => {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{applicationStats.averageScore}</div>
+            <div className="text-2xl font-bold">
+              {statsLoading ? '...' : (applicationStats?.averageScore || dashboardStats?.averageScore || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
               Quality metric
             </p>
@@ -315,7 +486,7 @@ const Applications: React.FC = () => {
 
         <TabsContent value="applications">
           <ApplicationReviewDashboard
-            jobId={mockJob.id}
+            jobId={currentJob.id}
             onApplicationAction={handleApplicationAction}
             onBulkAction={handleBulkAction}
           />

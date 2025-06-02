@@ -18,16 +18,23 @@ import {
   Briefcase,
   GraduationCap,
   FileUp,
-  Shield
+  Shield,
+  ArrowLeft,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  Save
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/use-toast';
 
 import { 
@@ -59,6 +66,7 @@ interface PublicApplicationFormProps {
   onSubmit: (application: Partial<Application>) => Promise<void>;
   onSaveDraft?: (application: Partial<Application>) => Promise<void>;
   existingApplication?: Partial<Application>;
+  onClose?: () => void;
 }
 
 interface FileUploadState {
@@ -74,7 +82,8 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
   job,
   onSubmit,
   onSaveDraft,
-  existingApplication
+  existingApplication,
+  onClose
 }) => {
   const { toast } = useToast();
   const { control, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm({
@@ -428,13 +437,37 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
     }
   };
 
+  // Safety checks for schema
+  if (!schema.sections || schema.sections.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Form Not Available</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              The application form is not properly configured. Please contact support or try again later.
+            </p>
+            {onClose && (
+              <Button onClick={onClose} variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Go Back
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const currentSection = schema.sections[currentStep];
   const isLastStep = currentStep === schema.sections.length - 1;
   const canProceed = currentSection?.fields.every(field => {
     if (!field.required) return true;
     const value = watch(field.id);
     return value !== undefined && value !== '' && value !== null;
-  });
+  }) || false;
 
   const handleNext = () => {
     if (canProceed && currentStep < schema.sections.length - 1) {
@@ -492,9 +525,16 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+            <div className="flex items-center gap-4">
+              {onClose && (
+                <Button variant="outline" size="sm" onClick={onClose}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              )}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Building className="h-4 w-4" />
                   {job.company}
@@ -509,9 +549,10 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
                     ${job.salaryRange.min.toLocaleString()} - ${job.salaryRange.max.toLocaleString()}
                   </div>
                 )}
+                </div>
               </div>
             </div>
-            
+
             {schema.settings.showProgress && (
               <div className="text-right">
                 <div className="text-sm text-gray-600 mb-1">
@@ -565,17 +606,19 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
           )}
 
           {/* Current Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{currentSection.title}</CardTitle>
-              {currentSection.description && (
-                <p className="text-gray-600">{currentSection.description}</p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {currentSection.fields.map(renderField)}
-            </CardContent>
-          </Card>
+          {currentSection && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{currentSection.title}</CardTitle>
+                {currentSection.description && (
+                  <p className="text-gray-600">{currentSection.description}</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {currentSection.fields.map(renderField)}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Navigation */}
           <div className="flex items-center justify-between mt-8">
