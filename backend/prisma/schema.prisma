@@ -130,6 +130,8 @@ model Application {
   reviewedBy User?       @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
   interviews Interview[]
   documents  Document[]
+  mlPredictions MLPrediction[]
+  skillExtractions SkillExtraction[]
 
   @@map("applications")
 }
@@ -204,4 +206,80 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("email_templates")
+}
+
+// ML Models and Training Data
+model MLModel {
+  id            String   @id @default(cuid())
+  name          String
+  type          String   // 'candidate_scoring', 'job_matching', 'resume_parsing'
+  version       String
+  modelPath     String   @map("model_path")
+  accuracy      Float?
+  precision     Float?
+  recall        Float?
+  f1Score       Float?   @map("f1_score")
+  trainingData  Json     @map("training_data") // Metadata about training dataset
+  features      String[] // List of features used
+  isActive      Boolean  @default(false) @map("is_active")
+  trainedAt     DateTime @map("trained_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  predictions MLPrediction[]
+
+  @@map("ml_models")
+}
+
+model MLPrediction {
+  id            String   @id @default(cuid())
+  modelId       String   @map("model_id")
+  applicationId String   @map("application_id")
+  predictionType String  @map("prediction_type") // 'priority_score', 'job_match', 'skill_extraction'
+  inputFeatures Json     @map("input_features") // Features used for prediction
+  prediction    Json     // Prediction results (score, confidence, etc.)
+  confidence    Float?   // Confidence score (0-1)
+  explanation   Json?    // Feature importance/explanation
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  model       MLModel     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("ml_predictions")
+}
+
+model TrainingDataset {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  source      String   // 'kaggle', 'internal', 'synthetic'
+  datasetPath String   @map("dataset_path")
+  features    String[] // List of features/columns
+  targetVariable String @map("target_variable")
+  recordCount Int      @map("record_count")
+  version     String   @default("1.0")
+  isActive    Boolean  @default(true) @map("is_active")
+  metadata    Json?    // Additional dataset information
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("training_datasets")
+}
+
+model SkillExtraction {
+  id            String   @id @default(cuid())
+  applicationId String   @map("application_id")
+  extractedSkills Json   @map("extracted_skills") // Array of skills with confidence scores
+  skillCategories Json   @map("skill_categories") // Categorized skills (technical, soft, etc.)
+  experienceLevel String? @map("experience_level") // Predicted experience level
+  confidence      Float?  // Overall extraction confidence
+  method          String  @default("ml") // 'ml', 'nlp', 'manual'
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("skill_extractions")
 }

@@ -705,10 +705,94 @@ The {{companyName}} Team`,
 
   console.log('✅ Created email templates');
 
+  // Create ML training dataset entries
+  await prisma.trainingDataset.create({
+    data: {
+      name: 'Kaggle Resume Dataset',
+      description: '2400+ labeled resumes for candidate classification and skills extraction',
+      source: 'kaggle',
+      datasetPath: './ml_models/data/resume_dataset.csv',
+      features: [
+        'resume_text',
+        'category',
+        'years_experience',
+        'education_level',
+        'skills_extracted',
+        'industry_experience'
+      ],
+      targetVariable: 'priority_score',
+      recordCount: 2400,
+      version: '1.0',
+      metadata: {
+        kaggle_url: 'https://www.kaggle.com/datasets/spidy20/resume-dataset',
+        license: 'Public Domain',
+        categories: 25,
+        description: 'Resume dataset with job categories for ML training'
+      },
+    },
+  });
+
+  // Create a demo ML model entry
+  await prisma.mLModel.create({
+    data: {
+      name: 'Candidate Priority Classifier v1',
+      type: 'candidate_scoring',
+      version: '1.0',
+      modelPath: './ml_models/models/candidate_scoring_v1.pkl',
+      accuracy: 0.847,
+      precision: 0.823,
+      recall: 0.789,
+      f1Score: 0.805,
+      trainingData: {
+        datasetName: 'Kaggle Resume Dataset',
+        recordCount: 2400,
+        features: [
+          'years_experience',
+          'education_level',
+          'skills_match_score',
+          'resume_quality',
+          'application_completeness',
+          'location_match',
+          'salary_match'
+        ],
+        hyperparameters: {
+          algorithm: 'RandomForest',
+          n_estimators: 100,
+          max_depth: 10,
+          random_state: 42
+        }
+      },
+      features: [
+        'years_experience',
+        'education_level',
+        'technical_skills_count',
+        'soft_skills_count',
+        'skills_match_score',
+        'role_relevance',
+        'resume_quality_score',
+        'cover_letter_present',
+        'portfolio_present',
+        'application_completeness',
+        'response_time',
+        'location_match',
+        'salary_expectation_match',
+        'availability_match'
+      ],
+      isActive: false, // Not active by default - requires manual activation
+      trainedAt: new Date(),
+    },
+  });
+
+  console.log('✅ Created ML training dataset and model entries');
+
   console.log('🎉 Database seed completed successfully!');
   console.log('\n📧 Demo login credentials:');
   console.log('Admin: admin@talentsol-demo.com / password123');
   console.log('Recruiter: recruiter@talentsol-demo.com / password123');
+  console.log('\n🤖 ML Features:');
+  console.log('- ML models and datasets registered');
+  console.log('- Ready for Kaggle dataset integration');
+  console.log('- API endpoints: /api/ml/*');
 }
 
 main()

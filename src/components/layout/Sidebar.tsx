@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   BarChart2,
@@ -16,6 +16,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface SidebarProps {
   className?: string;
@@ -30,6 +38,7 @@ interface NavItem {
 const Sidebar = ({ className }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems: NavItem[] = [
     {
@@ -112,18 +121,52 @@ const Sidebar = ({ className }: SidebarProps) => {
         </nav>
 
         <div className="mt-auto px-2">
-          <Link
-            to="/dashboard" /* Temporarily point to dashboard */
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              location.pathname === '/settings'
-                ? "bg-ats-blue/10 text-ats-blue"
-                : "text-gray-600 hover:bg-ats-light-blue/10 hover:text-ats-blue"
-            )}
-          >
-            <Settings className="h-5 w-5" />
-            {!collapsed && <span>Settings</span>}
-          </Link>
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors justify-start",
+                        location.pathname.startsWith('/settings')
+                          ? "bg-ats-blue/10 text-ats-blue"
+                          : "text-gray-600 hover:bg-ats-light-blue/10 hover:text-ats-blue"
+                      )}
+                    >
+                      <Settings className="h-5 w-5" />
+                      {!collapsed && <span>Settings</span>}
+                    </Button>
+                  </TooltipTrigger>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align={collapsed ? "start" : "end"} side={collapsed ? "right" : "top"}>
+                  <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/settings?tab=account')}>
+                    Account Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings?tab=company')}>
+                    Company Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings?tab=integrations')}>
+                    Integration Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings?tab=notifications')}>
+                    Notification Preferences
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings?tab=security')}>
+                    Privacy & Security
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/help')}>
+                    Help & Support
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {collapsed && <TooltipContent side="right">Settings</TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 

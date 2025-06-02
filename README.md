@@ -130,6 +130,68 @@ The backend includes comprehensive seed data that mirrors and enhances the front
 - **Analytics data** for dashboard metrics
 - **Multi-tenant architecture** ready for scaling
 
+## Key Features & Enhancements
+
+### 📊 **Smart Application Cap Management**
+
+The Jobs page features an intelligent application cap system that provides transparency and urgency indicators:
+
+#### **Visual Progress Indicators**
+- **Color-coded progress bars** showing application fill status
+- **Dynamic colors** based on urgency:
+  - 🔵 Blue (0-70%): Normal capacity
+  - 🟡 Yellow (70-90%): Getting full
+  - 🔴 Red (90%+): Nearly full
+
+#### **Smart Status Messages**
+- **"X spots remaining"** - Shows exact availability
+- **"Filling fast"** warning when 80%+ full
+- **"Applications full"** alert when at capacity
+
+#### **Benefits**
+- **For Recruiters**: Quick visual assessment and capacity planning
+- **For Candidates**: Transparency about competition and urgency motivation
+- **For System**: Automatic updates and consistent UX patterns
+
+### 🤖 **AI/ML Integration Ready**
+
+Built-in support for machine learning powered candidate prioritization:
+
+#### **Database Schema**
+- **ML Models Management** - Store and version trained models
+- **Prediction Tracking** - Log all ML predictions with explanations
+- **Skills Extraction** - AI-powered skills identification
+- **Training Datasets** - Registry for Kaggle and other datasets
+
+#### **API Endpoints**
+- `POST /api/ml/predict` - Candidate priority scoring
+- `POST /api/ml/predict/job/:jobId` - Bulk predictions for job pipeline
+- `GET /api/ml/models` - Model management
+- `POST /api/ml/train` - Train new models
+
+#### **Kaggle Dataset Integration**
+Ready for integration with publicly sourced datasets:
+- Resume classification datasets
+- HR analytics data
+- Skills and job matching datasets
+
+### 🎨 **Modern UI/UX Design**
+
+#### **Responsive Design**
+- Mobile-first approach with consistent breakpoints
+- Collapsible sidebar with tooltips
+- Touch-friendly interactions
+
+#### **Professional Styling**
+- Consistent purple/blue color scheme
+- Smooth animations and transitions
+- Accessibility-focused design
+
+#### **Smart Components**
+- Dynamic job cards with pipeline visualization
+- Interactive candidate pipeline with drag-and-drop
+- Real-time dashboard metrics
+
 ## Project Structure
 
 ```

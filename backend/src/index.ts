@@ -16,6 +16,7 @@ import applicationRoutes from './routes/applications.js';
 import interviewRoutes from './routes/interviews.js';
 import documentRoutes from './routes/documents.js';
 import analyticsRoutes from './routes/analytics.js';
+import mlRoutes from './routes/ml.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -76,6 +77,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/interviews', authenticateToken, interviewRoutes);
 app.use('/api/documents', authenticateToken, documentRoutes);
 app.use('/api/analytics', authenticateToken, analyticsRoutes);
+app.use('/api/ml', authenticateToken, mlRoutes);
 
 // Error handling middleware
 app.use(notFound);
