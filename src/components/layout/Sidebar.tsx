@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Folder,
   Home,
   MessageSquare,
   Settings,
@@ -47,6 +48,11 @@ const Sidebar = ({ className }: SidebarProps) => {
       icon: <Briefcase className="h-5 w-5" />,
     },
     {
+      title: 'Applications',
+      href: '/applications',
+      icon: <FileText className="h-5 w-5" />,
+    },
+    {
       title: 'Interviews',
       href: '/interviews',
       icon: <Calendar className="h-5 w-5" />,
@@ -64,7 +70,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     {
       title: 'Documents',
       href: '/documents',
-      icon: <FileText className="h-5 w-5" />,
+      icon: <Folder className="h-5 w-5" />,
     },
   ];
 

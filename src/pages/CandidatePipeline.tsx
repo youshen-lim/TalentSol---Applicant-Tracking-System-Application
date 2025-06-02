@@ -808,7 +808,8 @@ const CandidatePipeline = () => {
         />
       ) : (
         <div className="bg-white rounded-lg border overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
+          {/* List View Header - Responsive */}
+          <div className="hidden md:grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
             <div className="col-span-3">Candidate</div>
             <div className="col-span-2">Position</div>
             <div className="col-span-2">Stage</div>
@@ -822,93 +823,186 @@ const CandidatePipeline = () => {
                 <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-medium mb-2">No candidates found</h3>
                 <p className="text-sm">Try adjusting your search or filter criteria</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="mt-4"
+                >
+                  Clear all filters
+                </Button>
               </div>
             ) : (
               filteredCandidates.map((candidate) => (
-                <div key={candidate.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-gray-50">
-                  <div className="col-span-3 flex items-center space-x-3">
-                    <div className="h-10 w-10 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center font-medium">
-                      {candidate.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <div className="font-medium">{candidate.name}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {candidate.email}
-                      </div>
-                      {candidate.phone && (
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {candidate.phone}
+                <div key={candidate.id} className="md:grid md:grid-cols-12 md:gap-4 p-4 md:items-center hover:bg-gray-50">
+                  {/* Mobile Layout */}
+                  <div className="md:hidden space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center font-medium text-sm">
+                          {candidate.name.split(' ').map(n => n[0]).join('')}
                         </div>
-                      )}
+                        <div>
+                          <div className="font-medium">{candidate.name}</div>
+                          <div className="text-sm text-gray-600">{candidate.position}</div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewCandidate(candidate.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                  <div className="col-span-2">
-                    <div className="font-medium">{candidate.position}</div>
+
+                    <div className="flex items-center justify-between">
+                      <Badge
+                        variant={
+                          candidate.stage === 'offer' ? 'default' :
+                          candidate.stage === 'rejected' ? 'destructive' :
+                          'secondary'
+                        }
+                        className={
+                          candidate.stage === 'offer' ? 'bg-green-100 text-green-800' :
+                          candidate.stage === 'rejected' ? '' :
+                          'bg-ats-blue/10 text-ats-blue'
+                        }
+                      >
+                        {stages.find(s => s.id === candidate.stage)?.name || candidate.stage}
+                      </Badge>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`h-3 w-3 ${
+                              index < (candidate.rating || 0)
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({candidate.rating || 0})
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        <span className="truncate">{candidate.email}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{candidate.lastActivity}</span>
+                      </div>
+                    </div>
+
                     {candidate.tags && candidate.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {candidate.tags.slice(0, 2).map((tag, index) => (
+                      <div className="flex flex-wrap gap-1">
+                        {candidate.tags.slice(0, 3).map((tag, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
-                        {candidate.tags.length > 2 && (
+                        {candidate.tags.length > 3 && (
                           <Badge variant="outline" className="text-xs">
-                            +{candidate.tags.length - 2}
+                            +{candidate.tags.length - 3}
                           </Badge>
                         )}
                       </div>
                     )}
                   </div>
-                  <div className="col-span-2">
-                    <Badge
-                      variant={
-                        candidate.stage === 'offer' ? 'default' :
-                        candidate.stage === 'rejected' ? 'destructive' :
-                        'secondary'
-                      }
-                      className={
-                        candidate.stage === 'offer' ? 'bg-green-100 text-green-800' :
-                        candidate.stage === 'rejected' ? '' :
-                        'bg-ats-blue/10 text-ats-blue'
-                      }
-                    >
-                      {stages.find(s => s.id === candidate.stage)?.name || candidate.stage}
-                    </Badge>
-                  </div>
-                  <div className="col-span-2">
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <Star
-                          key={index}
-                          className={`h-4 w-4 ${
-                            index < (candidate.rating || 0)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                      <span className="text-sm text-gray-500 ml-1">
-                        ({candidate.rating || 0})
-                      </span>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden md:contents">
+                    <div className="col-span-3 flex items-center space-x-3">
+                      <div className="h-10 w-10 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center font-medium">
+                        {candidate.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <div className="font-medium">{candidate.name}</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {candidate.email}
+                        </div>
+                        {candidate.phone && (
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {candidate.phone}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-span-2">
-                    <div className="text-sm flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-gray-400" />
-                      {candidate.lastActivity}
+                    <div className="col-span-2">
+                      <div className="font-medium">{candidate.position}</div>
+                      {candidate.tags && candidate.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {candidate.tags.slice(0, 2).map((tag, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {candidate.tags.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{candidate.tags.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="col-span-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewCandidate(candidate.id)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                    <div className="col-span-2">
+                      <Badge
+                        variant={
+                          candidate.stage === 'offer' ? 'default' :
+                          candidate.stage === 'rejected' ? 'destructive' :
+                          'secondary'
+                        }
+                        className={
+                          candidate.stage === 'offer' ? 'bg-green-100 text-green-800' :
+                          candidate.stage === 'rejected' ? '' :
+                          'bg-ats-blue/10 text-ats-blue'
+                        }
+                      >
+                        {stages.find(s => s.id === candidate.stage)?.name || candidate.stage}
+                      </Badge>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`h-4 w-4 ${
+                              index < (candidate.rating || 0)
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                        <span className="text-sm text-gray-500 ml-1">
+                          ({candidate.rating || 0})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-sm flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-gray-400" />
+                        {candidate.lastActivity}
+                      </div>
+                    </div>
+                    <div className="col-span-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewCandidate(candidate.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))

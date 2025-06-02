@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import {
   User,
   Mail,
@@ -19,6 +22,10 @@ import {
   Activity,
   Award,
   Clock,
+  Shield,
+  Key,
+  Eye,
+  Settings,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -53,12 +60,40 @@ interface ProfileData {
     description: string;
     date: string;
   }>;
+  security: {
+    twoFactorEnabled: boolean;
+    lastPasswordChange: string;
+    loginHistory: Array<{
+      id: string;
+      timestamp: string;
+      location: string;
+      device: string;
+      ipAddress: string;
+    }>;
+    accountPermissions: string[];
+  };
+  account: {
+    createdDate: string;
+    lastLogin: string;
+    accountType: string;
+    companyAssociation: string;
+  };
 }
 
 const Profile = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isSaving, setIsSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [activeTab, setActiveTab] = useState('profile');
+
+  // Handle URL parameters for tab navigation
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['profile', 'account', 'security', 'activity'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const [profile, setProfile] = useState<ProfileData>({
     personalInfo: {
@@ -134,6 +169,40 @@ const Profile = () => {
         date: '2023-06-01',
       },
     ],
+    security: {
+      twoFactorEnabled: false,
+      lastPasswordChange: '2024-01-15',
+      loginHistory: [
+        {
+          id: '1',
+          timestamp: '2024-01-20 09:15:00',
+          location: 'New York, NY',
+          device: 'Chrome on Windows',
+          ipAddress: '192.168.1.100',
+        },
+        {
+          id: '2',
+          timestamp: '2024-01-19 14:30:00',
+          location: 'New York, NY',
+          device: 'Safari on iPhone',
+          ipAddress: '192.168.1.101',
+        },
+        {
+          id: '3',
+          timestamp: '2024-01-18 08:45:00',
+          location: 'New York, NY',
+          device: 'Chrome on Windows',
+          ipAddress: '192.168.1.100',
+        },
+      ],
+      accountPermissions: ['User Management', 'Job Posting', 'Candidate Review', 'Interview Scheduling', 'Report Generation'],
+    },
+    account: {
+      createdDate: '2020-03-15',
+      lastLogin: '2024-01-20 09:15:00',
+      accountType: 'HR Manager',
+      companyAssociation: 'TalentSol Inc.',
+    },
   });
 
   const updatePersonalInfo = (field: keyof ProfileData['personalInfo'], value: string) => {
@@ -141,6 +210,18 @@ const Profile = () => {
       ...prev,
       personalInfo: { ...prev.personalInfo, [field]: value }
     }));
+  };
+
+  const updateSecurity = (field: keyof ProfileData['security'], value: any) => {
+    setProfile(prev => ({
+      ...prev,
+      security: { ...prev.security, [field]: value }
+    }));
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
   };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

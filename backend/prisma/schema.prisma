@@ -1,0 +1,207 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users User[]
+  jobs  Job[]
+
+  @@map("companies")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
+  role         String   @default("recruiter")
+  companyId    String   @map("company_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  company           Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdJobs       Job[]         @relation("JobCreator")
+  reviewedApps      Application[] @relation("ApplicationReviewer")
+  createdInterviews Interview[]   @relation("InterviewCreator")
+
+  @@map("users")
+}
+
+model Job {
+  id                      String   @id @default(cuid())
+  title                   String
+  department              String?
+  location                Json? // JobLocation interface
+  employmentType          String?  @map("employment_type")
+  experienceLevel         String?  @map("experience_level")
+  salary                  Json? // JobSalary interface
+  description             String?
+  responsibilities        String[]
+  requiredQualifications  String[] @map("required_qualifications")
+  preferredQualifications String[] @map("preferred_qualifications")
+  skills                  String[]
+  benefits                String?
+  status                  String   @default("draft")
+  visibility              String   @default("public")
+  postedDate              DateTime? @map("posted_date")
+  applicationDeadline     DateTime? @map("application_deadline")
+  maxApplicants           Int?     @map("max_applicants")
+  currentApplicants       Int      @default(0) @map("current_applicants")
+  pipeline                Json? // JobPipeline interface
+  source                  String   @default("internal")
+  createdById             String   @map("created_by_id")
+  companyId               String   @map("company_id")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  createdBy    User          @relation("JobCreator", fields: [createdById], references: [id])
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+  formSchemas  ApplicationFormSchema[]
+
+  @@map("jobs")
+}
+
+model Candidate {
+  id                String   @id @default(cuid())
+  firstName         String   @map("first_name")
+  lastName          String   @map("last_name")
+  email             String   @unique
+  phone             String?
+  location          Json? // Location interface
+  willingToRelocate Boolean? @map("willing_to_relocate")
+  workAuthorization String?  @map("work_authorization")
+  linkedinUrl       String?  @map("linkedin_url")
+  portfolioUrl      String?  @map("portfolio_url")
+  websiteUrl        String?  @map("website_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  applications Application[]
+
+  @@map("candidates")
+}
+
+model Application {
+  id                     String    @id @default(cuid())
+  jobId                  String    @map("job_id")
+  candidateId            String    @map("candidate_id")
+  status                 String    @default("applied")
+  submittedAt            DateTime? @map("submitted_at")
+  candidateInfo          Json      @map("candidate_info") // CandidateInfo interface
+  professionalInfo       Json?     @map("professional_info") // ProfessionalInfo interface
+  documents              Json?     // ApplicationDocuments interface
+  customAnswers          Json?     @map("custom_answers") // Record<string, CustomAnswer>
+  metadata               Json?     // ApplicationMetadata interface
+  scoring                Json?     // ApplicationScoring interface
+  activity               Json[]    // ApplicationActivity[] interface
+  reviewNotes            String?   @map("review_notes")
+  reviewedById           String?   @map("reviewed_by_id")
+  reviewedAt             DateTime? @map("reviewed_at")
+  tags                   String[]
+  lastContactDate        DateTime? @map("last_contact_date")
+  nextFollowupDate       DateTime? @map("next_followup_date")
+  communicationHistory   String[]  @map("communication_history")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  job        Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate  Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  reviewedBy User?       @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
+  interviews Interview[]
+  documents  Document[]
+
+  @@map("applications")
+}
+
+model Interview {
+  id            String    @id @default(cuid())
+  applicationId String    @map("application_id")
+  title         String
+  type          String?
+  scheduledDate DateTime? @map("scheduled_date")
+  startTime     String?   @map("start_time")
+  endTime       String?   @map("end_time")
+  location      String?
+  interviewers  String[] // Array of user IDs
+  notes         String?
+  feedback      Json? // Interview feedback structure
+  status        String    @default("scheduled")
+  createdById   String    @map("created_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  createdBy   User        @relation("InterviewCreator", fields: [createdById], references: [id])
+
+  @@map("interviews")
+}
+
+model Document {
+  id            String    @id @default(cuid())
+  applicationId String    @map("application_id")
+  filename      String
+  fileType      String?   @map("file_type")
+  fileSize      Int?      @map("file_size")
+  fileUrl       String    @map("file_url")
+  documentType  String    @map("document_type") // 'resume', 'cover_letter', 'portfolio', etc.
+  uploadedAt    DateTime  @default(now()) @map("uploaded_at")
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model ApplicationFormSchema {
+  id            String   @id @default(cuid())
+  jobId         String   @map("job_id")
+  title         String
+  description   String?
+  sections      Json     // FormSection[] interface
+  settings      Json     // Form settings interface
+  emailSettings Json     @map("email_settings") // Email settings interface
+  version       Int      @default(1)
+  createdById   String   @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("application_form_schemas")
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  subject   String
+  body      String
+  type      String // 'confirmation', 'status_update', 'interview_invite', 'rejection', 'offer'
+  variables String[] // Available template variables
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("email_templates")
+}

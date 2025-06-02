@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import CandidatePipeline from "./pages/CandidatePipeline";
 import Interviews from "./pages/Interviews";
 import Jobs from "./pages/Jobs";
+import Applications from "./pages/Applications";
 import Messages from "./pages/Messages";
 import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
@@ -15,7 +16,8 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
+import ProfileEnhanced from "./pages/ProfileEnhanced";
+import Help from "./pages/Help";
 import HiresCurrentQuarter from "./pages/analytics/reports/HiresCurrentQuarter";
 import PipelineMetrics from "./pages/analytics/reports/PipelineMetrics";
 import TimeToHire from "./pages/analytics/reports/TimeToHire";
@@ -71,6 +73,7 @@ const App = () => (
             <Route path="/candidates/all" element={<CandidatePipeline />} />
             <Route path="/interviews" element={<Interviews />} />
             <Route path="/jobs" element={<Jobs />} />
+            <Route path="/applications" element={<Applications />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/analytics" element={<Analytics />} />
@@ -79,7 +82,8 @@ const App = () => (
             <Route path="/analytics/reports/time-to-hire" element={<TimeToHire />} />
             <Route path="/analytics/reports/source-effectiveness" element={<SourceEffectiveness />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<ProfileEnhanced />} />
+            <Route path="/help" element={<Help />} />
           </Route>
           <Route path="/examples" element={<ExamplesPage />} />
           <Route path="*" element={<NotFound />} />

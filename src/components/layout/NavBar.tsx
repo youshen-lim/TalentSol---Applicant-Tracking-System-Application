@@ -47,18 +47,50 @@ const mockNotifications: Notification[] = [
   },
   {
     id: '3',
-    type: 'system',
-    title: 'System Update',
-    message: 'New AI matching features are now available',
-    timestamp: '1 hour ago',
-    isRead: true,
+    type: 'application',
+    title: 'Application Status Update',
+    message: 'Emily Davis application moved to technical review',
+    timestamp: '45 minutes ago',
+    isRead: false,
   },
   {
     id: '4',
+    type: 'system',
+    title: 'Job Posting Alert',
+    message: 'Product Manager position received 25+ applications',
+    timestamp: '1 hour ago',
+    isRead: false,
+  },
+  {
+    id: '5',
+    type: 'interview',
+    title: 'Interview Scheduled',
+    message: 'New interview scheduled with Alex Chen for tomorrow',
+    timestamp: '2 hours ago',
+    isRead: false,
+  },
+  {
+    id: '6',
+    type: 'system',
+    title: 'System Reminder',
+    message: 'Weekly recruitment report is ready for review',
+    timestamp: '3 hours ago',
+    isRead: false,
+  },
+  {
+    id: '7',
     type: 'update',
     title: 'Candidate Status Update',
     message: 'Michael Brown moved to final interview stage',
-    timestamp: '2 hours ago',
+    timestamp: '4 hours ago',
+    isRead: true,
+  },
+  {
+    id: '8',
+    type: 'system',
+    title: 'System Update',
+    message: 'New AI matching features are now available',
+    timestamp: '1 day ago',
     isRead: true,
   },
 ];
@@ -200,20 +232,23 @@ const NavBar = ({ className }: NavBarProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Settings</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
-              Account Preferences
+            <DropdownMenuItem onClick={() => navigate('/settings?tab=account')}>
+              Account Settings
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
-              Notification Settings
+            <DropdownMenuItem onClick={() => navigate('/settings?tab=company')}>
+              Company Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
+            <DropdownMenuItem onClick={() => navigate('/settings?tab=integrations')}>
               Integration Settings
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
-              System Configuration
+            <DropdownMenuItem onClick={() => navigate('/settings?tab=notifications')}>
+              Notification Preferences
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/settings?tab=security')}>
+              Privacy & Security
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/help')}>
               Help & Support
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -234,16 +269,22 @@ const NavBar = ({ className }: NavBarProps) => {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/profile')}>
-              Profile
+              Profile Page
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/settings')}>
-              Settings
+              Settings Page
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/profile?tab=account')}>
+              Account Information
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/profile?tab=security')}>
+              Change Password
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/profile?tab=activity')}>
               My Activity
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/help')}>
               Help Center
             </DropdownMenuItem>
             <DropdownMenuSeparator />

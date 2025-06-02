@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +25,7 @@ import {
   Save,
   Eye,
   EyeOff,
+  Briefcase,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -71,9 +73,18 @@ interface SettingsData {
 
 const Settings = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('account');
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Handle URL parameters for tab navigation
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['account', 'company', 'notifications', 'privacy', 'appearance', 'integrations', 'security'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const [settings, setSettings] = useState<SettingsData>({
     account: {
@@ -159,6 +170,11 @@ const Settings = () => {
     }));
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     
@@ -204,11 +220,15 @@ const Settings = () => {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="account" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Account
+          </TabsTrigger>
+          <TabsTrigger value="company" className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            Company
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
@@ -295,6 +315,100 @@ const Settings = () => {
                   onChange={(e) => updateAccount('bio', e.target.value)}
                   rows={3}
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="company" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Company Profile</CardTitle>
+              <CardDescription>
+                Manage your company information and settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="company-name">Company Name</Label>
+                  <Input
+                    id="company-name"
+                    value="TalentSol Inc."
+                    readOnly
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company-size">Company Size</Label>
+                  <Input
+                    id="company-size"
+                    value="50-200 employees"
+                    readOnly
+                    className="bg-gray-50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="industry">Industry</Label>
+                  <Input
+                    id="industry"
+                    value="Technology"
+                    readOnly
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="founded">Founded</Label>
+                  <Input
+                    id="founded"
+                    value="2018"
+                    readOnly
+                    className="bg-gray-50"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company-description">Company Description</Label>
+                <Textarea
+                  id="company-description"
+                  value="TalentSol is a leading provider of AI-powered applicant tracking systems, helping companies streamline their recruitment processes and find the best talent efficiently."
+                  readOnly
+                  className="bg-gray-50"
+                  rows={3}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <h4 className="font-medium">Company Settings</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Allow Public Job Listings</Label>
+                      <p className="text-sm text-gray-500">Make job postings visible on public job boards</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Enable Candidate Referrals</Label>
+                      <p className="text-sm text-gray-500">Allow employees to refer candidates</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Automated Screening</Label>
+                      <p className="text-sm text-gray-500">Use AI to pre-screen applications</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
