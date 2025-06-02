@@ -185,72 +185,103 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
     );
   };
 
-  // Modern card design combining elements from both versions
+  // Modern responsive card design
   return (
-    <Card className={cn("w-full max-w-md shadow-sm hover:shadow-md transition-shadow", className)}>
+    <Card className={cn("w-full shadow-sm hover:shadow-md transition-shadow", className)}>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
+        <div className="flex justify-between items-start gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
               {imageSrc ? <AvatarImage src={imageSrc} alt={name} /> : null}
-              <AvatarFallback className="bg-ats-blue text-white">{getInitials(name)}</AvatarFallback>
+              <AvatarFallback className="bg-ats-blue text-white text-xs sm:text-sm">{getInitials(name)}</AvatarFallback>
             </Avatar>
-            <div>
-              <CardTitle className="text-lg">{name}</CardTitle>
-              <CardDescription className="text-sm">{position}</CardDescription>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-sm sm:text-lg truncate">{name}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm truncate">{position}</CardDescription>
             </div>
           </div>
-          <Badge className={cn(getStatusColor())}>
+          <Badge className={cn(getStatusColor(), "flex-shrink-0 text-xs")}>
             {stage || statusLabels[status || 'new']}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pb-2">
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <MailIcon className="h-4 w-4 text-muted-foreground" />
+      <CardContent className="pb-2 sm:pb-3 space-y-2 sm:space-y-3">
+        {/* Contact Information */}
+        <div className="space-y-1 sm:space-y-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+            <MailIcon className="h-3 w-3 text-ats-blue flex-shrink-0" />
             <span className="truncate">{email}</span>
           </div>
           {phone && (
-            <div className="flex items-center gap-2">
-              <PhoneIcon className="h-4 w-4 text-muted-foreground" />
-              <span>{phone}</span>
-            </div>
-          )}
-          {appliedDate && (
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <span>Applied: {formatDate(appliedDate)}</span>
-            </div>
-          )}
-          {(lastContact || lastActivity) && (
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span>Last Activity: {lastActivity || formatDate(lastContact)}</span>
-            </div>
-          )}
-          {renderRating(rating)}
-          {tags && tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {tags.map((tag, index) => (
-                <div key={index} className="inline-flex items-center text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                  <Tag className="h-3 w-3 mr-1" />
-                  {tag}
-                </div>
-              ))}
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+              <PhoneIcon className="h-3 w-3 text-ats-blue flex-shrink-0" />
+              <span className="truncate">{phone}</span>
             </div>
           )}
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-between pt-2">
-        <Button variant="outline" size="sm" onClick={handleView}>
-          View Profile
-        </Button>
-        {onEdit && (
-          <Button variant="outline" size="sm" onClick={() => onEdit(candidate)}>
-            Edit
-          </Button>
+
+        {/* Last Activity */}
+        {(lastActivity || lastContact || appliedDate) && (
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 bg-gray-50 rounded-md p-1.5 sm:p-2">
+            <Clock className="h-3 w-3 text-ats-purple flex-shrink-0" />
+            <span className="text-xs truncate">
+              {lastActivity || (appliedDate ? `Applied: ${formatDate(appliedDate)}` : formatDate(lastContact))}
+            </span>
+          </div>
         )}
+
+        {/* Rating */}
+        {rating && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-0.5 sm:gap-1">
+              {[...Array(5)].map((_, i) => (
+                <StarIcon
+                  key={i}
+                  className={cn(
+                    "h-3 w-3",
+                    i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                  )}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-500 font-medium">
+              {rating}/5
+            </span>
+          </div>
+        )}
+
+        {/* Tags/Skills */}
+        {tags && tags.length > 0 && (
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex flex-wrap gap-1">
+              {tags.slice(0, 2).map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="text-xs px-1.5 sm:px-2 py-0.5 bg-ats-blue/10 text-ats-blue border-ats-blue/20"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {tags.length > 2 && (
+                <Badge variant="outline" className="text-xs px-1.5 sm:px-2 py-0.5 text-gray-500">
+                  +{tags.length - 2}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="pt-2 sm:pt-3 border-t border-gray-100">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleView}
+          className="w-full text-ats-blue hover:text-ats-dark-blue hover:bg-ats-blue/10 text-xs sm:text-sm"
+        >
+          <UserIcon className="h-3 w-3 mr-1 flex-shrink-0" />
+          <span>View Profile</span>
+        </Button>
       </CardFooter>
     </Card>
   );

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, PlusCircle } from 'lucide-react';
+import { PlusIcon, PlusCircle, Users } from 'lucide-react';
 import CandidateCard, { Candidate } from './CandidateCard';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -93,6 +93,23 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   // State to track columns/stages
   const [columns, setColumns] = useState<KanbanColumn[]>(getInitialColumns());
 
+  // Sync columns with initialStages prop changes (for filtering)
+  useEffect(() => {
+    if (initialStages && initialStages.length > 0) {
+      const updatedColumns = initialStages.map(stage => ({
+        id: stage.id,
+        title: stage.name,
+        candidates: stage.candidates,
+      }));
+      setColumns(updatedColumns);
+    }
+  }, [initialStages]);
+
+  // Helper function to get total candidate count for debugging
+  const getTotalCandidates = () => {
+    return columns.reduce((total, column) => total + column.candidates.length, 0);
+  };
+
   // Handle drag end event
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -154,80 +171,137 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }
   };
 
-  // Render the kanban board with a blend of both styles
+  // Stage color mapping for enhanced visual distinction
+  const getStageColor = (stageId: string) => {
+    const colorMap: Record<string, { bg: string; border: string; text: string }> = {
+      applied: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+      screening: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+      interview: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+      assessment: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+      offer: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
+      rejected: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
+    };
+    return colorMap[stageId] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' };
+  };
+
+  // Render the kanban board with enhanced responsive styling
   return (
-    <div className={cn("w-full overflow-x-auto", className)}>
-      {/* Header with title and add button */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Candidate Pipeline</h2>
+    <div className={cn("w-full", className)}>
+      {/* Kanban Board Header Layout - Title with adjacent button */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Candidate Pipeline</h2>
         {onAddCandidate && (
-          <Button onClick={onAddCandidate}>
+          <Button
+            onClick={onAddCandidate}
+            className="bg-ats-blue hover:bg-ats-dark-blue text-white w-full sm:w-auto"
+            size="sm"
+          >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Candidate
           </Button>
         )}
       </div>
 
-      {/* Drag and drop context */}
+      {/* Drag and drop context with responsive design */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex space-x-4 overflow-x-auto pb-6">
-          {columns.map(column => (
-            <div
-              key={column.id}
-              className="min-w-[300px] w-[300px] bg-white rounded-lg border border-gray-200 flex-shrink-0"
-            >
-              {/* Column header */}
-              <div className="p-3 border-b sticky top-0 bg-white z-10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{column.title}</h3>
-                    <span className="text-xs text-gray-500">{column.candidates.length} candidates</span>
-                  </div>
-                  {onAddCandidate && (
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onAddCandidate}>
-                      <PlusCircle className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Droppable area */}
-              <Droppable droppableId={column.id}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className="p-2 min-h-[calc(100vh-12rem)]"
-                  >
-                    <div className="space-y-3">
-                      {column.candidates.map((candidate, index) => (
-                        <Draggable
-                          key={candidate.id}
-                          draggableId={candidate.id}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              <CandidateCard
-                                candidate={candidate}
-                                onView={handleViewCandidate}
-                                onEdit={onEditCandidate}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                    </div>
-                    {provided.placeholder}
-                  </div>
+        {/* Mobile: Horizontal scroll, Desktop: Full width */}
+        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 sm:pb-6 -mx-2 px-2 sm:mx-0 sm:px-0">
+          {columns.map(column => {
+            const stageColors = getStageColor(column.id);
+            return (
+              <div
+                key={column.id}
+                className={cn(
+                  // Responsive column sizing
+                  "min-w-[280px] w-[280px] sm:min-w-[300px] sm:w-[300px] md:min-w-[320px] md:w-[320px] lg:min-w-[340px] lg:w-[340px]",
+                  "rounded-lg border-2 flex-shrink-0 transition-all duration-200",
+                  stageColors.bg,
+                  stageColors.border
                 )}
-              </Droppable>
-            </div>
-          ))}
+              >
+                {/* Column header with responsive styling */}
+                <div className={cn(
+                  "p-3 sm:p-4 border-b-2 sticky top-0 z-10 rounded-t-lg",
+                  stageColors.bg,
+                  stageColors.border
+                )}>
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <h3 className={cn("font-semibold text-xs sm:text-sm uppercase tracking-wide truncate", stageColors.text)}>
+                        {column.title}
+                      </h3>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {column.candidates.length} candidate{column.candidates.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {onAddCandidate && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn("h-6 w-6 sm:h-7 sm:w-7 hover:bg-white/50 flex-shrink-0", stageColors.text)}
+                        onClick={onAddCandidate}
+                      >
+                        <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Droppable area with responsive styling */}
+                <Droppable droppableId={column.id}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={cn(
+                        "p-2 sm:p-3 transition-colors duration-200",
+                        // Responsive min-height based on screen size
+                        "min-h-[calc(100vh-16rem)] sm:min-h-[calc(100vh-14rem)] md:min-h-[calc(100vh-12rem)]",
+                        snapshot.isDraggingOver && "bg-white/70"
+                      )}
+                    >
+                      <div className="space-y-2 sm:space-y-3">
+                        {column.candidates.map((candidate, index) => (
+                          <Draggable
+                            key={candidate.id}
+                            draggableId={candidate.id}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={cn(
+                                  "transition-all duration-200",
+                                  snapshot.isDragging && "rotate-1 sm:rotate-2 scale-105 shadow-lg z-50"
+                                )}
+                              >
+                                <CandidateCard
+                                  candidate={candidate}
+                                  onView={handleViewCandidate}
+                                  onEdit={onEditCandidate}
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                      </div>
+                      {provided.placeholder}
+
+                      {/* Empty state for columns */}
+                      {column.candidates.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-6 sm:py-8 text-gray-400">
+                          <Users className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />
+                          <p className="text-xs sm:text-sm text-center">No candidates</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            );
+          })}
         </div>
       </DragDropContext>
     </div>
