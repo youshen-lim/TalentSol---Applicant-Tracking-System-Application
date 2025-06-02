@@ -4,8 +4,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import responseTime from 'response-time';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+
+// Import cache system
+import { initializeCache, cleanupCache, getCacheHealth } from './cache/index.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -50,6 +54,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(compression());
+app.use(responseTime());
 app.use(limiter);
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(cors({
@@ -60,13 +65,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  const cacheHealth = await getCacheHealth();
+
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV,
+    cache: cacheHealth,
   });
+});
+
+// Cache health endpoint
+app.get('/health/cache', async (req, res) => {
+  const cacheHealth = await getCacheHealth();
+  res.status(200).json(cacheHealth);
 });
 
 // API routes
@@ -85,24 +99,41 @@ app.use('/api/notifications', authenticateToken, notificationRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
+// Initialize cache system
+async function startServer() {
+  try {
+    // Initialize cache system
+    await initializeCache();
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`🚀 TalentSol ATS Backend running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🔗 CORS enabled for: ${process.env.CORS_ORIGIN}`);
+      console.log(`💾 Cache system initialized`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('Received SIGINT, shutting down gracefully...');
+  await cleanupCache();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM, shutting down gracefully...');
+  await cleanupCache();
   await prisma.$disconnect();
   process.exit(0);
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 TalentSol ATS Backend running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 CORS enabled for: ${process.env.CORS_ORIGIN}`);
-});
+// Start the server
+startServer();
 
 export default app;

@@ -1,0 +1,130 @@
+# Redis Configuration for TalentSol ATS
+redis:
+  # Single instance configuration
+  single_instance:
+    host: localhost
+    port: 6379
+    password: ""
+    db: 0
+    
+  # Cluster configuration (for production)
+  cluster:
+    enabled: false
+    nodes:
+      - host: redis-node-1
+        port: 6379
+      - host: redis-node-2
+        port: 6379
+      - host: redis-node-3
+        port: 6379
+    
+  # Connection settings
+  connection:
+    retry_delay_on_failover: 100
+    max_retries_per_request: 3
+    enable_offline_queue: false
+    lazy_connect: true
+    
+  # Cache strategies
+  cache_strategies:
+    - name: "application_cache"
+      ttl: 3600  # 1 hour
+      pattern: "app:*"
+      description: "General application data cache"
+      
+    - name: "session_cache"
+      ttl: 86400  # 24 hours
+      pattern: "session:*"
+      description: "User session data cache"
+      
+    - name: "query_cache"
+      ttl: 1800  # 30 minutes
+      pattern: "query:*"
+      description: "Database query result cache"
+      
+    - name: "ai_analysis_cache"
+      ttl: 7200  # 2 hours
+      pattern: "ai:*"
+      description: "AI/ML analysis result cache"
+      
+    - name: "dashboard_cache"
+      ttl: 900  # 15 minutes
+      pattern: "dashboard:*"
+      description: "Dashboard analytics cache"
+      
+    - name: "job_listings_cache"
+      ttl: 1800  # 30 minutes
+      pattern: "jobs:*"
+      description: "Job listings and search cache"
+
+# Cache warming configuration
+cache_warming:
+  enabled: true
+  strategies:
+    - dashboard_cache
+    - job_listings_cache
+  schedule: "0 */6 * * *"  # Every 6 hours
+  
+# Cache monitoring
+monitoring:
+  enabled: true
+  metrics:
+    - hit_rate
+    - miss_rate
+    - memory_usage
+    - key_count
+  alerts:
+    low_hit_rate_threshold: 70  # Alert if hit rate below 70%
+    high_memory_usage_threshold: 80  # Alert if memory usage above 80%
+
+# Performance tuning
+performance:
+  # Memory optimization
+  memory:
+    max_memory_policy: "allkeys-lru"
+    max_memory: "256mb"
+    
+  # Persistence (for production)
+  persistence:
+    save_enabled: true
+    save_seconds: 900
+    save_changes: 1
+    
+  # Compression
+  compression:
+    enabled: true
+    algorithm: "lz4"
+    
+# Environment-specific overrides
+environments:
+  development:
+    redis:
+      single_instance:
+        host: localhost
+        port: 6379
+        db: 0
+    cache_strategies:
+      - name: "application_cache"
+        ttl: 300  # 5 minutes (shorter for dev)
+      - name: "dashboard_cache"
+        ttl: 60   # 1 minute (shorter for dev)
+        
+  production:
+    redis:
+      cluster:
+        enabled: true
+      connection:
+        max_retries_per_request: 5
+    performance:
+      memory:
+        max_memory: "2gb"
+    monitoring:
+      enabled: true
+      
+  test:
+    redis:
+      single_instance:
+        db: 1  # Use different DB for tests
+    cache_strategies:
+      - name: "application_cache"
+        ttl: 60   # 1 minute for tests

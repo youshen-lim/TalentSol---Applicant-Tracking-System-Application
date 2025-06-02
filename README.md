@@ -34,6 +34,12 @@ The entire frontend development of this application was completed in just 1.5 da
 - JWT Authentication
 - Zod Validation
 - Multer (file uploads)
+- **Advanced Caching System**:
+  - Redis with cluster support
+  - In-memory fallback (NodeCache)
+  - Multi-layer caching strategies
+  - Automatic cache invalidation
+  - Performance monitoring
 
 ## Getting Started
 
@@ -153,6 +159,8 @@ The backend includes comprehensive seed data that mirrors and enhances the front
   - Interactive progress bars for source breakdown
   - Company Website, LinkedIn, Indeed, Referrals tracking
   - Percentage-based visual indicators
+  - **Enhanced Error Handling**: Fixed null reference errors with proper loading states
+  - **Skeleton Loading**: Smooth loading animations while data loads
 - **Advanced Search & Filtering**:
   - Real-time search across candidate names and positions
   - Filter by application status, date range, and scores
@@ -266,6 +274,13 @@ The backend includes comprehensive seed data that mirrors and enhances the front
 - **Cards**: Improved styling with hover effects and animations
 - **Forms**: Advanced validation with real-time feedback
 
+#### **Recent Bug Fixes & Improvements**
+- **Applications Page**: Fixed `topSources` null reference error that caused page crashes
+- **Loading States**: Added skeleton loading animations for better user experience
+- **Error Handling**: Implemented graceful fallbacks when data is unavailable
+- **Variable References**: Corrected `mockJob` to `currentJob` reference in application forms
+- **Null Safety**: Added comprehensive null checks throughout application components
+
 ## Key Features & Enhancements
 
 ### 📊 **Smart Application Cap Management**
@@ -333,19 +348,30 @@ Ready for integration with publicly sourced datasets:
 ```
 talentsol-ats/
 ├── backend/                 # Backend API
+│   ├── config/              # Configuration files
+│   │   └── redis-config.yml # Redis caching configuration
+│   ├── models/              # Data model definitions
+│   │   └── talentsol_schema.yml # Unified data model schema
 │   ├── prisma/              # Database schema and migrations
 │   │   └── schema.prisma    # Prisma schema
 │   ├── src/
+│   │   ├── cache/           # Advanced caching system
+│   │   │   ├── RedisClient.ts    # Redis client with fallback
+│   │   │   ├── QueryCache.ts     # Database query caching
+│   │   │   ├── CacheManager.ts   # Centralized cache management
+│   │   │   ├── decorators.ts     # Caching decorators
+│   │   │   └── index.ts          # Cache module exports
 │   │   ├── middleware/      # Express middleware
 │   │   ├── routes/          # API route handlers
+│   │   ├── services/        # Business logic services
+│   │   │   └── CachedAnalyticsService.ts # Cached analytics
 │   │   ├── types/           # TypeScript types and validation
 │   │   ├── index.ts         # Express server entry point
 │   │   └── seed.ts          # Database seeding script
 │   ├── uploads/             # File upload directory
 │   ├── .env.example         # Environment variables template
 │   ├── package.json         # Backend dependencies
-│   ├── tsconfig.json        # Backend TypeScript config
-│   └── README.md            # Backend documentation
+│   └── tsconfig.json        # Backend TypeScript config
 ├── public/                  # Static assets
 ├── src/                     # Frontend React app
 │   ├── assets/              # Images, fonts, etc.
@@ -474,9 +500,15 @@ A robust Node.js/Express backend API built with TypeScript, Prisma, and PostgreS
 - `POST /api/ml/train` - Train new models
 
 #### **Analytics**
-- `GET /api/analytics/dashboard` - Get dashboard analytics
+- `GET /api/analytics/dashboard` - Get dashboard analytics (cached)
 - `GET /api/analytics/funnel` - Get hiring funnel data
 - `GET /api/analytics/time-to-hire` - Get time-to-hire analytics
+
+#### **Cache Management**
+- `POST /api/analytics/cache/warm` - Warm cache for company
+- `POST /api/analytics/cache/refresh` - Refresh dashboard cache
+- `GET /api/analytics/cache/stats` - Get cache statistics
+- `GET /health/cache` - Cache system health check
 
 ### 🗄️ **Database Schema**
 
@@ -701,6 +733,507 @@ The `screenshots/` folder contains comprehensive visual documentation:
 
 This project is open source and available under the [MIT License](LICENSE).
 
+## 🚀 **Advanced Caching Architecture (Part 1)**
+
+### **Overview**
+
+TalentSol ATS implements a sophisticated multi-layer caching architecture designed for high performance and scalability. The system provides intelligent caching strategies, automatic invalidation, and graceful fallback mechanisms.
+
+### **Architecture Components**
+
+#### **1. Multi-Layer Caching Strategy**
+
+**Layer 1: Application-Level Caching (Redis)**
+- **Primary cache**: Redis with cluster support
+- **Fallback**: In-memory NodeCache
+- **Features**: Distributed caching, persistence, high availability
+
+**Layer 2: Database Query Caching**
+- **Purpose**: Cache expensive database queries
+- **TTL**: Configurable per query type
+- **Invalidation**: Tag-based and pattern-based
+
+**Layer 3: CDN & Static Asset Caching**
+- **Purpose**: Cache static assets and API responses
+- **Provider**: Configurable (Cloudflare, AWS CloudFront)
+- **TTL**: Long-term for static assets, short-term for dynamic content
+
+#### **2. Cache Strategies**
+
+| Strategy | TTL | Pattern | Use Case |
+|----------|-----|---------|----------|
+| `application_cache` | 1 hour | `app:*` | General application data |
+| `session_cache` | 24 hours | `session:*` | User sessions |
+| `query_cache` | 30 minutes | `query:*` | Database queries |
+| `ai_analysis_cache` | 2 hours | `ai:*` | ML/AI results |
+| `dashboard_cache` | 15 minutes | `dashboard:*` | Analytics data |
+| `job_listings_cache` | 30 minutes | `jobs:*` | Job search results |
+
+### **Implementation**
+
+#### **1. Redis Client Configuration**
+
+```typescript
+// Initialize Redis with fallback
+import { redisClient } from './cache/RedisClient.js';
+
+// Automatic fallback to in-memory cache if Redis unavailable
+const data = await redisClient.get('key');
+await redisClient.set('key', 'value', 3600);
+```
+
+#### **2. Query Cache Usage**
+
+```typescript
+import { queryCache } from './cache/QueryCache.js';
+
+// Cache database query results
+const result = await queryCache.get('user_profile', { userId: '123' });
+if (!result) {
+  const data = await database.query('SELECT * FROM users WHERE id = ?', [userId]);
+  await queryCache.set('user_profile', { userId: '123' }, data, { ttl: 1800 });
+  return data;
+}
+return result;
+```
+
+#### **3. Decorator-Based Caching**
+
+```typescript
+import { Cached, InvalidateCache } from './cache/decorators.js';
+
+class UserService {
+  @Cached({
+    strategy: 'application_cache',
+    ttl: 3600,
+    tags: ['users'],
+    keyGenerator: (userId: string) => `user_${userId}`,
+  })
+  async getUserProfile(userId: string) {
+    return await database.users.findUnique({ where: { id: userId } });
+  }
+
+  @InvalidateCache({
+    tags: ['users'],
+    patterns: ['user_*'],
+  })
+  async updateUser(userId: string, data: any) {
+    return await database.users.update({
+      where: { id: userId },
+      data,
+    });
+  }
+}
+```
+
+#### **4. Cache Manager**
+
+```typescript
+import { cacheManager } from './cache/CacheManager.js';
+
+// Invalidate related caches when application is updated
+await cacheManager.invalidateApplicationCache(applicationId);
+
+// Warm dashboard cache
+await cacheManager.warmDashboardCache(companyId);
+
+// Get cache health status
+const health = await cacheManager.healthCheck();
+```
+
+### **Cache Invalidation Strategies**
+
+#### **1. Time-Based Invalidation (TTL)**
+- Automatic expiration based on configured TTL
+- Different TTL values for different data types
+- Configurable per environment
+
+#### **2. Tag-Based Invalidation**
+- Group related cache entries with tags
+- Invalidate all entries with specific tags
+- Example: Invalidate all user-related caches when user is updated
+
+#### **3. Pattern-Based Invalidation**
+- Use Redis pattern matching to invalidate multiple keys
+- Useful for hierarchical cache structures
+- Example: `user:*:profile` invalidates all user profiles
+
+#### **4. Event-Driven Invalidation**
+- Automatic invalidation on data changes
+- Integrated with database operations
+- Ensures cache consistency
+
+### **Performance Optimizations**
+
+#### **1. Connection Pooling**
+- Redis connection pooling for high concurrency
+- Configurable pool size and timeout settings
+- Health checks and automatic reconnection
+
+#### **2. Compression**
+- Automatic compression for large cache values
+- Configurable compression algorithms (LZ4, Gzip)
+- Reduces memory usage and network transfer
+
+#### **3. Batch Operations**
+- Batch cache operations for better performance
+- Reduces network round trips
+- Atomic operations for consistency
+
+#### **4. Memory Management**
+- LRU eviction policy for memory optimization
+- Configurable memory limits
+- Memory usage monitoring and alerts
+
+### **Monitoring and Metrics**
+
+#### **1. Cache Statistics**
+- Hit/miss ratios per cache strategy
+- Memory usage and key counts
+- Performance metrics and latency
+
+#### **2. Health Checks**
+- Redis connectivity status
+- Fallback cache status
+- Cache performance indicators
+
+#### **3. Alerting**
+- Low hit rate alerts
+- High memory usage alerts
+- Connection failure notifications
+
+### **Configuration**
+
+#### **Environment Variables**
+
+```bash
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+REDIS_CLUSTER_ENABLED=false
+
+# Cache TTL Settings
+CACHE_TTL_DEFAULT=1800
+CACHE_TTL_QUERY=1800
+CACHE_TTL_SESSION=86400
+CACHE_TTL_AI_ANALYSIS=7200
+```
+
+#### **YAML Configuration**
+
+See `backend/config/redis-config.yml` for detailed configuration options.
+
+### **API Endpoints**
+
+#### **Cache Management**
+
+```bash
+# Warm cache for company
+POST /api/analytics/cache/warm
+
+# Refresh dashboard cache
+POST /api/analytics/cache/refresh
+
+# Get cache statistics
+GET /api/analytics/cache/stats
+
+# Health check with cache status
+GET /health
+GET /health/cache
+```
+
+### **Best Practices**
+
+#### **1. Cache Key Design**
+- Use consistent naming conventions
+- Include version information when needed
+- Avoid overly long keys
+
+#### **2. TTL Selection**
+- Short TTL for frequently changing data
+- Long TTL for static or rarely changing data
+- Consider business requirements and data freshness needs
+
+#### **3. Error Handling**
+- Always implement fallback mechanisms
+- Log cache errors for monitoring
+- Graceful degradation when cache is unavailable
+
+#### **4. Testing**
+- Test cache behavior in different scenarios
+- Verify cache invalidation works correctly
+- Performance testing with cache enabled/disabled
+
+### **Troubleshooting**
+
+#### **Common Issues**
+
+1. **Redis Connection Failures**
+   - Check Redis server status
+   - Verify network connectivity
+   - Review connection configuration
+
+2. **Low Cache Hit Rates**
+   - Analyze cache key patterns
+   - Review TTL settings
+   - Check invalidation logic
+
+3. **Memory Issues**
+   - Monitor Redis memory usage
+   - Adjust eviction policies
+   - Optimize cache key sizes
+
+#### **Debug Commands**
+
+```bash
+# Check Redis connectivity
+redis-cli ping
+
+# Monitor Redis commands
+redis-cli monitor
+
+# Check memory usage
+redis-cli info memory
+
+# List all keys (use carefully in production)
+redis-cli keys "*"
+```
+
+### **Future Enhancements**
+
+1. **Distributed Cache Warming**
+   - Scheduled cache warming jobs
+   - Predictive cache preloading
+
+2. **Advanced Analytics**
+   - Cache usage analytics
+   - Performance optimization recommendations
+
+3. **Multi-Region Support**
+   - Cross-region cache replication
+   - Geo-distributed caching
+
+4. **Machine Learning Integration**
+   - Intelligent cache eviction
+   - Predictive cache warming based on usage patterns
+
+## 🌐 **Multi-API Architecture (Part 2)**
+
+### **Overview**
+
+TalentSol ATS implements a comprehensive multi-API architecture designed for modern data stack compatibility. The system provides multiple API interfaces to support different use cases and integration patterns.
+
+### **Architecture Components**
+
+#### **1. API Gateway (Nginx)**
+- **Load Balancing**: Distributes requests across multiple API instances
+- **Rate Limiting**: Protects APIs from abuse and ensures fair usage
+- **Caching**: Intelligent caching strategies per API type
+- **Security**: SSL termination, security headers, CORS handling
+- **Monitoring**: Request logging and metrics collection
+
+#### **2. Multiple API Endpoints**
+
+| API | Port | Purpose | Technology |
+|-----|------|---------|------------|
+| **REST API** | 3000 | Traditional REST endpoints | Node.js/Express |
+| **GraphQL API** | 4000 | Flexible query interface | Apollo Server |
+| **SQL API** | 5000 | PostgreSQL-compatible queries | FastAPI/Python |
+| **AI/ML API** | 8000 | Machine learning operations | FastAPI/Python |
+| **DAX API** | 6000 | Advanced analytics | Node.js/Express |
+| **MDX API** | 7000 | Documentation system | Next.js |
+| **WebSocket API** | 9000 | Real-time features | Socket.io |
+
+#### **3. Data Stack Compatibility**
+
+**PostgreSQL-Compatible SQL API**
+```python
+# Direct SQL queries with caching and security
+POST /sql/query
+{
+  "query": "SELECT * FROM applications WHERE status = $1",
+  "parameters": {"status": "pending"},
+  "cache_ttl": 1800
+}
+```
+
+**GraphQL API**
+```graphql
+# Flexible data fetching
+query GetJobs($filters: JobFilters) {
+  jobs(filters: $filters) {
+    id
+    title
+    applications {
+      candidate {
+        name
+        score
+      }
+    }
+  }
+}
+```
+
+**AI/ML API**
+```python
+# Candidate scoring and matching
+POST /ai/score
+{
+  "candidate": {...},
+  "job": {...},
+  "scoring_criteria": {
+    "skills_match": 0.4,
+    "experience_match": 0.3
+  }
+}
+```
+
+### **Implementation Features**
+
+#### **1. Security & Authentication**
+- **JWT Token Validation**: Consistent across all APIs
+- **SQL Injection Protection**: Advanced query validation
+- **Rate Limiting**: Per-API and per-user limits
+- **CORS Configuration**: Secure cross-origin requests
+
+#### **2. Caching Strategy**
+- **API Gateway Level**: Nginx proxy caching
+- **Application Level**: Redis caching per API
+- **Query Level**: SQL query result caching
+- **AI Model Level**: ML prediction caching
+
+#### **3. Monitoring & Observability**
+- **Prometheus**: Metrics collection
+- **Grafana**: Visualization dashboards
+- **ELK Stack**: Log aggregation and analysis
+- **Health Checks**: Automated service monitoring
+
+#### **4. Scalability Features**
+- **Horizontal Scaling**: Multiple API instances
+- **Load Balancing**: Intelligent request distribution
+- **Connection Pooling**: Efficient database connections
+- **Message Queues**: Async processing with RabbitMQ
+
+### **API Usage Examples**
+
+#### **Frontend Integration**
+```typescript
+import { multiApiClient } from '@/services/multiApiClient';
+
+// Initialize multi-API client
+await multiApiClient.initialize();
+
+// Use SQL API for complex queries
+const stats = await multiApiClient.sql.getApplicationStats(companyId);
+
+// Use GraphQL for flexible data fetching
+const jobs = await multiApiClient.graphql.getJobs({
+  filters: { department: 'Engineering' }
+});
+
+// Use AI API for candidate scoring
+const score = await multiApiClient.ai.scoreCandidate({
+  candidate: candidateData,
+  job: jobData
+});
+
+// Use WebSocket for real-time updates
+multiApiClient.websocket.send({
+  type: 'subscribe',
+  channel: 'applications'
+});
+```
+
+#### **External Integration**
+```bash
+# REST API (Traditional)
+curl -X GET "http://api.talentsol.local/api/v1/jobs" \
+  -H "Authorization: Bearer $TOKEN"
+
+# GraphQL API (Flexible)
+curl -X POST "http://api.talentsol.local/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ jobs { id title } }"}'
+
+# SQL API (Direct Database Access)
+curl -X POST "http://api.talentsol.local/sql/query" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT COUNT(*) FROM applications"}'
+
+# AI API (Machine Learning)
+curl -X POST "http://api.talentsol.local/ai/score" \
+  -H "Content-Type: application/json" \
+  -d '{"candidate": {...}, "job": {...}}'
+```
+
+### **Deployment**
+
+#### **Docker Compose**
+```bash
+# Start all services
+docker-compose -f docker-compose.multi-api.yml up -d
+
+# Scale specific services
+docker-compose -f docker-compose.multi-api.yml up -d --scale rest-api=3
+
+# Monitor services
+docker-compose -f docker-compose.multi-api.yml logs -f
+```
+
+#### **Service Health Checks**
+```bash
+# Check all services
+curl http://api.talentsol.local/health
+
+# Check specific APIs
+curl http://localhost:3000/health  # REST API
+curl http://localhost:4000/health  # GraphQL API
+curl http://localhost:5000/health  # SQL API
+curl http://localhost:8000/health  # AI API
+```
+
+### **Performance Optimization**
+
+#### **1. Caching Layers**
+- **L1 Cache**: Nginx proxy cache (static content)
+- **L2 Cache**: Redis application cache (dynamic data)
+- **L3 Cache**: Database query cache (expensive queries)
+
+#### **2. Connection Management**
+- **Database Pooling**: Optimized connection pools per service
+- **Keep-Alive**: HTTP connection reuse
+- **Circuit Breakers**: Fault tolerance patterns
+
+#### **3. Resource Allocation**
+- **CPU Limits**: Per-service resource constraints
+- **Memory Limits**: Prevent memory leaks and OOM
+- **Disk I/O**: Optimized storage access patterns
+
+### **Monitoring Dashboard**
+
+#### **Key Metrics**
+- **Request Rate**: Requests per second per API
+- **Response Time**: P50, P95, P99 latencies
+- **Error Rate**: 4xx and 5xx error percentages
+- **Cache Hit Rate**: Caching effectiveness
+- **Resource Usage**: CPU, memory, disk utilization
+
+#### **Alerts**
+- **High Error Rate**: > 5% error rate for 5 minutes
+- **High Latency**: P95 > 2 seconds for 5 minutes
+- **Low Cache Hit Rate**: < 70% hit rate for 10 minutes
+- **Resource Exhaustion**: > 80% CPU/memory for 5 minutes
+
+### **Future Enhancements**
+
+1. **API Versioning**: Support multiple API versions simultaneously
+2. **Auto-scaling**: Kubernetes-based horizontal pod autoscaling
+3. **Service Mesh**: Istio for advanced traffic management
+4. **Event Sourcing**: CQRS pattern for complex data flows
+5. **Federated GraphQL**: Distributed GraphQL schema composition
+
 ## Acknowledgements
 
 - Developed as a hobbyist project with Augment Code
@@ -708,4 +1241,25 @@ This project is open source and available under the [MIT License](LICENSE).
 - Built with modern web technologies and best practices
 - ML integration ready for Kaggle dataset integration
 - Comprehensive backend API with production-ready features
+- Advanced caching architecture for enterprise-scale performance
+
+### **Recent Development Milestones**
+
+#### **Advanced Caching Implementation (Latest)**
+- ✅ **Multi-layer caching system** with Redis and in-memory fallback
+- ✅ **6 cache strategies** implemented with automatic invalidation
+- ✅ **Decorator-based caching** for easy method-level optimization
+- ✅ **Performance monitoring** with health checks and metrics
+- ✅ **Production-ready** with comprehensive error handling
+
+#### **Application Management Improvements**
+- ✅ **Bug fixes**: Resolved `topSources` null reference errors
+- ✅ **Enhanced UX**: Added skeleton loading states and error handling
+- ✅ **Code quality**: Improved null safety and variable references
+- ✅ **Testing**: Verified frontend functionality and caching system
+
+#### **Documentation Consolidation**
+- ✅ **Single source of truth**: All documentation consolidated into README.md
+- ✅ **Comprehensive coverage**: From basic setup to advanced architecture
+- ✅ **Developer-friendly**: Clear examples and troubleshooting guides
 

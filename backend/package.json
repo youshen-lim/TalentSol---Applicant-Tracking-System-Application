@@ -29,7 +29,12 @@
     "dotenv": "^16.3.1",
     "multer": "^1.4.5-lts.1",
     "express-rate-limit": "^7.1.5",
-    "compression": "^1.7.4"
+    "compression": "^1.7.4",
+    "redis": "^4.6.12",
+    "ioredis": "^5.3.2",
+    "js-yaml": "^4.1.0",
+    "node-cache": "^5.1.2",
+    "response-time": "^2.3.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
@@ -40,6 +45,8 @@
     "@types/multer": "^1.4.11",
     "@types/compression": "^1.7.5",
     "@types/node": "^20.10.5",
+    "@types/js-yaml": "^4.0.9",
+    "@types/response-time": "^2.3.8",
     "prisma": "^5.7.1",
     "tsx": "^4.6.2",
     "typescript": "^5.3.3",

@@ -69,10 +69,23 @@ const Applications: React.FC = () => {
     const loadApplicationStats = async () => {
       try {
         const response = await applicationApi.getStats();
-        setApplicationStats(response);
+        console.log('Application stats response:', response);
+
+        // Map the API response to match frontend expectations
+        const mappedStats = {
+          total: response.totalApplications,
+          new: response.newApplications,
+          conversionRate: response.conversionRate,
+          averageScore: response.averageScore,
+          topSources: response.sourceStats || [], // Map sourceStats to topSources
+          applicationsByStatus: response.applicationsByStatus,
+          recentApplications: response.recentApplications
+        };
+
+        setApplicationStats(mappedStats);
       } catch (error) {
         console.error('Failed to load application stats:', error);
-        // Use dashboard stats as fallback
+        // Use dashboard stats as fallback with mock source data
         if (dashboardStats) {
           setApplicationStats({
             total: dashboardStats.totalApplications,
@@ -82,6 +95,20 @@ const Applications: React.FC = () => {
             hired: dashboardStats.hires,
             conversionRate: dashboardStats.conversionRate,
             averageScore: dashboardStats.averageScore,
+            topSources: [
+              { source: 'Company Website', count: 67, percentage: 43 },
+              { source: 'LinkedIn', count: 45, percentage: 29 },
+              { source: 'Indeed', count: 28, percentage: 18 },
+              { source: 'Referrals', count: 16, percentage: 10 }
+            ]
+          });
+        } else {
+          // Fallback with mock data if no dashboard stats available
+          setApplicationStats({
+            total: 156,
+            new: 23,
+            conversionRate: 15.4,
+            averageScore: 72,
             topSources: [
               { source: 'Company Website', count: 67, percentage: 43 },
               { source: 'LinkedIn', count: 45, percentage: 29 },
@@ -155,7 +182,7 @@ const Applications: React.FC = () => {
   if (showPublicForm) {
     const defaultSchema = {
       id: 'default_form',
-      jobId: mockJob.id,
+      jobId: currentJob.id,
       title: 'Job Application Form',
       description: 'Please fill out this form to apply for the position.',
       sections: [
@@ -464,20 +491,56 @@ const Applications: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {applicationStats.topSources.map((source, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>{source.source}</span>
-                        <span>{source.count} ({source.percentage}%)</span>
+                  {applicationStats?.topSources && applicationStats.topSources.length > 0 ? (
+                    applicationStats.topSources.map((source, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>{source.source}</span>
+                          <span>{source.count} ({source.percentage}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-ats-blue h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${source.percentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-ats-blue h-2 rounded-full" 
-                          style={{ width: `${source.percentage}%` }}
-                        />
+                    ))
+                  ) : applicationStats === null ? (
+                    // Loading state
+                    <div className="space-y-4">
+                      <div className="animate-pulse">
+                        <div className="flex justify-between mb-2">
+                          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded w-full mb-4"></div>
+
+                        <div className="flex justify-between mb-2">
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded w-full mb-4"></div>
+
+                        <div className="flex justify-between mb-2">
+                          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded w-full"></div>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    // No data state
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="mb-4">
+                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium">No application source data available</p>
+                      <p className="text-xs text-gray-400 mt-1">Data will appear here once applications are submitted</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

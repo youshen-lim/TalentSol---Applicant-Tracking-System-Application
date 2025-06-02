@@ -1,0 +1,294 @@
+version: "2.0"
+namespace: "talentsol"
+database: "postgresql"
+
+global_settings:
+  id_type: "uuid"
+  timestamp_type: "timestamp_with_timezone"
+  json_type: "jsonb"
+  enable_soft_delete: true
+  enable_audit_trail: true
+
+entities:
+  User:
+    table: "users"
+    primary_key: "id"
+    soft_delete: true
+    audit_trail: true
+    fields:
+      id:
+        type: "uuid"
+        generated: true
+        primary_key: true
+      username:
+        type: "string"
+        max_length: 100
+        unique: true
+        required: true
+        searchable: true
+      email:
+        type: "email"
+        unique: true
+        required: true
+        searchable: true
+      password_hash:
+        type: "string"
+        max_length: 255
+        required: true
+        sensitive: true
+      profile:
+        type: "jsonb"
+        schema:
+          first_name: { type: "string", max_length: 100, searchable: true }
+          last_name: { type: "string", max_length: 100, searchable: true }
+          avatar_url: { type: "url" }
+          phone: { type: "string", pattern: "^\\+?[1-9]\\d{1,14}$" }
+          bio: { type: "text", max_length: 500 }
+          linkedin_url: { type: "url" }
+      role:
+        type: "enum"
+        values: ["admin", "recruiter", "hr_manager", "hiring_manager"]
+        default: "recruiter"
+        indexed: true
+      permissions:
+        type: "jsonb"
+        schema:
+          can_create_jobs: { type: "boolean", default: true }
+          can_view_all_applications: { type: "boolean", default: false }
+          can_export_data: { type: "boolean", default: false }
+          can_manage_users: { type: "boolean", default: false }
+      settings:
+        type: "jsonb"
+        schema:
+          email_notifications: { type: "boolean", default: true }
+          push_notifications: { type: "boolean", default: true }
+          theme: { type: "enum", values: ["light", "dark", "auto"], default: "light" }
+          timezone: { type: "string", default: "UTC" }
+          language: { type: "string", default: "en" }
+          dashboard_layout: { type: "jsonb" }
+      last_login_at:
+        type: "timestamp"
+      is_active:
+        type: "boolean"
+        default: true
+        indexed: true
+      created_at:
+        type: "timestamp"
+        auto_now_add: true
+        indexed: true
+      updated_at:
+        type: "timestamp"
+        auto_now: true
+      deleted_at:
+        type: "timestamp"
+        null: true
+    indexes:
+      - fields: ["email"]
+        unique: true
+        name: "idx_users_email"
+      - fields: ["username"]
+        unique: true
+        name: "idx_users_username"
+      - fields: ["role", "is_active"]
+        name: "idx_users_role_active"
+      - fields: ["created_at"]
+        name: "idx_users_created"
+      - fields: ["profile"]
+        type: "gin"
+        name: "idx_users_profile_gin"
+    relationships:
+      created_applications:
+        type: "one_to_many"
+        target: "Application"
+        foreign_key: "created_by"
+      notifications:
+        type: "one_to_many"
+        target: "Notification"
+        foreign_key: "user_id"
+
+  Company:
+    table: "companies"
+    primary_key: "id"
+    soft_delete: true
+    audit_trail: true
+    fields:
+      id:
+        type: "uuid"
+        generated: true
+        primary_key: true
+      name:
+        type: "string"
+        max_length: 255
+        required: true
+        searchable: true
+        indexed: true
+      slug:
+        type: "string"
+        max_length: 100
+        unique: true
+        generated_from: "name"
+      details:
+        type: "jsonb"
+        schema:
+          location: { type: "string", searchable: true }
+          logo_url: { type: "url" }
+          banner_url: { type: "url" }
+          description: { type: "text", searchable: true }
+          website: { type: "url" }
+          founded_year: { type: "integer" }
+          size: { type: "enum", values: ["startup", "small", "medium", "large", "enterprise"] }
+          industry: { type: "string", searchable: true }
+          headquarters: { type: "string" }
+          culture: { type: "array", items: { type: "string" } }
+      social_links:
+        type: "jsonb"
+        schema:
+          linkedin: { type: "url" }
+          twitter: { type: "url" }
+          facebook: { type: "url" }
+          glassdoor: { type: "url" }
+      branding:
+        type: "jsonb"
+        schema:
+          primary_color: { type: "string", pattern: "^#[0-9A-Fa-f]{6}$" }
+          secondary_color: { type: "string", pattern: "^#[0-9A-Fa-f]{6}$" }
+          font_family: { type: "string" }
+          logo_variants: { type: "object" }
+      is_verified:
+        type: "boolean"
+        default: false
+        indexed: true
+      is_active:
+        type: "boolean"
+        default: true
+        indexed: true
+      created_at:
+        type: "timestamp"
+        auto_now_add: true
+        indexed: true
+      updated_at:
+        type: "timestamp"
+        auto_now: true
+      deleted_at:
+        type: "timestamp"
+        null: true
+    indexes:
+      - fields: ["name"]
+        name: "idx_companies_name"
+        type: "gin"
+      - fields: ["is_active", "is_verified"]
+        name: "idx_companies_status"
+      - fields: ["details"]
+        type: "gin"
+        name: "idx_companies_details_gin"
+    relationships:
+      job_positions:
+        type: "one_to_many"
+        target: "JobPosition"
+        foreign_key: "company_id"
+
+  JobPosition:
+    table: "job_positions"
+    primary_key: "id"
+    soft_delete: true
+    audit_trail: true
+    fields:
+      id:
+        type: "uuid"
+        generated: true
+        primary_key: true
+      company_id:
+        type: "uuid"
+        required: true
+        foreign_key: "companies.id"
+        indexed: true
+      title:
+        type: "string"
+        max_length: 255
+        required: true
+        searchable: true
+        indexed: true
+      slug:
+        type: "string"
+        max_length: 150
+        unique: true
+        generated_from: ["title", "company_id"]
+      details:
+        type: "jsonb"
+        schema:
+          department: { type: "string", searchable: true }
+          employment_type: { type: "enum", values: ["full-time", "part-time", "contract", "internship", "temporary"] }
+          experience_level: { type: "enum", values: ["entry", "mid", "senior", "lead", "executive"] }
+          location: { type: "string", searchable: true }
+          remote_policy: { type: "enum", values: ["on-site", "remote", "hybrid"] }
+          salary_range: { 
+            type: "object", 
+            schema: { 
+              min: { type: "integer" }, 
+              max: { type: "integer" }, 
+              currency: { type: "string", default: "USD" },
+              period: { type: "enum", values: ["hourly", "monthly", "annually"], default: "annually" }
+            } 
+          }
+          benefits: { type: "array", items: { type: "string" } }
+          work_schedule: { type: "string" }
+      requirements:
+        type: "jsonb"
+        schema:
+          skills_required: { type: "array", items: { type: "string" } }
+          skills_preferred: { type: "array", items: { type: "string" } }
+          education_level: { type: "enum", values: ["high_school", "associate", "bachelor", "master", "phd", "none"] }
+          years_experience_min: { type: "integer", default: 0 }
+          years_experience_max: { type: "integer" }
+          certifications: { type: "array", items: { type: "string" } }
+          languages: { type: "array", items: { type: "object" } }
+      description:
+        type: "text"
+        required: true
+        searchable: true
+      responsibilities:
+        type: "array"
+        items: { type: "string" }
+      status:
+        type: "enum"
+        values: ["draft", "active", "paused", "closed", "filled"]
+        default: "draft"
+        indexed: true
+      visibility:
+        type: "enum"
+        values: ["public", "internal", "private"]
+        default: "public"
+      application_deadline:
+        type: "date"
+        null: true
+      ai_matching_criteria:
+        type: "jsonb"
+        schema:
+          skills_weight: { type: "number", default: 0.4 }
+          experience_weight: { type: "number", default: 0.3 }
+          education_weight: { type: "number", default: 0.2 }
+          location_weight: { type: "number", default: 0.1 }
+          keywords: { type: "array", items: { type: "string" } }
+          auto_reject_threshold: { type: "integer", default: 20 }
+          auto_shortlist_threshold: { type: "integer", default: 80 }
+      analytics:
+        type: "jsonb"
+        schema:
+          views_count: { type: "integer", default: 0 }
+          applications_count: { type: "integer", default: 0 }
+          avg_application_score: { type: "number" }
+          time_to_fill: { type: "integer" }
+      created_by:
+        type: "uuid"
+        foreign_key: "users.id"
+        indexed: true
+      created_at:
+        type: "timestamp"
+        auto_now_add: true
+        indexed: true
+      updated_at:
+        type: "timestamp"
+        auto_now: true
+      deleted_at:
+        type: "timestamp"
+        null: true

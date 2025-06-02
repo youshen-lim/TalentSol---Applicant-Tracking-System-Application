@@ -1,161 +1,92 @@
 import express from 'express';
 import { prisma } from '../index.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { CachedAnalyticsService } from '../services/CachedAnalyticsService.js';
+import { cacheManager } from '../cache/CacheManager.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = express.Router();
+const analyticsService = new CachedAnalyticsService();
 
-// Get dashboard analytics
+// Get dashboard analytics (cached)
 router.get('/dashboard', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const companyId = req.user!.companyId;
 
-  // Get date range (default to last 30 days)
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 30);
+  try {
+    // Use cached analytics service
+    const [
+      summary,
+      statusDistribution,
+      applicationsByDate,
+      topJobs,
+      recentApplications,
+    ] = await Promise.all([
+      analyticsService.getDashboardSummary(companyId),
+      analyticsService.getApplicationsByStatus(companyId),
+      analyticsService.getApplicationsByDate(companyId, 30),
+      analyticsService.getTopJobs(companyId, 5),
+      analyticsService.getRecentApplications(companyId, 10),
+    ]);
 
-  // Total counts
-  const [
-    totalJobs,
-    totalApplications,
-    totalCandidates,
-    totalInterviews,
-    activeJobs,
-    newApplicationsToday,
-  ] = await Promise.all([
-    prisma.job.count({
-      where: { companyId },
-    }),
-    prisma.application.count({
-      where: {
-        job: { companyId },
-      },
-    }),
-    prisma.candidate.count({
-      where: {
-        applications: {
-          some: {
-            job: { companyId },
-          },
-        },
-      },
-    }),
-    prisma.interview.count({
-      where: {
-        application: {
-          job: { companyId },
-        },
-      },
-    }),
-    prisma.job.count({
-      where: {
-        companyId,
-        status: 'open',
-      },
-    }),
-    prisma.application.count({
-      where: {
-        job: { companyId },
-        submittedAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        },
-      },
-    }),
-  ]);
+    res.json({
+      summary,
+      statusDistribution,
+      applicationsByDate,
+      topJobs,
+      recentApplications,
+      cached: true,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Dashboard analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard analytics' });
+  }
+}));
 
-  // Application status distribution
-  const statusDistribution = await prisma.application.groupBy({
-    by: ['status'],
-    where: {
-      job: { companyId },
-    },
-    _count: {
-      status: true,
-    },
-  });
+// Cache management endpoints
+router.post('/cache/warm', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user!.companyId;
 
-  // Applications over time (last 30 days)
-  const applicationsOverTime = await prisma.application.findMany({
-    where: {
-      job: { companyId },
-      submittedAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-    select: {
-      submittedAt: true,
-    },
-    orderBy: {
-      submittedAt: 'asc',
-    },
-  });
+  try {
+    await analyticsService.warmCompanyCache(companyId);
+    res.json({
+      message: 'Cache warmed successfully',
+      companyId,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Cache warming error:', error);
+    res.status(500).json({ error: 'Failed to warm cache' });
+  }
+}));
 
-  // Group applications by date
-  const applicationsByDate = applicationsOverTime.reduce((acc, app) => {
-    if (app.submittedAt) {
-      const date = app.submittedAt.toISOString().split('T')[0];
-      acc[date] = (acc[date] || 0) + 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+router.post('/cache/refresh', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user!.companyId;
 
-  // Top performing jobs
-  const topJobs = await prisma.job.findMany({
-    where: { companyId },
-    include: {
-      _count: {
-        select: {
-          applications: true,
-        },
-      },
-    },
-    orderBy: {
-      applications: {
-        _count: 'desc',
-      },
-    },
-    take: 5,
-  });
+  try {
+    await analyticsService.refreshDashboardCache(companyId);
+    res.json({
+      message: 'Cache refreshed successfully',
+      companyId,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Cache refresh error:', error);
+    res.status(500).json({ error: 'Failed to refresh cache' });
+  }
+}));
 
-  // Recent activity
-  const recentApplications = await prisma.application.findMany({
-    where: {
-      job: { companyId },
-    },
-    include: {
-      candidate: {
-        select: {
-          firstName: true,
-          lastName: true,
-        },
-      },
-      job: {
-        select: {
-          title: true,
-        },
-      },
-    },
-    orderBy: {
-      submittedAt: 'desc',
-    },
-    take: 10,
-  });
-
-  res.json({
-    summary: {
-      totalJobs,
-      totalApplications,
-      totalCandidates,
-      totalInterviews,
-      activeJobs,
-      newApplicationsToday,
-    },
-    statusDistribution,
-    applicationsByDate,
-    topJobs,
-    recentApplications,
-  });
+router.get('/cache/stats', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  try {
+    const stats = await analyticsService.getCacheStats();
+    res.json({
+      stats,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Cache stats error:', error);
+    res.status(500).json({ error: 'Failed to get cache stats' });
+  }
 }));
 
 // Get hiring funnel analytics
