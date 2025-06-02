@@ -260,6 +260,307 @@ talentsol-ats/
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build locally
 
+## Backend API Documentation
+
+### 🚀 **Backend Features**
+
+A robust Node.js/Express backend API built with TypeScript, Prisma, and PostgreSQL:
+
+- **Authentication & Authorization**: JWT-based auth with role-based access control
+- **Database**: PostgreSQL with Prisma ORM
+- **File Uploads**: Multer for document handling
+- **Validation**: Zod schemas for request validation
+- **Security**: Helmet, CORS, rate limiting
+- **Error Handling**: Comprehensive error handling with custom error classes
+
+### 🔧 **Backend Setup**
+
+1. **Install dependencies**:
+   ```bash
+   cd backend && npm install
+   ```
+
+2. **Set up environment variables**:
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` with your configuration:
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/talentsol_ats"
+   JWT_SECRET="your-super-secret-jwt-key"
+   PORT=3001
+   NODE_ENV=development
+   ```
+
+3. **Set up the database**:
+   ```bash
+   # Generate Prisma client
+   npx prisma generate
+
+   # Push schema to database
+   npx prisma db push
+
+   # Seed the database with sample data
+   npm run db:seed
+   ```
+
+4. **Start the backend server**:
+   ```bash
+   npm run dev
+   ```
+
+### 📡 **API Endpoints**
+
+#### **Authentication**
+- `POST /api/auth/register` - Register new user and company
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/verify` - Verify JWT token
+
+#### **Jobs Management**
+- `GET /api/jobs` - Get public job listings
+- `GET /api/jobs/:id` - Get single job
+- `GET /api/jobs/company/all` - Get all company jobs (auth required)
+- `POST /api/jobs` - Create job (auth required)
+- `PUT /api/jobs/:id` - Update job (auth required)
+- `DELETE /api/jobs/:id` - Delete job (auth required)
+
+#### **Applications & Candidates**
+- `POST /api/applications` - Submit application (public)
+- `GET /api/applications` - Get company applications (auth required)
+- `GET /api/candidates` - Get company candidates (auth required)
+- `GET /api/candidates/pipeline/summary` - Get pipeline summary (auth required)
+
+#### **ML Integration**
+- `POST /api/ml/predict` - Candidate priority scoring
+- `POST /api/ml/predict/job/:jobId` - Bulk predictions for job pipeline
+- `GET /api/ml/models` - Model management
+- `POST /api/ml/train` - Train new models
+
+#### **Analytics**
+- `GET /api/analytics/dashboard` - Get dashboard analytics
+- `GET /api/analytics/funnel` - Get hiring funnel data
+- `GET /api/analytics/time-to-hire` - Get time-to-hire analytics
+
+### 🗄️ **Database Schema**
+
+The database includes comprehensive entities for a production ATS:
+
+- **Companies**: Multi-tenant support
+- **Users**: Authentication and role management
+- **Jobs**: Job postings with application caps and pipeline tracking
+- **Candidates**: Candidate information and profiles
+- **Applications**: Job applications with rich metadata and ML scoring
+- **Interviews**: Interview scheduling and management
+- **Documents**: File uploads and management
+- **ML Models**: Machine learning model storage and versioning
+- **ML Predictions**: Prediction results and explanations
+- **Skill Extractions**: AI-powered skills identification
+
+## ML Integration Guide
+
+### 🎯 **Kaggle Dataset Integration**
+
+Complete guide for integrating publicly sourced Kaggle datasets for ML-powered candidate prioritization:
+
+#### **Recommended Datasets**
+
+1. **Primary Dataset: "Resume Dataset" by SPIDY20**
+   - **URL**: `https://www.kaggle.com/datasets/spidy20/resume-dataset`
+   - **Size**: 2,400+ labeled resumes
+   - **Categories**: 25 job categories
+   - **License**: Public Domain
+
+2. **Secondary Dataset: "HR Analytics Dataset"**
+   - **URL**: `https://www.kaggle.com/datasets/giripujar/hr-analytics`
+   - **Features**: Employee performance, satisfaction, promotion data
+
+3. **Skills Dataset: "LinkedIn Job Skills"**
+   - **URL**: `https://www.kaggle.com/datasets/asaniczka/linkedin-job-skills-dataset`
+   - **Features**: Job titles, required skills, experience levels
+
+#### **Implementation Steps**
+
+1. **Download Kaggle Dataset**:
+   ```bash
+   pip install kaggle
+   kaggle datasets download -d spidy20/resume-dataset
+   unzip resume-dataset.zip -d ./backend/ml_models/data/
+   ```
+
+2. **Register Dataset in TalentSol**:
+   ```bash
+   curl -X POST http://localhost:3001/api/ml/datasets \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+     -d '{
+       "name": "Kaggle Resume Dataset",
+       "description": "2400+ labeled resumes for candidate classification",
+       "source": "kaggle",
+       "datasetPath": "./ml_models/data/resume_dataset.csv",
+       "features": ["resume_text", "category", "extracted_skills"],
+       "targetVariable": "category",
+       "recordCount": 2400
+     }'
+   ```
+
+3. **Train ML Model**:
+   ```python
+   # Create training script: backend/ml_models/train_model.py
+   import pandas as pd
+   from sklearn.ensemble import RandomForestClassifier
+   from sklearn.feature_extraction.text import TfidfVectorizer
+
+   def train_candidate_scoring_model():
+       df = pd.read_csv('./data/resume_dataset.csv')
+       vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
+       X = vectorizer.fit_transform(df['resume_text'])
+       # ... training logic
+   ```
+
+4. **Activate Model**:
+   ```bash
+   curl -X PATCH http://localhost:3001/api/ml/models/MODEL_ID/status \
+     -H "Content-Type: application/json" \
+     -d '{"isActive": true}'
+   ```
+
+#### **Feature Engineering Pipeline**
+
+The ML service maps TalentSol application data to ML features:
+
+```typescript
+// Feature extraction from application data
+const features = {
+  yearsOfExperience: parseExperience(application.professionalInfo),
+  technicalSkills: extractSkills(application.documents),
+  skillsMatchScore: calculateSkillsMatch(candidateSkills, jobSkills),
+  resumeQualityScore: assessResumeQuality(application.documents),
+  applicationCompleteness: calculateCompleteness(application),
+  locationMatch: calculateLocationMatch(candidate, job),
+  salaryExpectationMatch: calculateSalaryMatch(candidate, job)
+};
+```
+
+#### **Frontend Integration**
+
+Enhanced candidate cards with ML scores:
+
+```typescript
+interface CandidateWithML extends Candidate {
+  mlScore?: {
+    priorityScore: number;
+    confidence: number;
+    reasoning: string[];
+    skillsExtracted: Array<{
+      skill: string;
+      confidence: number;
+      category: string;
+    }>;
+  };
+}
+
+const MLScoreBadge = ({ score, confidence }) => (
+  <div className="flex items-center gap-2">
+    <div className={`px-2 py-1 rounded text-xs font-medium ${
+      score >= 80 ? 'bg-green-100 text-green-800' :
+      score >= 60 ? 'bg-yellow-100 text-yellow-800' :
+      'bg-gray-100 text-gray-800'
+    }`}>
+      ML Score: {score}
+    </div>
+    <div className="text-xs text-gray-500">
+      {Math.round(confidence * 100)}% confidence
+    </div>
+  </div>
+);
+```
+
+## Data Mapping & Architecture
+
+### 🔄 **Frontend Mock Data → Database Mapping**
+
+#### **Dashboard Metrics**
+- **Frontend**: Static metrics in Dashboard.tsx
+- **Database**: Real-time calculations from actual application data
+- **API**: `/api/analytics/dashboard` with time-based filtering
+
+#### **Candidate Pipeline**
+- **Frontend**: Mock candidate objects with basic info
+- **Database**: Comprehensive candidates and applications tables
+- **Features**: Rich metadata, activity tracking, ML scoring
+
+#### **Jobs Management**
+- **Frontend**: Simple job objects with pipeline counts
+- **Database**: Full job lifecycle with application caps, pipeline tracking
+- **Features**: Multi-tenant, structured salary/location data, skills tracking
+
+### 🏗️ **Enhanced Database Features**
+
+1. **Multi-Tenant Architecture**: All data scoped to company_id
+2. **User Management**: Role-based access control (admin, recruiter, hiring_manager)
+3. **Interview Management**: Comprehensive scheduling and feedback system
+4. **Document Management**: File uploads with metadata and version control
+5. **Email Templates**: Customizable templates with variable substitution
+6. **ML Integration**: Model storage, prediction tracking, skills extraction
+
+## UI/UX Enhancements
+
+### 🎨 **Sidebar Settings Enhancement**
+
+Fixed inconsistency between sidebar and header settings buttons:
+
+#### **Before (Issues)**
+- Sidebar settings: Simple link pointing to `/dashboard` (temporary)
+- Header settings: Full dropdown menu with multiple options
+- Inconsistent UX across the application
+
+#### **After (Fixed)**
+- **Consistent Functionality**: Both sidebar and header settings have identical dropdown menus
+- **Direct Navigation**: Quick access to specific settings tabs
+- **Responsive Design**: Adapts to sidebar collapsed/expanded state
+- **Proper Tooltips**: Shows "Settings" tooltip when sidebar is collapsed
+
+#### **Implementation**
+```typescript
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost" className="w-full">
+      <Settings className="h-5 w-5" />
+      {!collapsed && <span>Settings</span>}
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align={collapsed ? "start" : "end"}>
+    <DropdownMenuItem onClick={() => navigate('/settings?tab=account')}>
+      Account Settings
+    </DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate('/settings?tab=company')}>
+      Company Profile
+    </DropdownMenuItem>
+    {/* ... more options */}
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+## Screenshots
+
+The `screenshots/` folder contains comprehensive visual documentation:
+
+1. **landing-page.png** - Main landing page with navigation
+2. **login-page.png** - Authentication interface
+3. **dashboard.png** - Main dashboard with metrics and pipeline
+4. **candidate-pipeline.png** - Drag-and-drop candidate management
+5. **job-postings.png** - Job listings with application caps
+6. **interviews.png** - Interview scheduling calendar
+7. **analytics-overview.png** - Analytics dashboard with core reports
+8. **pipeline-metrics.png** - Detailed pipeline analytics
+9. **time-to-hire.png** - Time to hire analytics (chart view)
+10. **time-to-hire-table.png** - Time to hire analytics (table view)
+11. **custom-reports.png** - Custom reporting interface
+12. **ml-reports.png** - Machine learning analytics
+13. **messages.png** - Communication inbox
+14. **documents.png** - Document management with AI assistant
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
@@ -269,4 +570,6 @@ This project is open source and available under the [MIT License](LICENSE).
 - Developed as a hobbyist project with Augment Code
 - Frontend development completed in just 1.5 days
 - Built with modern web technologies and best practices
+- ML integration ready for Kaggle dataset integration
+- Comprehensive backend API with production-ready features
 
