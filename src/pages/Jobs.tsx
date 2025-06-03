@@ -25,6 +25,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { shadows } from "@/components/ui/shadow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -292,7 +293,7 @@ const JobCard = ({ job, isSelected, onSelect }: {
   };
 
   return (
-    <Card className={`bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 ${isSelected ? 'ring-2 ring-blue-500 border-blue-300' : ''}`}>
+    <Card className={`${shadows.cardEnhanced} ${isSelected ? 'ring-2 ring-blue-500 border-blue-300' : ''}`}>
       <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
           <div className="flex items-start gap-3 flex-1">

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowUpRight, Users, Briefcase, Clock, Calendar, Download, Plus, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { shadows } from "@/components/ui/shadow";
 import StatCard from "@/components/dashboard/StatCard";
 import LineChart from "@/components/dashboard/LineChart";
 import BarChart from "@/components/dashboard/BarChart";
@@ -96,6 +97,10 @@ const Dashboard = () => {
             value={statsLoading ? "..." : (dashboardStats?.timeToHire?.averageDays ? `${dashboardStats.timeToHire.averageDays} days` : "0 days")}
             description="Average this quarter"
             icon={<Clock className="h-4 w-4 text-blue-600" />}
+            change={dashboardStats?.changeMetrics?.timeToHire ? {
+              value: Math.abs(dashboardStats.changeMetrics.timeToHire.change),
+              positive: dashboardStats.changeMetrics.timeToHire.change <= 0 // For time to hire, lower is better
+            } : undefined}
           />
           <StatCard
             title="Interviews This Week"
@@ -117,11 +122,11 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recruitment Pipeline Chart */}
           {recruitmentLoading ? (
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 h-[400px] flex items-center justify-center">
+            <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
               <div className="text-center text-slate-500 text-base">Loading recruitment data...</div>
             </div>
           ) : recruitmentData?.data && recruitmentData.data.length > 0 ? (
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 h-[400px]">
+            <div className={`${shadows.card} h-[400px]`}>
               <LineChart
                 title="Recruitment Pipeline"
                 description="Tracking applications, interviews, and offers"
@@ -144,18 +149,18 @@ const Dashboard = () => {
               />
             </div>
           ) : (
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 h-[400px] flex items-center justify-center">
+            <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
               <div className="text-center text-slate-500 text-base">No recruitment data available</div>
             </div>
           )}
 
           {/* Candidate Sources Chart */}
           {sourceLoading ? (
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 h-[400px] flex items-center justify-center">
+            <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
               <div className="text-center text-slate-500 text-base">Loading source data...</div>
             </div>
           ) : sourceData?.sourceEffectiveness && sourceData.sourceEffectiveness.length > 0 ? (
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 h-[400px]">
+            <div className={`${shadows.card} h-[400px]`}>
               <BarChart
                 title="Candidate Sources"
                 description="Breakdown of candidates by source"
@@ -176,7 +181,7 @@ const Dashboard = () => {
               />
             </div>
           ) : (
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 h-[400px] flex items-center justify-center">
+            <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
               <div className="text-center text-slate-500 text-base">No source data available</div>
             </div>
           )}
@@ -186,7 +191,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
           {/* Upcoming Interviews Card */}
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-[320px] sm:h-[350px]">
+          <div className={`${shadows.card} flex flex-col h-[320px] sm:h-[350px]`}>
             <div className="p-6 pb-4 border-b border-slate-100">
               <h3 className="text-lg font-semibold text-slate-900">Upcoming Interviews</h3>
               <p className="text-sm text-slate-600 mt-1">Next 7 days</p>
@@ -226,7 +231,7 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Applications Card */}
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-[320px] sm:h-[350px]">
+          <div className={`${shadows.card} flex flex-col h-[320px] sm:h-[350px]`}>
             <div className="p-6 pb-4 border-b border-slate-100">
               <h3 className="text-lg font-semibold text-slate-900">Recent Applications</h3>
               <p className="text-sm text-slate-600 mt-1">Last 7 days</p>
@@ -264,7 +269,7 @@ const Dashboard = () => {
           </div>
 
           {/* Top Job Openings Card */}
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-[320px] sm:h-[350px] md:col-span-2 xl:col-span-1">
+          <div className={`${shadows.card} flex flex-col h-[320px] sm:h-[350px] md:col-span-2 xl:col-span-1`}>
             <div className="p-6 pb-4 border-b border-slate-100">
               <h3 className="text-lg font-semibold text-slate-900">Top Job Openings</h3>
               <p className="text-sm text-slate-600 mt-1">By application volume</p>

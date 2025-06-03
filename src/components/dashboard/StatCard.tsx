@@ -148,7 +148,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all hover:shadow-md",
+        "bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300",
         onClick ? "cursor-pointer" : "",
         className
       )}

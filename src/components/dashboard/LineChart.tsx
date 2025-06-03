@@ -193,46 +193,46 @@ export const LineChart: React.FC<LineChartProps> = ({
           {description && <CardDescription className="text-sm text-slate-600 mt-1 text-center">{description}</CardDescription>}
         </CardHeader>
       )}
-      <CardContent className="pt-0 px-4 pb-4">
-        <div className="flex justify-center items-center w-full" style={{ height: typeof height === 'number' ? `${height - 80}px` : 'calc(100% - 80px)' }}>
+      <CardContent className="pt-0 px-6 pb-6">
+        <div className="flex justify-center items-center w-full" style={{ height: typeof height === 'number' ? `${height - 100}px` : 'calc(100% - 100px)' }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsLineChart
               data={data}
               margin={{
-                top: 15,
-                right: 25,
-                left: 25,
-                bottom: 35,
+                top: 20,
+                right: 30,
+                left: 30,
+                bottom: 40,
               }}
             >
             {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />}
             <XAxis
               dataKey="name"
-              tick={{ fill: '#475569', fontSize: 12, fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+              tick={{ fill: '#475569', fontSize: 14, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
               tickLine={{ stroke: '#e2e8f0' }}
               axisLine={{ stroke: '#e2e8f0' }}
               tickFormatter={dateFormatter}
               height={35}
-              label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 } } : undefined}
+              label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
             />
             <YAxis
-              tick={{ fill: '#475569', fontSize: 12, fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+              tick={{ fill: '#475569', fontSize: 14, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
               tickLine={{ stroke: '#e2e8f0' }}
               axisLine={{ stroke: '#e2e8f0' }}
               tickFormatter={(value) => Math.round(value).toString()} // Force whole numbers
               width={40}
               domain={[0, 'dataMax + 1']} // Start from 0, add padding at top
               allowDecimals={false} // Prevent decimal values
-              label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 } } : undefined}
+              label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
             />
             {showTooltip && <Tooltip content={<CustomTooltip />} />}
             {showLegend && (
               <Legend
                 wrapperStyle={{
                   paddingTop: 12,
-                  fontSize: 12,
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontWeight: 500,
+                  fontSize: 14,
+                  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                  fontWeight: 400,
                   color: '#475569',
                   display: 'flex',
                   justifyContent: 'center',

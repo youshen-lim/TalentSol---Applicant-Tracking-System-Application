@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { shadows } from "@/components/ui/shadow";
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -236,7 +237,7 @@ const Interviews = () => {
                 {getDayInterviews(day).length > 0 ? (
                   <div className="space-y-2">
                     {getDayInterviews(day).map((interview) => (
-                      <Card key={interview.id} className="p-2 text-xs border-l-4 border-l-ats-blue">
+                      <Card key={interview.id} className={`${shadows.card} p-2 text-xs border-l-4 border-l-ats-blue`}>
                         <div className="font-medium">{format(interview.dateTime, "h:mm a")}</div>
                         <div>{interview.candidateName}</div>
                         <div className="text-gray-500">{interview.type}</div>
@@ -258,7 +259,7 @@ const Interviews = () => {
         </TabsContent>
 
         <TabsContent value="list" className="mt-6">
-          <div className="bg-white rounded-lg border overflow-hidden">
+          <div className={`${shadows.card} overflow-hidden`}>
             <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
               <div className="col-span-3">Candidate</div>
               <div className="col-span-2">Position</div>

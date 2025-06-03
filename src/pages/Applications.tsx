@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { shadows } from '@/components/ui/shadow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -340,7 +341,7 @@ const Applications: React.FC = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className={shadows.cardEnhanced}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -355,7 +356,7 @@ const Applications: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={shadows.cardEnhanced}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">New Applications</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
@@ -370,7 +371,7 @@ const Applications: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={shadows.cardEnhanced}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -385,7 +386,7 @@ const Applications: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={shadows.cardEnhanced}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Score</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -412,7 +413,7 @@ const Applications: React.FC = () => {
 
         <TabsContent value="dashboard" className="space-y-6">
           {/* Quick Actions */}
-          <Card>
+          <Card className={shadows.card}>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -448,7 +449,7 @@ const Applications: React.FC = () => {
 
           {/* Recent Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle>Recent Applications</CardTitle>
               </CardHeader>
@@ -477,7 +478,7 @@ const Applications: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle>Application Sources</CardTitle>
               </CardHeader>

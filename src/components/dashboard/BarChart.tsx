@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -97,6 +97,55 @@ export const BarChart: React.FC<BarChartProps> = ({
   bars,
   vertical = false,
 }) => {
+  // Responsive configuration hook
+  const [screenSize, setScreenSize] = useState<'sm' | 'md' | 'lg'>('lg');
+
+  useEffect(() => {
+    const updateScreenSize = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setScreenSize('sm');
+      } else if (width < 1024) {
+        setScreenSize('md');
+      } else {
+        setScreenSize('lg');
+      }
+    };
+
+    updateScreenSize();
+    window.addEventListener('resize', updateScreenSize);
+    return () => window.removeEventListener('resize', updateScreenSize);
+  }, []);
+
+  // Responsive configuration
+  const getResponsiveConfig = () => {
+    switch (screenSize) {
+      case 'sm':
+        return {
+          yAxisWidth: 90,
+          leftMargin: 110,
+          maxLabelLength: 10,
+          fontSize: 12
+        };
+      case 'md':
+        return {
+          yAxisWidth: 105,
+          leftMargin: 125,
+          maxLabelLength: 14,
+          fontSize: 13
+        };
+      default:
+        return {
+          yAxisWidth: 120,
+          leftMargin: 140,
+          maxLabelLength: 18,
+          fontSize: 14
+        };
+    }
+  };
+
+  const config = getResponsiveConfig();
+
   // Enhanced interactive tooltip with percentage and ranking
   const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
@@ -154,6 +203,32 @@ export const BarChart: React.FC<BarChartProps> = ({
     return null;
   };
 
+  // Custom Y-axis tick component for single-line labels
+  const CustomYAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    let displayText = payload.value;
+
+    // Truncate long text and add ellipsis based on screen size
+    if (displayText.length > config.maxLabelLength) {
+      displayText = displayText.substring(0, config.maxLabelLength - 3) + '...';
+    }
+
+    return (
+      <text
+        x={x - 8}
+        y={y}
+        fill="#475569"
+        fontSize={config.fontSize}
+        fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+        fontWeight="400"
+        textAnchor="end"
+        dominantBaseline="middle"
+      >
+        {displayText}
+      </text>
+    );
+  };
+
   // Enhanced bar rendering with gradient colors and data labels
   const getBars = () => {
     // Custom label component for displaying values on bars
@@ -169,8 +244,9 @@ export const BarChart: React.FC<BarChartProps> = ({
           fill="#374151"
           textAnchor={vertical ? "start" : "middle"}
           dominantBaseline={vertical ? "middle" : "auto"}
-          fontSize="12"
-          fontWeight="600"
+          fontSize={config.fontSize}
+          fontWeight="400"
+          fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
         >
           {valueFormatter(value)}
         </text>
@@ -188,7 +264,7 @@ export const BarChart: React.FC<BarChartProps> = ({
           name={bar.name}
           fill={bar.fill}
           radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-          barSize={vertical ? 16 : 30}
+          barSize={vertical ? 12 : 30}
           label={<CustomLabel />}
         />
       ));
@@ -204,7 +280,7 @@ export const BarChart: React.FC<BarChartProps> = ({
         name={category}
         fill={colors[index % colors.length]}
         radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-        barSize={vertical ? 16 : 30}
+        barSize={vertical ? 12 : 30}
         label={<CustomLabel />}
       />
     ));
@@ -218,19 +294,19 @@ export const BarChart: React.FC<BarChartProps> = ({
           {description && <CardDescription className="text-sm text-slate-600 mt-1 text-center">{description}</CardDescription>}
         </CardHeader>
       )}
-      <CardContent className="pt-0 px-4 pb-4">
-        <div className="flex justify-center items-center w-full" style={{ height: typeof height === 'number' ? `${height - 80}px` : 'calc(100% - 80px)' }}>
+      <CardContent className="pt-0 px-6 pb-6">
+        <div className="flex justify-center items-center w-full" style={{ height: typeof height === 'number' ? `${height - 100}px` : 'calc(100% - 100px)' }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart
               data={data}
               layout={vertical ? "vertical" : "horizontal"}
               margin={{
-                top: 15,
-                right: 25,
-                left: vertical ? 100 : 25,
-                bottom: 35,
+                top: 20,
+                right: vertical ? 50 : 30,
+                left: vertical ? config.leftMargin : 30,
+                bottom: 40,
               }}
-              barCategoryGap={vertical ? "15%" : "8%"}
+              barCategoryGap={vertical ? "35%" : "8%"}
             >
               {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={!vertical} />}
 
@@ -238,7 +314,7 @@ export const BarChart: React.FC<BarChartProps> = ({
                 <>
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tick={{ fontSize: config.fontSize, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
                     tickLine={{ stroke: '#e2e8f0' }}
                     axisLine={{ stroke: '#e2e8f0' }}
                     tickFormatter={valueFormatter}
@@ -246,9 +322,9 @@ export const BarChart: React.FC<BarChartProps> = ({
                   <YAxis
                     dataKey="name"
                     type="category"
-                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tick={<CustomYAxisTick />}
                     tickLine={{ stroke: '#e2e8f0' }}
-                    width={100}
+                    width={config.yAxisWidth}
                     axisLine={{ stroke: '#e2e8f0' }}
                     interval={0}
                   />
@@ -257,19 +333,19 @@ export const BarChart: React.FC<BarChartProps> = ({
                 <>
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tick={{ fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
                     tickLine={{ stroke: '#e2e8f0' }}
                     axisLine={{ stroke: '#e2e8f0' }}
                     height={35}
-                    label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 } } : undefined}
+                    label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
                   />
                   <YAxis
-                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tick={{ fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
                     tickLine={{ stroke: '#e2e8f0' }}
                     axisLine={{ stroke: '#e2e8f0' }}
                     tickFormatter={valueFormatter}
                     width={40}
-                    label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 } } : undefined}
+                    label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
                   />
                 </>
               )}
@@ -279,9 +355,9 @@ export const BarChart: React.FC<BarChartProps> = ({
                 <Legend
                   wrapperStyle={{
                     paddingTop: 12,
-                    fontSize: 12,
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    fontWeight: 500,
+                    fontSize: config.fontSize,
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                    fontWeight: 400,
                     color: '#475569',
                     display: 'flex',
                     justifyContent: 'center',

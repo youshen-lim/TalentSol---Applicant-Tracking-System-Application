@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { shadows } from "@/components/ui/shadow";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Filter, FileText, FileSignature, Mail, Clock, CheckCircle, AlertCircle } from "lucide-react";
@@ -235,7 +236,7 @@ const Documents = () => {
           )}
 
           {/* Chat interface */}
-          <div className="border rounded-lg overflow-hidden flex flex-col flex-1">
+          <div className={`${shadows.card} overflow-hidden flex flex-col flex-1`}>
             <DocumentChat selectedDocument={selectedDocument} />
           </div>
         </div>

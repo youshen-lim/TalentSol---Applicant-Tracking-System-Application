@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { shadows } from "@/components/ui/shadow";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -661,7 +662,7 @@ const CandidatePipeline = () => {
 
           {/* Search Suggestions Dropdown */}
           {showSuggestions && searchSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+            <div className={`absolute top-full left-0 right-0 mt-1 ${shadows.dropdown} z-50 max-h-64 overflow-y-auto`}>
               <div className="p-2">
                 <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
                   <Zap className="h-3 w-3" />
