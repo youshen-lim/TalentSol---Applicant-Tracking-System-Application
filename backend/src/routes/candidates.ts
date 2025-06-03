@@ -19,11 +19,14 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const limitNum = parseInt(limit as string);
   const skip = (pageNum - 1) * limitNum;
 
+  // Use default company for testing when auth is disabled
+  const companyId = req.user?.companyId || 'comp_1';
+
   const where: any = {
     applications: {
       some: {
         job: {
-          companyId: req.user!.companyId,
+          companyId,
         },
       },
     },
@@ -46,7 +49,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
         applications: {
           where: {
             job: {
-              companyId: req.user!.companyId,
+              companyId,
             },
           },
           include: {
@@ -89,6 +92,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 // Get single candidate
 router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
+  const companyId = req.user?.companyId || 'comp_1';
 
   const candidate = await prisma.candidate.findFirst({
     where: {
@@ -96,7 +100,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
       applications: {
         some: {
           job: {
-            companyId: req.user!.companyId,
+            companyId,
           },
         },
       },
@@ -105,7 +109,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
       applications: {
         where: {
           job: {
-            companyId: req.user!.companyId,
+            companyId,
           },
         },
         include: {
@@ -151,6 +155,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 // Update candidate information
 router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
+  const companyId = req.user?.companyId || 'comp_1';
   const validatedData = candidateInfoSchema.partial().parse(req.body);
 
   // Check if candidate exists and has applications to user's company
@@ -160,7 +165,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
       applications: {
         some: {
           job: {
-            companyId: req.user!.companyId,
+            companyId,
           },
         },
       },
@@ -178,7 +183,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
       applications: {
         where: {
           job: {
-            companyId: req.user!.companyId,
+            companyId,
           },
         },
         include: {
@@ -202,15 +207,16 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 // Get candidate pipeline/stages summary
 router.get('/pipeline/summary', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user?.companyId || 'comp_1';
   const stages = ['applied', 'screening', 'interview', 'assessment', 'offer', 'hired', 'rejected'];
-  
+
   const stageCounts = await Promise.all(
     stages.map(async (stage) => {
       const count = await prisma.application.count({
         where: {
           status: stage,
           job: {
-            companyId: req.user!.companyId,
+            companyId,
           },
         },
       });
@@ -221,7 +227,7 @@ router.get('/pipeline/summary', asyncHandler(async (req: AuthenticatedRequest, r
   const totalApplications = await prisma.application.count({
     where: {
       job: {
-        companyId: req.user!.companyId,
+        companyId,
       },
     },
   });
@@ -229,7 +235,7 @@ router.get('/pipeline/summary', asyncHandler(async (req: AuthenticatedRequest, r
   const recentApplications = await prisma.application.findMany({
     where: {
       job: {
-        companyId: req.user!.companyId,
+        companyId,
       },
     },
     take: 10,

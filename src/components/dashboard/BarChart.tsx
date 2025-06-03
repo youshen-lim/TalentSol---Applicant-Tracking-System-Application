@@ -51,7 +51,29 @@ export interface BarChartProps {
   vertical?: boolean;
 }
 
-const defaultColors = ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE'];
+// Enhanced gradient color palette for better visual hierarchy
+const defaultColors = ['#1E40AF', '#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
+
+// Generate gradient colors based on data values
+const generateGradientColors = (data: BarChartData[], dataKey: string = 'value') => {
+  if (!data || data.length === 0) return defaultColors;
+
+  const values = data.map(item => item[dataKey] || 0).filter(val => typeof val === 'number');
+  const maxValue = Math.max(...values);
+  const minValue = Math.min(...values);
+
+  return data.map((item, index) => {
+    const value = item[dataKey] || 0;
+    const intensity = maxValue > minValue ? (value - minValue) / (maxValue - minValue) : 0.5;
+
+    // Generate blue gradient from light to dark based on value
+    if (intensity > 0.8) return '#1E40AF'; // Dark blue for highest values
+    if (intensity > 0.6) return '#2563EB'; // Strong blue
+    if (intensity > 0.4) return '#3B82F6'; // Medium blue
+    if (intensity > 0.2) return '#60A5FA'; // Light blue
+    return '#93C5FD'; // Lightest blue for lowest values
+  });
+};
 
 export const BarChart: React.FC<BarChartProps> = ({
   // Common props
@@ -75,21 +97,55 @@ export const BarChart: React.FC<BarChartProps> = ({
   bars,
   vertical = false,
 }) => {
-  // Custom tooltip formatter
+  // Enhanced interactive tooltip with percentage and ranking
   const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
+      const value = payload[0]?.value as number;
+      const totalValue = data.reduce((sum, item) => sum + (item.value || 0), 0);
+      const percentage = totalValue > 0 ? ((value / totalValue) * 100).toFixed(1) : '0';
+
+      // Calculate ranking
+      const sortedData = [...data].sort((a, b) => (b.value || 0) - (a.value || 0));
+      const rank = sortedData.findIndex(item => item.name === label) + 1;
+
       return (
-        <div className="bg-white p-2 border border-gray-200 shadow-sm rounded-md">
-          <p className="font-medium text-gray-900">{label}</p>
+        <div className="bg-white p-4 border border-gray-300 shadow-xl rounded-lg min-w-[220px]">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-bold text-gray-900 text-base">{label}</p>
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+              #{rank} of {data.length}
+            </span>
+          </div>
+
           {payload.map((entry, index) => (
-            <div key={`tooltip-${index}`} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-gray-700">
-                {entry.name}: {valueFormatter(entry.value as number)}
-              </span>
+            <div key={`tooltip-${index}`} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-4 h-4 rounded border-2 border-white shadow-sm"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-gray-700 text-sm font-medium">
+                    {entry.name}
+                  </span>
+                </div>
+                <span className="text-gray-900 text-lg font-bold">
+                  {valueFormatter(entry.value as number)}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Percentage of total</span>
+                <span className="font-semibold">{percentage}%</span>
+              </div>
+
+              {/* Progress bar showing relative value */}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -98,97 +154,143 @@ export const BarChart: React.FC<BarChartProps> = ({
     return null;
   };
 
-  // Determine which bar configuration to use
+  // Enhanced bar rendering with gradient colors and data labels
   const getBars = () => {
-    // If bars prop is provided, use it directly
+    // Custom label component for displaying values on bars
+    const CustomLabel = (props: any) => {
+      const { x, y, width, height, value } = props;
+      const labelX = vertical ? x + width + 5 : x + width / 2;
+      const labelY = vertical ? y + height / 2 : y - 5;
+
+      return (
+        <text
+          x={labelX}
+          y={labelY}
+          fill="#374151"
+          textAnchor={vertical ? "start" : "middle"}
+          dominantBaseline={vertical ? "middle" : "auto"}
+          fontSize="12"
+          fontWeight="600"
+        >
+          {valueFormatter(value)}
+        </text>
+      );
+    };
+
+    // If bars prop is provided, use it with enhancements
     if (bars && bars.length > 0) {
+      const gradientColors = generateGradientColors(data, bars[0]?.dataKey || 'value');
+
       return bars.map((bar, index) => (
         <Bar
           key={`bar-${bar.dataKey}`}
           dataKey={bar.dataKey}
           name={bar.name}
           fill={bar.fill}
-          radius={[4, 4, 0, 0]}
-          barSize={30}
+          radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+          barSize={vertical ? 16 : 30}
+          label={<CustomLabel />}
         />
       ));
     }
 
-    // Otherwise, use the categories and colors props
+    // Enhanced default bar rendering with gradient colors
+    const gradientColors = generateGradientColors(data, categories[0] || 'value');
+
     return categories.map((category, index) => (
       <Bar
         key={`bar-${category}`}
         dataKey={category}
         name={category}
         fill={colors[index % colors.length]}
-        radius={[4, 4, 0, 0]}
-        barSize={30}
+        radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+        barSize={vertical ? 16 : 30}
+        label={<CustomLabel />}
       />
     ));
   };
 
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn("w-full h-full", className)}>
       {(title || description) && (
-        <CardHeader>
-          {title && <CardTitle>{title}</CardTitle>}
-          {description && <CardDescription>{description}</CardDescription>}
+        <CardHeader className="pb-3 px-6 pt-6">
+          {title && <CardTitle className="text-lg font-semibold text-slate-900 text-center">{title}</CardTitle>}
+          {description && <CardDescription className="text-sm text-slate-600 mt-1 text-center">{description}</CardDescription>}
         </CardHeader>
       )}
-      <CardContent>
-        <div className={cn(height === 300 ? "h-[300px]" : "", typeof height === 'string' ? height : `h-[${height}px]`)}>
+      <CardContent className="pt-0 px-4 pb-4">
+        <div className="flex justify-center items-center w-full" style={{ height: typeof height === 'number' ? `${height - 80}px` : 'calc(100% - 80px)' }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart
               data={data}
               layout={vertical ? "vertical" : "horizontal"}
               margin={{
-                top: 10,
-                right: 30,
-                left: vertical ? 100 : 20,
-                bottom: 40,
+                top: 15,
+                right: 25,
+                left: vertical ? 100 : 25,
+                bottom: 35,
               }}
+              barCategoryGap={vertical ? "15%" : "8%"}
             >
-              {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={!vertical} />}
+              {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={!vertical} />}
 
               {vertical ? (
                 <>
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                    tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB' }}
+                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tickLine={{ stroke: '#e2e8f0' }}
+                    axisLine={{ stroke: '#e2e8f0' }}
                     tickFormatter={valueFormatter}
                   />
                   <YAxis
                     dataKey="name"
                     type="category"
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tickLine={{ stroke: '#e2e8f0' }}
                     width={100}
-                    axisLine={{ stroke: '#E5E7EB' }}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    interval={0}
                   />
                 </>
               ) : (
                 <>
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                    tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB' }}
-                    label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -15 } : undefined}
+                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tickLine={{ stroke: '#e2e8f0' }}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    height={35}
+                    label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 } } : undefined}
                   />
                   <YAxis
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                    tickLine={false}
-                    axisLine={{ stroke: '#E5E7EB' }}
+                    tick={{ fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 }}
+                    tickLine={{ stroke: '#e2e8f0' }}
+                    axisLine={{ stroke: '#e2e8f0' }}
                     tickFormatter={valueFormatter}
-                    label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
+                    width={40}
+                    label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 12, fill: '#475569', fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 500 } } : undefined}
                   />
                 </>
               )}
 
               {showTooltip && <Tooltip content={<CustomTooltip />} />}
-              {showLegend && <Legend wrapperStyle={{ paddingTop: 10 }} />}
+              {showLegend && (
+                <Legend
+                  wrapperStyle={{
+                    paddingTop: 12,
+                    fontSize: 12,
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontWeight: 500,
+                    color: '#475569',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '16px'
+                  }}
+                  align="center"
+                  verticalAlign="bottom"
+                />
+              )}
 
               {getBars()}
             </RechartsBarChart>

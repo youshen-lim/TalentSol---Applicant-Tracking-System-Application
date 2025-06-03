@@ -1,0 +1,51 @@
+candidate_id,job_id,application_id,application_status,submitted_date,score,skills,department,experience_level,remote_work,expected_salary_min,expected_salary_max,first_name,last_name,email,location_city,location_state
+1.0,1010,15071,assessment,2025-04-26,88,"strategy, partner, result, who, spring",Engineering,1-3,False,90000,100000,Sarah,Chen,sarah.chen@email.com,San Francisco,CA
+2.0,1010,37302,assessment,2025-04-11,95,"remember, study, customer, data, but",Engineering,5-10,True,80000,100000,Marcus,Johnson,marcus.johnson@email.com,Austin,TX
+3.0,1005,14590,hired,2025-04-22,78,"oil, tax, act, until, often",Product,5-10,False,60000,90000,Emily,Rodriguez,emily.rodriguez@email.com,New York,NY
+4.0,1008,19870,interview,2025-04-08,93,"view, camera, out",Engineering,5-10,True,80000,130000,David,Kim,david.kim@email.com,Seattle,WA
+5.0,1003,27118,assessment,2025-05-24,69,"front, defense, onto, management",Product,1-3,True,70000,90000,Jessica,Thompson,jessica.thompson@email.com,Chicago,IL
+6.0,1004,70301,hired,2025-05-26,66,"oil, decision, yard, address",Design,1-3,True,100000,90000,Alex,Rivera,alex.rivera@email.com,Denver,CO
+7.0,1006,51621,interview,2025-05-12,71,"remember, land, others, sing, term",Product,1-3,True,60000,130000,Priya,Patel,priya.patel@email.com,Los Angeles,CA
+8.0,1005,73757,offer,2025-05-07,68,"what, see, management, head, society",Design,5-10,True,90000,90000,Michael,Brown,michael.brown@email.com,Miami,FL
+9.0,1001,18008,hired,2025-04-20,82,"really, character, friend, lot, decide, but",Product,1-3,False,90000,100000,Jennifer,Wilson,jennifer.wilson@email.com,Boston,MA
+10.0,1001,23439,rejected,2025-04-14,77,"record, education, have, great, two, former",Engineering,5-10,False,70000,90000,Robert,Garcia,robert.garcia@email.com,Portland,OR
+11.0,1005,14092,applied,2025-05-30,61,"green, degree, available, compare, give, eye",Product,5-10,False,70000,90000,Lisa,Martinez,lisa.martinez@email.com,San Francisco,CA
+12.0,1008,22521,rejected,2025-04-06,76,"heavy, choose, feel, require, teacher, method",Product,5-10,False,70000,90000,James,Anderson,james.anderson@email.com,Austin,TX
+13.0,1006,64424,interview,2025-04-25,91,"page, people, let",Design,5-10,False,60000,120000,Maria,Taylor,maria.taylor@email.com,New York,NY
+14.0,1008,84835,screening,2025-05-25,88,"run, thousand, trial, suffer, tough, trouble",Product,1-3,True,80000,90000,John,Thomas,john.thomas@email.com,Seattle,WA
+15.0,1001,56114,applied,2025-05-15,88,"stop, per, interesting, very, worker",Engineering,1-3,False,90000,100000,Ashley,Jackson,ashley.jackson@email.com,Chicago,IL
+16.0,1010,33384,applied,2025-04-18,79,"education, not, individual, than, although, mission",Product,5-10,True,100000,90000,Christopher,White,christopher.white@email.com,Denver,CO
+17.0,1004,46906,screening,2025-05-21,91,"become, whom, want, health",Product,5-10,False,60000,100000,Amanda,Harris,amanda.harris@email.com,Los Angeles,CA
+18.0,1007,84737,hired,2025-04-10,98,"in, listen, receive",Product,1-3,False,100000,90000,Daniel,Martin,daniel.martin@email.com,Miami,FL
+19.0,1004,32819,applied,2025-04-30,72,"contain, bring, space",Engineering,3-5,False,90000,120000,Michelle,Lee,michelle.lee@email.com,Boston,MA
+20.0,1007,20938,hired,2025-05-27,68,"note, memory, measure, yeah",Engineering,5-10,True,90000,130000,Matthew,Clark,matthew.clark@email.com,Portland,OR
+21.0,1007,56400,offer,2025-05-13,90,"laugh, boy, player, surface, drug",Product,1-3,True,60000,120000,Stephanie,Lewis,stephanie.lewis@email.com,San Francisco,CA
+22.0,1009,58159,assessment,2025-04-04,74,"court, outside, different, can, education, whether",Product,1-3,True,70000,100000,Anthony,Robinson,anthony.robinson@email.com,Austin,TX
+23.0,1008,94923,offer,2025-04-19,80,"administration, main, difficult, artist",Product,3-5,True,90000,120000,Nicole,Walker,nicole.walker@email.com,New York,NY
+24.0,1001,47555,screening,2025-04-30,86,"type, loss, ok, TV",Design,3-5,True,80000,100000,Kevin,Hall,kevin.hall@email.com,Seattle,WA
+25.0,1009,66998,interview,2025-05-12,75,"former, me, simple, customer, here",Design,1-3,False,70000,90000,Elizabeth,Allen,elizabeth.allen@email.com,Chicago,IL
+26.0,1009,99021,offer,2025-05-18,68,"practice, prevent, process, among, way, piece",Design,1-3,True,100000,120000,Brian,Young,brian.young@email.com,Denver,CO
+27.0,1001,80126,assessment,2025-04-13,91,"suggest, certain, wide, white, such, fire",Engineering,5-10,True,60000,130000,Helen,King,helen.king@email.com,Los Angeles,CA
+28.0,1007,70881,offer,2025-05-08,65,"actually, truth, statement, particularly",Design,1-3,True,100000,90000,Ryan,Wright,ryan.wright@email.com,Portland,OR
+29.0,1006,58095,assessment,2025-05-16,96,"rather, same, reason, movement",Design,5-10,False,90000,130000,Samantha,Lopez,samantha.lopez@email.com,Boston,MA
+30.0,1007,38680,applied,2025-04-05,79,"impact, art, maybe, sense",Design,1-3,True,70000,100000,Jason,Hill,jason.hill@email.com,Miami,FL
+31.0,1006,64888,offer,2025-05-08,60,"rest, town, rock, whom",Design,5-10,False,70000,130000,Rachel,Scott,rachel.scott@email.com,San Francisco,CA
+32.0,1007,61745,rejected,2025-05-30,70,"report, experience, figure",Engineering,5-10,True,80000,130000,William,Green,william.green@email.com,Austin,TX
+33.0,1010,98776,offer,2025-05-01,63,"then, these, subject, best",Product,3-5,True,80000,120000,Laura,Adams,laura.adams@email.com,New York,NY
+34.0,1006,90524,offer,2025-04-04,75,"face, small, activity, range, weight",Product,1-3,True,90000,130000,Steven,Baker,steven.baker@email.com,Seattle,WA
+35.0,1008,93757,hired,2025-05-21,60,"investment, direction, power, bit",Engineering,5-10,True,90000,100000,Karen,Gonzalez,karen.gonzalez@email.com,Chicago,IL
+36.0,1007,99885,screening,2025-04-11,72,"since, once, even, leave",Engineering,3-5,True,90000,120000,Paul,Nelson,paul.nelson@email.com,Denver,CO
+37.0,1005,43042,assessment,2025-04-26,95,"return, effort, he, data, wish",Engineering,3-5,True,100000,100000,Susan,Carter,susan.carter@email.com,Los Angeles,CA
+38.0,1003,58450,offer,2025-04-15,80,"car, until, push, consider, lot, example",Product,3-5,True,90000,130000,Mark,Mitchell,mark.mitchell@email.com,Portland,OR
+39.0,1006,42189,interview,2025-04-29,71,"on, increase, agency, way, star",Product,3-5,True,100000,100000,Linda,Perez,linda.perez@email.com,Boston,MA
+40.0,1005,54986,interview,2025-05-28,63,"never, enter, piece, area, condition, measure",Product,3-5,True,60000,120000,Charles,Roberts,charles.roberts@email.com,Miami,FL
+41.0,1005,91335,applied,2025-04-10,82,"maintain, together, successful, past, ten",Design,5-10,False,100000,100000,Barbara,Turner,barbara.turner@email.com,San Francisco,CA
+42.0,1009,32505,offer,2025-04-28,99,"surface, six, few, cell",Engineering,5-10,True,60000,130000,Joseph,Phillips,joseph.phillips@email.com,Austin,TX
+43.0,1008,11069,offer,2025-05-17,88,"after, a, paper, lose",Product,1-3,False,100000,120000,Nancy,Campbell,nancy.campbell@email.com,New York,NY
+44.0,1002,49415,offer,2025-06-02,76,"fine, fear, term, memory, wide, customer",Design,5-10,True,70000,90000,Thomas,Parker,thomas.parker@email.com,Seattle,WA
+45.0,1007,26015,hired,2025-04-08,90,"head, land, street",Design,5-10,True,100000,90000,Betty,Evans,betty.evans@email.com,Chicago,IL
+46.0,1006,77827,interview,2025-06-02,88,"rise, house, catch, store, his, explain",Product,5-10,False,80000,100000,Richard,Edwards,richard.edwards@email.com,Denver,CO
+47.0,1007,72035,hired,2025-04-25,87,"season, bag, customer, here",Product,3-5,True,100000,130000,Dorothy,Collins,dorothy.collins@email.com,Los Angeles,CA
+48.0,1010,54751,rejected,2025-05-17,87,"power, plant, nor",Design,3-5,True,60000,120000,Donald,Stewart,donald.stewart@email.com,Portland,OR
+49.0,1007,15779,offer,2025-04-21,94,"prove, room, quite, on, place, point",Engineering,5-10,False,100000,90000,Sandra,Sanchez,sandra.sanchez@email.com,Boston,MA
+50.0,1007,30530,applied,2025-04-13,95,"teach, maybe, determine, garden, evening, actually",Engineering,1-3,False,60000,130000,Kenneth,Morris,kenneth.morris@email.com,Miami,FL

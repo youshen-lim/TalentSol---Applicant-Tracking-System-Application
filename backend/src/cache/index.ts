@@ -21,23 +21,32 @@ export type { CacheDecoratorOptions } from './decorators.js';
 export async function initializeCache(): Promise<void> {
   try {
     console.log('🔄 Initializing cache system...');
-    
-    // Test Redis connection
-    const redisHealth = await redisClient.healthCheck();
-    
-    if (redisHealth.redis) {
-      console.log('✅ Redis cache system initialized successfully');
-    } else {
-      console.log('⚠️ Redis unavailable, using in-memory fallback cache');
+
+    // Test Redis connection with fallback
+    try {
+      const redisHealth = await redisClient.healthCheck();
+
+      if (redisHealth.redis) {
+        console.log('✅ Redis cache system initialized successfully');
+      } else {
+        console.log('⚠️ Redis unavailable, using in-memory fallback cache');
+      }
+    } catch (redisError) {
+      console.log('⚠️ Failed to initialize Redis, using in-memory cache:', redisError.message);
     }
-    
+
     // Initialize cache manager
-    const cacheHealth = await cacheManager.healthCheck();
-    console.log(`✅ Cache manager initialized with ${cacheHealth.strategies.length} strategies`);
-    
+    try {
+      const cacheHealth = await cacheManager.healthCheck();
+      console.log(`✅ Cache manager initialized with ${cacheHealth.strategies.length} strategies`);
+    } catch (cacheError) {
+      console.log('⚠️ Cache manager using fallback mode:', cacheError.message);
+    }
+
   } catch (error) {
     console.error('❌ Failed to initialize cache system:', error);
-    throw error;
+    // Don't throw error - allow server to start without cache
+    console.log('⚠️ Server will continue without advanced caching');
   }
 }
 
@@ -45,8 +54,12 @@ export async function initializeCache(): Promise<void> {
 export async function cleanupCache(): Promise<void> {
   try {
     console.log('🔄 Cleaning up cache system...');
-    await redisClient.disconnect();
-    console.log('✅ Cache system cleaned up successfully');
+    try {
+      await redisClient.disconnect();
+      console.log('✅ Cache system cleaned up successfully');
+    } catch (redisError) {
+      console.log('⚠️ Redis cleanup skipped:', redisError.message);
+    }
   } catch (error) {
     console.error('❌ Error during cache cleanup:', error);
   }

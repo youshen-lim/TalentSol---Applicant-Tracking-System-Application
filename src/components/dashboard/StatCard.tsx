@@ -71,61 +71,51 @@ export const StatCard: React.FC<StatCardProps> = ({
   // New layout
   if (useNewLayout) {
     return (
-      <Card className={cn("", className)} onClick={onClick}>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1">
-              <CardTitle className="text-sm font-medium text-gray-500">
+      <Card className={cn("bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300", className)} onClick={onClick}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {Icon && typeof Icon !== 'function' && <div className="flex-shrink-0">{Icon}</div>}
+              {Icon && typeof Icon === 'function' && (
+                <div className="flex-shrink-0">
+                  <Icon className="h-4 w-4 text-blue-600" />
+                </div>
+              )}
+              <CardTitle className="text-base font-semibold text-slate-700">
                 {title}
               </CardTitle>
               {tooltip && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className="h-3 w-3 text-gray-400" />
+                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="w-60 text-xs">{tooltip}</p>
+                      <p className="w-60 text-sm">{tooltip}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}
             </div>
-            {Icon && typeof Icon !== 'function' && <div>{Icon}</div>}
-            {Icon && typeof Icon === 'function' && (
-              <div
-                className={cn(
-                  "p-2 rounded-full",
-                  `bg-${iconColor.replace('#', '')}/10`,
-                  iconClassName
-                )}
-                style={{ backgroundColor: `${iconColor}10` }}
-              >
-                <Icon
-                  className="h-5 w-5"
-                  style={{ color: iconColor }}
-                />
-              </div>
-            )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <div className="flex justify-between items-end">
-            <div>
-              <div className={cn("text-2xl font-bold", valueClassName)}>{value}</div>
+            <div className="min-w-0 flex-1">
+              <div className={cn("text-3xl font-bold text-slate-900 tracking-tight", valueClassName)}>{value}</div>
               {description && (
-                <CardDescription className="text-xs mt-1">
+                <p className="text-sm mt-1 text-slate-600">
                   {description}
-                </CardDescription>
+                </p>
               )}
             </div>
             {change && (
               <div
                 className={cn(
-                  "text-xs font-medium px-1.5 py-0.5 rounded",
+                  "text-sm font-semibold px-3 py-1.5 rounded-lg shadow-sm",
                   change.positive
-                    ? "text-green-700 bg-green-50"
-                    : "text-red-700 bg-red-50"
+                    ? "text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
+                    : "text-red-700 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200"
                 )}
               >
                 {change.positive ? "+" : ""}
@@ -135,8 +125,10 @@ export const StatCard: React.FC<StatCardProps> = ({
             {typeof trend !== 'undefined' && !change && (
               <div
                 className={cn(
-                  "flex items-center text-xs font-medium",
-                  getTrendColor(),
+                  "flex items-center text-sm font-semibold px-3 py-1.5 rounded-lg shadow-sm",
+                  trend > 0 ? "text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200" :
+                  trend < 0 ? "text-red-700 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200" :
+                  "text-gray-600 bg-gray-50 border border-gray-200",
                   trendClassName
                 )}
               >
@@ -163,19 +155,27 @@ export const StatCard: React.FC<StatCardProps> = ({
       onClick={onClick}
     >
       <CardContent className="p-6">
-        <div className="flex justify-between items-start">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            {Icon && typeof Icon !== 'function' && <div className="flex-shrink-0">{Icon}</div>}
+            {Icon && typeof Icon === 'function' && (
+              <div className="flex-shrink-0">
+                <Icon className="h-4 w-4 text-blue-600" />
+              </div>
+            )}
+            <p className="text-base font-semibold text-slate-700">{title}</p>
+          </div>
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
             <h3
               className={cn(
-                "text-2xl font-bold tracking-tight text-gray-900",
+                "text-2xl font-bold tracking-tight text-slate-900",
                 valueClassName
               )}
             >
               {value}
             </h3>
             {description && (
-              <p className="mt-1 text-xs text-gray-500">{description}</p>
+              <p className="text-sm mt-1 text-slate-600">{description}</p>
             )}
             {typeof trend !== 'undefined' && (
               <div
@@ -192,21 +192,6 @@ export const StatCard: React.FC<StatCardProps> = ({
               </div>
             )}
           </div>
-          {Icon && typeof Icon === 'function' && (
-            <div
-              className={cn(
-                "p-2 rounded-full",
-                `bg-${iconColor.replace('#', '')}/10`,
-                iconClassName
-              )}
-              style={{ backgroundColor: `${iconColor}10` }}
-            >
-              <Icon
-                className="h-5 w-5"
-                style={{ color: iconColor }}
-              />
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

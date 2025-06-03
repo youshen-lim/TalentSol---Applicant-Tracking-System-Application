@@ -151,6 +151,50 @@ const mockJobs: Job[] = [
   }
 ];
 
+// Backend job structure (what we receive from API)
+interface BackendJob {
+  id: string;
+  title: string;
+  department: string;
+  location: {
+    city?: string;
+    state?: string;
+    remote: boolean;
+  };
+  employmentType: string; // "full_time", "part_time", etc.
+  experienceLevel: string;
+  salary: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  description: string;
+  responsibilities: string[];
+  requiredQualifications: string[];
+  preferredQualifications: string[];
+  skills: string[];
+  benefits: string | null;
+  status: string;
+  visibility: string;
+  postedDate: string | null;
+  applicationDeadline?: string | null;
+  maxApplicants?: number | null;
+  pipeline: any; // null in backend
+  source: string;
+  createdAt: string;
+  updatedAt: string;
+  company: {
+    id: string;
+    name: string;
+  };
+  createdById: string;
+  companyId: string;
+  _count?: {
+    applications: number;
+  };
+}
+
+// Frontend job structure (what we use in components)
 export interface Job {
   id: string;
   title: string;
@@ -202,6 +246,57 @@ export interface Job {
   };
 }
 
+// Transform backend job to frontend job structure
+const transformBackendJob = (backendJob: BackendJob): Job => {
+  return {
+    id: backendJob.id,
+    title: backendJob.title,
+    department: backendJob.department,
+    location: {
+      type: backendJob.location.remote ? 'remote' : 'onsite',
+      allowRemote: backendJob.location.remote,
+      country: 'US', // Default to US
+      city: backendJob.location.city,
+      state: backendJob.location.state,
+    },
+    employmentType: backendJob.employmentType.replace('_', '-'), // Convert "full_time" to "full-time"
+    experienceLevel: backendJob.experienceLevel,
+    salary: {
+      min: backendJob.salary.min,
+      max: backendJob.salary.max,
+      currency: backendJob.salary.currency,
+      payFrequency: 'annual',
+    },
+    description: backendJob.description,
+    responsibilities: backendJob.responsibilities,
+    requiredQualifications: backendJob.requiredQualifications,
+    preferredQualifications: backendJob.preferredQualifications,
+    skills: backendJob.skills,
+    benefits: backendJob.benefits || '',
+    status: backendJob.status,
+    visibility: backendJob.visibility,
+    postedDate: backendJob.postedDate || backendJob.createdAt,
+    applicationDeadline: backendJob.applicationDeadline || undefined,
+    maxApplicants: backendJob.maxApplicants || undefined,
+    currentApplicants: backendJob._count?.applications || 0,
+    pipeline: {
+      screening: 0,
+      interview: 0,
+      assessment: 0,
+      offer: 0,
+    },
+    source: backendJob.source,
+    createdAt: backendJob.createdAt,
+    updatedAt: backendJob.updatedAt,
+    company: backendJob.company,
+    createdBy: {
+      id: backendJob.createdById,
+      firstName: 'User', // Default values since backend doesn't provide this
+      lastName: 'Admin',
+    },
+  };
+};
+
 export interface UseJobsParams {
   page?: number;
   limit?: number;
@@ -233,13 +328,24 @@ export const useJobs = (params?: UseJobsParams): UseJobsReturn => {
       setLoading(true);
       setError(null);
 
+      console.log('Fetching jobs with params:', params);
       const response = await jobsApi.getJobs(params);
+      console.log('API response:', response);
 
-      if (response.data) {
-        setJobs(response.data);
-        setTotalPages(response.pagination?.totalPages || 1);
+      // Handle the actual backend response structure
+      if (response.jobs) {
+        console.log('Found jobs:', response.jobs.length);
+        // Transform backend jobs to frontend structure
+        const transformedJobs = response.jobs.map((backendJob: BackendJob) => transformBackendJob(backendJob));
+        console.log('Transformed jobs:', transformedJobs);
+        setJobs(transformedJobs);
+        setTotalPages(response.pagination?.pages || 1);
         setCurrentPage(response.pagination?.page || 1);
         setTotal(response.pagination?.total || 0);
+        setError(null); // Clear any previous errors
+      } else {
+        console.log('No jobs found in response');
+        setJobs([]);
       }
     } catch (err) {
       console.warn('API not available, using fallback mock data:', err);

@@ -10,12 +10,14 @@ import Sidebar from './Sidebar';
  */
 const Layout = () => {
   return (
-    <div className="min-h-screen bg-ats-gray flex flex-col">
+    <div className="min-h-screen bg-ats-gray flex flex-col font-sans">
       <NavBar />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 p-6 bg-gray-50 min-h-[calc(100vh-4rem)] overflow-y-auto border-t border-ats-border-gray">
-          <Outlet />
+        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto border-t border-ats-border-gray font-sans">
+          <div className="p-6">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

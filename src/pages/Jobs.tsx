@@ -51,6 +51,7 @@ import {
 import { useJobs, useCreateJob, useUpdateJob, useDeleteJob, Job } from '@/hooks/useJobs';
 import { jobsApi } from '@/services/api';
 import { multiApiClient } from '@/services/multiApiClient';
+import PageHeader from '@/components/layout/PageHeader';
 
 /**
  * Jobs page component
@@ -82,128 +83,7 @@ interface JobPipeline {
 
 // Job interface imported from useJobs hook
 
-// Fallback mock data for when API is not available
-const fallbackMockJobs = [
-  {
-    id: "j1",
-    title: "Senior Frontend Developer",
-    department: "Engineering",
-    location: {
-      type: "remote",
-      allowRemote: true,
-      country: "US"
-    },
-    employmentType: "full-time",
-    experienceLevel: "senior",
-    salary: {
-      min: 120000,
-      max: 150000,
-      currency: "USD",
-      payFrequency: "annual"
-    },
-    description: "We are looking for a Senior Frontend Developer to join our team...",
-    responsibilities: ["Develop user interfaces", "Collaborate with design team", "Optimize performance"],
-    requiredQualifications: ["5+ years React experience", "TypeScript proficiency"],
-    preferredQualifications: ["Next.js experience", "Design system knowledge"],
-    skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
-    benefits: "Comprehensive health insurance, 401k matching, flexible PTO",
-    status: "open",
-    visibility: "public",
-    postedDate: "2024-01-05T10:00:00Z",
-    applicationDeadline: "2024-02-05T23:59:59Z",
-    maxApplicants: 50,
-    currentApplicants: 45,
-    pipeline: {
-      screening: 15,
-      interview: 8,
-      assessment: 4,
-      offer: 1,
-    },
-    createdBy: "user_123",
-    lastModified: "2024-01-20T14:30:00Z",
-    source: "internal"
-  },
-  {
-    id: "j2",
-    title: "UX/UI Designer",
-    department: "Design",
-    location: {
-      type: "onsite",
-      city: "San Francisco",
-      state: "CA",
-      country: "US",
-      allowRemote: false
-    },
-    employmentType: "full-time",
-    experienceLevel: "mid",
-    salary: {
-      min: 90000,
-      max: 120000,
-      currency: "USD",
-      payFrequency: "annual"
-    },
-    description: "Join our design team to create beautiful and intuitive user experiences...",
-    responsibilities: ["Design user interfaces", "Create prototypes", "Conduct user research"],
-    requiredQualifications: ["3+ years UX/UI experience", "Figma proficiency"],
-    preferredQualifications: ["Design system experience", "Frontend development knowledge"],
-    skills: ["Figma", "Sketch", "Adobe Creative Suite", "Prototyping"],
-    benefits: "Health insurance, design conference budget, flexible hours",
-    status: "open",
-    visibility: "public",
-    postedDate: "2024-01-17T09:00:00Z",
-    currentApplicants: 23,
-    pipeline: {
-      screening: 8,
-      interview: 4,
-      assessment: 2,
-      offer: 0,
-    },
-    createdBy: "user_456",
-    lastModified: "2024-01-18T11:15:00Z",
-    source: "job_board"
-  },
-  {
-    id: "j3",
-    title: "Product Manager",
-    department: "Product",
-    location: {
-      type: "hybrid",
-      city: "New York",
-      state: "NY",
-      country: "US",
-      allowRemote: true
-    },
-    employmentType: "full-time",
-    experienceLevel: "senior",
-    salary: {
-      min: 110000,
-      max: 140000,
-      currency: "USD",
-      payFrequency: "annual"
-    },
-    description: "Lead product strategy and development for our core platform...",
-    responsibilities: ["Define product roadmap", "Work with engineering teams", "Analyze user metrics"],
-    requiredQualifications: ["5+ years product management", "Technical background"],
-    preferredQualifications: ["SaaS experience", "Data analysis skills"],
-    skills: ["Product Strategy", "Analytics", "Agile", "SQL"],
-    benefits: "Equity package, unlimited PTO, learning budget",
-    status: "open",
-    visibility: "public",
-    postedDate: "2024-01-13T14:00:00Z",
-    applicationDeadline: "2024-02-13T23:59:59Z",
-    maxApplicants: 40,
-    currentApplicants: 34,
-    pipeline: {
-      screening: 12,
-      interview: 6,
-      assessment: 3,
-      offer: 1,
-    },
-    createdBy: "user_789",
-    lastModified: "2024-01-19T16:45:00Z",
-    source: "internal"
-  }
-];
+// Note: Fallback mock data is handled in the useJobs hook
 
 // Utility functions
 const formatSalary = (salary: JobSalary): string => {
@@ -245,25 +125,25 @@ const getRelativeTime = (dateString: string): string => {
 const getStatusBadge = (status: Job['status']) => {
   switch (status) {
     case 'open':
-      return <Badge className="bg-green-500 hover:bg-green-600">Open</Badge>;
+      return <Badge className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-sm">Open</Badge>;
     case 'draft':
-      return <Badge className="bg-gray-500 hover:bg-gray-600">Draft</Badge>;
+      return <Badge className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white border-0 shadow-sm">Draft</Badge>;
     case 'closed':
-      return <Badge className="bg-red-500 hover:bg-red-600">Closed</Badge>;
+      return <Badge className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-sm">Closed</Badge>;
     case 'archived':
-      return <Badge className="bg-orange-500 hover:bg-orange-600">Archived</Badge>;
+      return <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-0 shadow-sm">Archived</Badge>;
     default:
-      return <Badge>{status}</Badge>;
+      return <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm">{status}</Badge>;
   }
 };
 
 // Pipeline Progress Component
 const PipelineProgress = ({ pipeline, total }: { pipeline: JobPipeline; total: number }) => {
   const stages = [
-    { key: 'screening', label: 'Screening', color: 'bg-ats-blue' },
-    { key: 'interview', label: 'Interview', color: 'bg-ats-purple' },
-    { key: 'assessment', label: 'Assessment', color: 'bg-indigo-500' },
-    { key: 'offer', label: 'Offer', color: 'bg-green-500' },
+    { key: 'screening', label: 'Screening', color: 'bg-blue-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
+    { key: 'interview', label: 'Interview', color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
+    { key: 'assessment', label: 'Assessment', color: 'bg-indigo-500', bgColor: 'bg-indigo-50', textColor: 'text-indigo-700' },
+    { key: 'offer', label: 'Offer', color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
   ] as const;
 
   const safePipeline = pipeline || { screening: 0, interview: 0, assessment: 0, offer: 0 };
@@ -271,23 +151,23 @@ const PipelineProgress = ({ pipeline, total }: { pipeline: JobPipeline; total: n
   const progressPercentage = total > 0 ? (totalInPipeline / total) * 100 : 0;
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>Pipeline Progress</span>
-        <span>{totalInPipeline} of {total} candidates</span>
+    <div className="space-y-3 bg-gray-50 rounded-lg p-4">
+      <div className="flex justify-between text-sm">
+        <span className="font-medium text-gray-700">Pipeline Progress</span>
+        <span className="font-semibold text-gray-900">{totalInPipeline} of {total} candidates</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-ats-blue to-green-500 transition-all duration-300"
+          className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 transition-all duration-500"
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
-      <div className="grid grid-cols-4 gap-1 text-xs">
+      <div className="grid grid-cols-4 gap-2 text-xs">
         {stages.map((stage) => (
-          <div key={stage.key} className="text-center">
-            <div className={`w-full h-1 ${stage.color} rounded mb-1`} />
-            <div className="font-medium">{safePipeline[stage.key]}</div>
-            <div className="text-gray-500 truncate">{stage.label}</div>
+          <div key={stage.key} className={`text-center p-2 rounded-lg ${stage.bgColor}`}>
+            <div className={`w-full h-2 ${stage.color} rounded-full mb-2`} />
+            <div className={`font-bold text-lg ${stage.textColor}`}>{safePipeline[stage.key]}</div>
+            <div className={`${stage.textColor} font-medium truncate`}>{stage.label}</div>
           </div>
         ))}
       </div>
@@ -412,34 +292,34 @@ const JobCard = ({ job, isSelected, onSelect }: {
   };
 
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${isSelected ? 'ring-2 ring-ats-blue' : ''}`}>
-      <CardHeader className="pb-3">
+    <Card className={`bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 ${isSelected ? 'ring-2 ring-blue-500 border-blue-300' : ''}`}>
+      <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
           <div className="flex items-start gap-3 flex-1">
             {onSelect && (
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onSelect(job.id)}
-                className="mt-1"
+                className="mt-1 border-gray-400 data-[state=checked]:bg-blue-600"
               />
             )}
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <CardTitle className="text-lg font-semibold">{job.title}</CardTitle>
+              <div className="flex items-center gap-3 mb-2">
+                <CardTitle className="text-xl font-semibold text-gray-900">{job.title}</CardTitle>
                 {getStatusBadge(job.status)}
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Badge variant="outline" className="text-xs">
+              <div className="flex items-center gap-3 text-sm">
+                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
                   {job.department}
                 </Badge>
-                <span>•</span>
-                <span className="capitalize">{job.experienceLevel}</span>
+                <span className="text-gray-400">•</span>
+                <span className="capitalize text-gray-600 font-medium">{job.experienceLevel}</span>
               </div>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-ats-blue">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -476,61 +356,69 @@ const JobCard = ({ job, isSelected, onSelect }: {
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center">
-            <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-            <span>{formatLocation(job.location)}</span>
+      <CardContent className="space-y-6 pt-0">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-50">
+              <MapPin className="h-4 w-4 text-blue-600" />
+            </div>
+            <span className="font-medium text-gray-700">{formatLocation(job.location)}</span>
           </div>
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-2 text-gray-400" />
-            <span className="capitalize">{job.employmentType}</span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-50">
+              <Clock className="h-4 w-4 text-green-600" />
+            </div>
+            <span className="capitalize font-medium text-gray-700">{job.employmentType}</span>
           </div>
-          <div className="flex items-center">
-            <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
-            <span>{formatSalary(job.salary)}</span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-50">
+              <DollarSign className="h-4 w-4 text-purple-600" />
+            </div>
+            <span className="font-medium text-gray-700">{formatSalary(job.salary)}</span>
           </div>
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-            <span>{getRelativeTime(job.postedDate)}</span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-orange-50">
+              <Calendar className="h-4 w-4 text-orange-600" />
+            </div>
+            <span className="font-medium text-gray-700">{getRelativeTime(job.postedDate)}</span>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Applications</span>
-            <span className="font-medium">
+            <span className="text-gray-600 font-medium">Applications</span>
+            <span className="font-semibold text-gray-900">
               {job.currentApplicants}{job.maxApplicants ? ` of ${job.maxApplicants}` : ''}
             </span>
           </div>
 
           {/* Application Progress Bar and Status */}
           {job.maxApplicants && (
-            <div className="space-y-1">
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="space-y-2">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  className={`h-3 rounded-full transition-all duration-500 ${
                     (job.currentApplicants / job.maxApplicants) >= 0.9
-                      ? 'bg-red-500'
+                      ? 'bg-gradient-to-r from-red-500 to-red-600'
                       : (job.currentApplicants / job.maxApplicants) >= 0.7
-                      ? 'bg-yellow-500'
-                      : 'bg-ats-blue'
+                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                      : 'bg-gradient-to-r from-blue-500 to-blue-600'
                   }`}
                   style={{ width: `${Math.min((job.currentApplicants / job.maxApplicants) * 100, 100)}%` }}
                 />
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500">
+                <span className="text-gray-600 font-medium">
                   {job.maxApplicants - job.currentApplicants} spots remaining
                 </span>
                 {(job.currentApplicants / job.maxApplicants) >= 0.8 && (
-                  <span className="text-orange-600 font-medium flex items-center gap-1">
+                  <span className="text-orange-600 font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
                     <Clock className="h-3 w-3" />
                     Filling fast
                   </span>
                 )}
                 {job.currentApplicants >= job.maxApplicants && (
-                  <span className="text-red-600 font-medium flex items-center gap-1">
+                  <span className="text-red-600 font-semibold flex items-center gap-1 bg-red-50 px-2 py-1 rounded-full">
                     <AlertCircle className="h-3 w-3" />
                     Applications full
                   </span>
@@ -542,23 +430,23 @@ const JobCard = ({ job, isSelected, onSelect }: {
 
         <PipelineProgress pipeline={job.pipeline} total={job.currentApplicants} />
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-3 pt-2">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-xs hover:bg-ats-blue hover:text-white"
+            className="flex-1 border-gray-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
             onClick={() => handleAction('view-job')}
           >
-            <Eye className="h-3 w-3 mr-1" />
+            <Eye className="h-4 w-4 mr-2" />
             View Job
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-xs hover:bg-ats-purple hover:text-white"
+            className="flex-1 border-gray-300 hover:border-purple-500 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200"
             onClick={() => handleAction('view-candidates')}
           >
-            <Users className="h-3 w-3 mr-1" />
+            <Users className="h-4 w-4 mr-2" />
             View Candidates
           </Button>
         </div>
@@ -680,8 +568,10 @@ const Jobs = () => {
       // Experience level filter
       const experienceMatch = filters.experienceLevel.length === 0 || filters.experienceLevel.includes(job.experienceLevel);
 
-      // Salary range filter
-      const salaryMatch = job.salary.min >= filters.salaryRange[0] && job.salary.max <= filters.salaryRange[1];
+      // Salary range filter - check if job salary overlaps with filter range
+      const salaryMatch = job.salary && (
+        (job.salary.min <= filters.salaryRange[1] && job.salary.max >= filters.salaryRange[0])
+      );
 
       // Application count filter
       const applicationMatch = job.currentApplicants >= filters.applicationCount[0] &&
@@ -914,36 +804,54 @@ const Jobs = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Briefcase className="h-6 w-6 text-ats-blue" />
-            Job Postings
-          </h1>
-          <p className="text-sm text-gray-500">
-            Manage your open positions • {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
-          </p>
-        </div>
+    <div className="space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen -m-6 p-6">
+      <PageHeader
+        title="Job Management"
+        subtitle={`Manage your open positions • ${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''} found`}
+        icon={Briefcase}
+      >
+        <Button
+          onClick={async () => {
+            try {
+              const response = await fetch('http://localhost:3001/api/jobs');
+              const data = await response.json();
+              console.log('Direct API test:', data);
+              toast.atsBlue({
+                title: "API Test",
+                description: `Found ${data.jobs?.length || 0} jobs`,
+              });
+            } catch (error) {
+              console.error('Direct API test failed:', error);
+              toast.atsBlue({
+                title: "API Test Failed",
+                description: error instanceof Error ? error.message : 'Unknown error',
+              });
+            }
+          }}
+          variant="outline"
+          className="border-gray-300 hover:border-blue-500 hover:text-blue-600"
+        >
+          Test API
+        </Button>
         <Button
           onClick={() => setShowCreateDialog(true)}
-          className="bg-ats-blue hover:bg-ats-dark-blue"
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all duration-200"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create New Job
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Enhanced Search and Filter Bar */}
-      <div className="space-y-4">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-6">
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
           {/* Search Bar */}
           <div className="relative w-full lg:w-96">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
               type="text"
-              placeholder="Search candidates, jobs, skills..."
-              className="pl-10 pr-10"
+              placeholder="Search jobs, departments, skills..."
+              className="pl-11 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -951,26 +859,26 @@ const Jobs = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-gray-100"
                 onClick={() => setSearchQuery("")}
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>
 
           {/* Filter Controls */}
-          <div className="flex gap-2 w-full lg:w-auto justify-end">
+          <div className="flex gap-3 w-full lg:w-auto justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilterDialog(true)}
-              className="relative"
+              className="relative border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
             >
               <SlidersHorizontal className="h-4 w-4 mr-2" />
               Filters
               {activeFilterCount > 0 && (
-                <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-ats-blue flex items-center justify-center">
+                <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-blue-600 hover:bg-blue-700 flex items-center justify-center">
                   {activeFilterCount}
                 </Badge>
               )}
@@ -978,13 +886,13 @@ const Jobs = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">
                   Department <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="w-48">
                 {['Engineering', 'Design', 'Product', 'Sales', 'Marketing'].map((dept) => (
-                  <DropdownMenuItem key={dept}>
+                  <DropdownMenuItem key={dept} className="hover:bg-blue-50">
                     <Checkbox
                       checked={filters.departments.includes(dept)}
                       onCheckedChange={(checked) => {
@@ -995,7 +903,7 @@ const Jobs = () => {
                             : prev.departments.filter(d => d !== dept)
                         }));
                       }}
-                      className="mr-2"
+                      className="mr-3"
                     />
                     {dept}
                   </DropdownMenuItem>
@@ -1005,13 +913,13 @@ const Jobs = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">
                   Location <ChevronDown className="h-4 w-4 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="w-48">
                 {['Remote', 'San Francisco, CA', 'New York, NY', 'Chicago, IL', 'Austin, TX'].map((location) => (
-                  <DropdownMenuItem key={location}>
+                  <DropdownMenuItem key={location} className="hover:bg-blue-50">
                     <Checkbox
                       checked={filters.locations.includes(location)}
                       onCheckedChange={(checked) => {
@@ -1022,7 +930,7 @@ const Jobs = () => {
                             : prev.locations.filter(l => l !== location)
                         }));
                       }}
-                      className="mr-2"
+                      className="mr-3"
                     />
                     {location}
                   </DropdownMenuItem>
@@ -1031,16 +939,18 @@ const Jobs = () => {
             </DropdownMenu>
           </div>
         </div>
+      </div>
 
-        {/* Active Filters Display */}
-        {activeFilterCount > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm text-gray-500">Active filters:</span>
+      {/* Active Filters Display */}
+      {activeFilterCount > 0 && (
+        <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200 p-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium text-gray-700">Active filters:</span>
             {filters.status.map(status => (
-              <Badge key={status} variant="secondary" className="gap-1">
+              <Badge key={status} variant="secondary" className="gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
                 Status: {status}
                 <X
-                  className="h-3 w-3 cursor-pointer"
+                  className="h-3 w-3 cursor-pointer hover:text-blue-900"
                   onClick={() => setFilters(prev => ({
                     ...prev,
                     status: prev.status.filter(s => s !== status)
@@ -1049,10 +959,10 @@ const Jobs = () => {
               </Badge>
             ))}
             {filters.departments.map(dept => (
-              <Badge key={dept} variant="secondary" className="gap-1">
+              <Badge key={dept} variant="secondary" className="gap-2 bg-green-100 text-green-800 hover:bg-green-200">
                 {dept}
                 <X
-                  className="h-3 w-3 cursor-pointer"
+                  className="h-3 w-3 cursor-pointer hover:text-green-900"
                   onClick={() => setFilters(prev => ({
                     ...prev,
                     departments: prev.departments.filter(d => d !== dept)
@@ -1061,10 +971,10 @@ const Jobs = () => {
               </Badge>
             ))}
             {filters.locations.map(location => (
-              <Badge key={location} variant="secondary" className="gap-1">
+              <Badge key={location} variant="secondary" className="gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200">
                 {location}
                 <X
-                  className="h-3 w-3 cursor-pointer"
+                  className="h-3 w-3 cursor-pointer hover:text-purple-900"
                   onClick={() => setFilters(prev => ({
                     ...prev,
                     locations: prev.locations.filter(l => l !== location)
@@ -1072,46 +982,47 @@ const Jobs = () => {
                 />
               </Badge>
             ))}
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-600 hover:text-gray-800">
               Clear all
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Bulk Actions Bar */}
       {showBulkActions && (
-        <Card className="p-4 bg-ats-blue/5 border-ats-blue/20">
+        <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Checkbox
                 checked={selectedJobs.length === filteredJobs.length}
                 onCheckedChange={handleSelectAll}
+                className="border-blue-400 data-[state=checked]:bg-blue-600"
               />
-              <span className="text-sm font-medium">
+              <span className="text-sm font-semibold text-blue-900">
                 {selectedJobs.length} job{selectedJobs.length !== 1 ? 's' : ''} selected
               </span>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Close')}>
-                <Archive className="h-4 w-4 mr-1" />
+            <div className="flex gap-3">
+              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Close')} className="border-gray-300 hover:border-orange-500 hover:text-orange-600">
+                <Archive className="h-4 w-4 mr-2" />
                 Close
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Archive')}>
-                <Archive className="h-4 w-4 mr-1" />
+              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Archive')} className="border-gray-300 hover:border-purple-500 hover:text-purple-600">
+                <Archive className="h-4 w-4 mr-2" />
                 Archive
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Export')}>
-                <Download className="h-4 w-4 mr-1" />
+              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Export')} className="border-gray-300 hover:border-green-500 hover:text-green-600">
+                <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleBulkAction('Delete')}
-                className="text-red-600 hover:text-red-700"
+                className="border-gray-300 hover:border-red-500 text-red-600 hover:text-red-700 hover:bg-red-50"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
+                <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
             </div>
@@ -1121,22 +1032,26 @@ const Jobs = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-ats-blue" />
-          <span className="ml-2 text-gray-600">Loading jobs...</span>
+        <div className="flex items-center justify-center py-16">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-8">
+            <div className="flex items-center gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <span className="text-lg font-medium text-gray-700">Loading jobs...</span>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Error State / Demo Mode */}
       {error && (
-        <div className="mb-6">
+        <div className="mb-8">
           {error.includes('Backend server not available') ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-lg">
               <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-blue-500 mr-3" />
-                <div>
-                  <h3 className="text-sm font-medium text-blue-800">Demo Mode Active</h3>
-                  <p className="text-sm text-blue-700 mt-1">
+                <AlertCircle className="h-6 w-6 text-blue-500 mr-4" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-blue-900">Demo Mode Active</h3>
+                  <p className="text-blue-700 mt-1">
                     Backend server not available. Showing demo data with limited functionality.
                   </p>
                 </div>
@@ -1144,25 +1059,25 @@ const Jobs = () => {
                   onClick={refetch}
                   variant="outline"
                   size="sm"
-                  className="ml-auto text-blue-600 border-blue-300 hover:bg-blue-100"
+                  className="ml-auto text-blue-600 border-blue-300 hover:bg-blue-100 shadow-sm"
                 >
                   Retry Connection
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 rounded-xl p-6 shadow-lg">
               <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
-                <div>
-                  <h3 className="text-sm font-medium text-red-800">Error Loading Jobs</h3>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                <AlertCircle className="h-6 w-6 text-red-500 mr-4" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-red-900">Error Loading Jobs</h3>
+                  <p className="text-red-700 mt-1">{error}</p>
                 </div>
                 <Button
                   onClick={refetch}
                   variant="outline"
                   size="sm"
-                  className="ml-auto text-red-600 border-red-300 hover:bg-red-100"
+                  className="ml-auto text-red-600 border-red-300 hover:bg-red-100 shadow-sm"
                 >
                   Try Again
                 </Button>
@@ -1174,22 +1089,22 @@ const Jobs = () => {
 
       {/* Empty State */}
       {!loading && filteredJobs.length === 0 && (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Jobs Found</h3>
-            <p className="text-gray-600 mb-4">
+        <div className="flex items-center justify-center py-16">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-12 text-center max-w-md">
+            <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">No Jobs Found</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
               {searchQuery || activeFilterCount > 0
                 ? "No jobs match your current search and filters."
                 : "Get started by creating your first job posting."
               }
             </p>
             {searchQuery || activeFilterCount > 0 ? (
-              <Button onClick={clearFilters} variant="outline">
+              <Button onClick={clearFilters} variant="outline" className="border-gray-300 hover:border-blue-500 hover:text-blue-600">
                 Clear Filters
               </Button>
             ) : (
-              <Button onClick={() => setShowCreateDialog(true)} className="bg-ats-blue hover:bg-ats-dark-blue">
+              <Button onClick={() => setShowCreateDialog(true)} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Your First Job
               </Button>
@@ -1200,7 +1115,7 @@ const Jobs = () => {
 
       {/* Job Cards Grid - Show jobs even in demo mode (when error exists but jobs are available) */}
       {!loading && filteredJobs.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredJobs.map((job) => (
             <JobCard
               key={job.id}
@@ -1214,30 +1129,34 @@ const Jobs = () => {
 
       {/* Pagination - Show even in demo mode */}
       {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-between mt-8">
-          <div className="text-sm text-gray-600">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} jobs
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-6 mt-8">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium text-gray-700">
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} jobs
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50"
+              >
+                Previous
+              </Button>
+              <span className="text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50"
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       )}

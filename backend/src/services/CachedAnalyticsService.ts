@@ -27,6 +27,26 @@ export interface TopJob {
   title: string;
   department: string;
   applicationCount: number;
+  location?: string;
+  status: string;
+}
+
+export interface TimeToHireMetrics {
+  averageDays: number;
+  medianDays: number;
+  totalHires: number;
+  departmentBreakdown: Array<{
+    department: string;
+    averageDays: number;
+    hires: number;
+  }>;
+}
+
+export interface ChangeMetrics {
+  totalCandidates: { current: number; previous: number; change: number };
+  activeJobs: { current: number; previous: number; change: number };
+  applications: { current: number; previous: number; change: number };
+  interviews: { current: number; previous: number; change: number };
 }
 
 export interface RecentApplication {
@@ -209,6 +229,8 @@ export class CachedAnalyticsService {
       title: job.title,
       department: job.department || 'Unknown',
       applicationCount: job._count.applications,
+      location: job.location ? (job.location as any).city || ((job.location as any).remote ? 'Remote' : 'Unknown') : 'Unknown',
+      status: job.status,
     }));
   }
 
@@ -312,6 +334,164 @@ export class CachedAnalyticsService {
     };
   }
 
+  @Cached({
+    strategy: 'dashboard_cache',
+    ttl: 3600, // 1 hour
+    tags: ['dashboard', 'analytics', 'time-to-hire'],
+    keyGenerator: (companyId: string) => `time_to_hire_${companyId}`,
+  })
+  async getTimeToHireMetrics(companyId: string): Promise<TimeToHireMetrics> {
+    const hiredApplications = await prisma.application.findMany({
+      where: {
+        job: { companyId },
+        status: 'hired',
+        hiredAt: { not: null },
+      },
+      select: {
+        submittedAt: true,
+        hiredAt: true,
+        job: {
+          select: {
+            department: true,
+          },
+        },
+      },
+    });
+
+    if (hiredApplications.length === 0) {
+      return {
+        averageDays: 0,
+        medianDays: 0,
+        totalHires: 0,
+        departmentBreakdown: [],
+      };
+    }
+
+    // Calculate days to hire for each application
+    const daysToHire = hiredApplications.map(app => {
+      const days = Math.ceil((app.hiredAt!.getTime() - app.submittedAt.getTime()) / (1000 * 60 * 60 * 24));
+      return {
+        days,
+        department: app.job.department || 'Unknown',
+      };
+    });
+
+    // Calculate average
+    const averageDays = Math.round(daysToHire.reduce((sum, item) => sum + item.days, 0) / daysToHire.length);
+
+    // Calculate median
+    const sortedDays = daysToHire.map(item => item.days).sort((a, b) => a - b);
+    const medianDays = sortedDays.length % 2 === 0
+      ? Math.round((sortedDays[sortedDays.length / 2 - 1] + sortedDays[sortedDays.length / 2]) / 2)
+      : sortedDays[Math.floor(sortedDays.length / 2)];
+
+    // Calculate department breakdown
+    const departmentGroups = daysToHire.reduce((acc, item) => {
+      if (!acc[item.department]) {
+        acc[item.department] = [];
+      }
+      acc[item.department].push(item.days);
+      return acc;
+    }, {} as Record<string, number[]>);
+
+    const departmentBreakdown = Object.entries(departmentGroups).map(([department, days]) => ({
+      department,
+      averageDays: Math.round(days.reduce((sum, day) => sum + day, 0) / days.length),
+      hires: days.length,
+    }));
+
+    return {
+      averageDays,
+      medianDays,
+      totalHires: hiredApplications.length,
+      departmentBreakdown,
+    };
+  }
+
+  @Cached({
+    strategy: 'dashboard_cache',
+    ttl: 1800, // 30 minutes
+    tags: ['dashboard', 'analytics', 'changes'],
+    keyGenerator: (companyId: string) => `change_metrics_${companyId}`,
+  })
+  async getChangeMetrics(companyId: string): Promise<ChangeMetrics> {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // Get current period (last 30 days) and previous period (30-60 days ago)
+    const [currentStats, previousStats] = await Promise.all([
+      this.getStatsForPeriod(companyId, thirtyDaysAgo, now),
+      this.getStatsForPeriod(companyId, sixtyDaysAgo, thirtyDaysAgo),
+    ]);
+
+    const calculateChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100);
+    };
+
+    return {
+      totalCandidates: {
+        current: currentStats.candidates,
+        previous: previousStats.candidates,
+        change: calculateChange(currentStats.candidates, previousStats.candidates),
+      },
+      activeJobs: {
+        current: currentStats.activeJobs,
+        previous: previousStats.activeJobs,
+        change: calculateChange(currentStats.activeJobs, previousStats.activeJobs),
+      },
+      applications: {
+        current: currentStats.applications,
+        previous: previousStats.applications,
+        change: calculateChange(currentStats.applications, previousStats.applications),
+      },
+      interviews: {
+        current: currentStats.interviews,
+        previous: previousStats.interviews,
+        change: calculateChange(currentStats.interviews, previousStats.interviews),
+      },
+    };
+  }
+
+  private async getStatsForPeriod(companyId: string, startDate: Date, endDate: Date) {
+    const [candidates, applications, interviews, activeJobs] = await Promise.all([
+      prisma.candidate.count({
+        where: {
+          createdAt: { gte: startDate, lte: endDate },
+          applications: {
+            some: {
+              job: { companyId },
+            },
+          },
+        },
+      }),
+      prisma.application.count({
+        where: {
+          submittedAt: { gte: startDate, lte: endDate },
+          job: { companyId },
+        },
+      }),
+      prisma.interview.count({
+        where: {
+          scheduledAt: { gte: startDate, lte: endDate },
+          application: {
+            job: { companyId },
+          },
+        },
+      }),
+      prisma.job.count({
+        where: {
+          companyId,
+          status: 'open',
+          createdAt: { lte: endDate },
+        },
+      }),
+    ]);
+
+    return { candidates, applications, interviews, activeJobs };
+  }
+
   @InvalidateCache({
     strategies: ['dashboard_cache'],
     tags: ['dashboard', 'analytics'],
@@ -343,6 +523,8 @@ export class CachedAnalyticsService {
         this.getTopJobs(companyId),
         this.getRecentApplications(companyId),
         this.getConversionMetrics(companyId),
+        this.getTimeToHireMetrics(companyId),
+        this.getChangeMetrics(companyId),
       ]);
       
       console.log(`✅ Cache warmed for company ${companyId}`);

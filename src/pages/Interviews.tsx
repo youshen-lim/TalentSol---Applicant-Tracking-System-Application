@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, addDays, startOfWeek, addWeeks, subWeeks } from "date-fns";
 import InterviewScheduler from "@/components/interviews/InterviewScheduler";
 import { toast } from "@/components/ui/use-toast";
+import PageHeader from "@/components/layout/PageHeader";
 
 /**
  * Interviews page component
@@ -148,41 +149,38 @@ const Interviews = () => {
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Interviews</h1>
-          <p className="text-sm text-gray-500">
-            Schedule and manage candidate interviews
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="w-[280px] justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? (
-                  format(selectedDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                initialFocus
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-          <Button size="sm" className="bg-ats-blue hover:bg-ats-dark-blue">
-            Schedule Interview
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Interviews"
+        subtitle="Schedule and manage candidate interviews"
+        icon={CalendarIcon}
+      >
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="w-[280px] justify-start text-left font-normal">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {selectedDate ? (
+                format(selectedDate, "PPP")
+              ) : (
+                <span>Pick a date</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <UserPlus className="mr-2 h-4 w-4" />
+          Schedule Interview
+        </Button>
+      </PageHeader>
 
       <Tabs defaultValue="calendar">
         <TabsList>

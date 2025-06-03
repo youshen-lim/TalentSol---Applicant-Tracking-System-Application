@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import DocumentList from "@/components/documents/DocumentList";
 import DocumentChat from "@/components/documents/DocumentChat";
 import DocumentSignatureView from "@/components/documents/DocumentSignatureView";
+import PageHeader from "@/components/layout/PageHeader";
 import DocumentRequestForm, { DocumentRequestData } from "@/components/documents/DocumentRequestForm";
 import { toast } from "sonner";
 import { generateId } from "@/lib/utils";
@@ -124,21 +125,19 @@ const Documents = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Documents</h1>
-          <p className="text-muted-foreground">
-            Manage document workflows with candidates and employees
-          </p>
-        </div>
+      <PageHeader
+        title="Documents"
+        subtitle="Manage document workflows with candidates and employees"
+        icon={FileText}
+      >
         <Button
-          className="bg-ats-blue hover:bg-ats-dark-blue text-white"
+          className="bg-blue-600 hover:bg-blue-700 text-white"
           onClick={() => setIsRequestDialogOpen(true)}
         >
           <Plus className="mr-2 h-4 w-4" />
           Request Document
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="flex flex-col md:flex-row gap-6 h-[calc(100vh-12rem)]">
         {/* Left side - Document management */}

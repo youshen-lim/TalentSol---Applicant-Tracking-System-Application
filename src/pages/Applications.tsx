@@ -25,6 +25,7 @@ import PublicApplicationForm from '@/components/forms/PublicApplicationForm';
 import StandardApplicationForm from '@/components/forms/StandardApplicationForm';
 import ApplicationReviewDashboard from '@/components/forms/ApplicationReviewDashboard';
 import { ApplicationFormSchema, Application } from '@/types/application';
+import PageHeader from '@/components/layout/PageHeader';
 
 // Import API hooks
 import { applicationApi } from '@/services/api';
@@ -322,29 +323,20 @@ const Applications: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <FileText className="h-6 w-6 text-ats-blue" />
-            Application Management
-          </h1>
-          <p className="text-sm text-gray-500">
-            Manage job application forms and review candidate submissions
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowFormBuilder(true)}>
-            <Settings className="h-4 w-4 mr-2" />
-            Form Builder
-          </Button>
-          <Button onClick={() => setShowPublicForm(true)} className="bg-ats-blue hover:bg-ats-dark-blue">
-            <Eye className="h-4 w-4 mr-2" />
-            Preview Application Form
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Application Management"
+        subtitle="Manage job application forms and review candidate submissions"
+        icon={FileText}
+      >
+        <Button variant="outline" onClick={() => setShowFormBuilder(true)}>
+          <Settings className="h-4 w-4 mr-2" />
+          Form Builder
+        </Button>
+        <Button onClick={() => setShowPublicForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Eye className="h-4 w-4 mr-2" />
+          Preview Application Form
+        </Button>
+      </PageHeader>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

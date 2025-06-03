@@ -13,6 +13,18 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:seed": "tsx src/seed.ts",
+    "db:enhance": "tsx src/scripts/enhanceSyntheticData.ts",
+    "db:seed-enhanced": "npm run db:seed && npm run db:enhance",
+    "db:check": "tsx src/scripts/checkDatabase.ts",
+    "setup-unified-data": "tsx src/scripts/setupUnifiedData.ts",
+    "generate-synthetic": "tsx src/scripts/syntheticDataGenerator.ts",
+
+    "generate-batch": "tsx src/scripts/batchDataGeneration.ts",
+    "generate-minimal": "tsx src/scripts/generateMinimalData.ts",
+    "import-csv": "tsx src/scripts/importFromCSV.ts",
+    "validate-data": "tsx src/scripts/validateSyntheticData.ts",
+    "data-minimal": "npm run db:check && npm run generate-minimal && npm run validate-data",
+    "data-full": "npm run db:check && npm run generate-batch && npm run validate-data",
     "db:studio": "prisma studio",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"

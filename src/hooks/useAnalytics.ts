@@ -25,6 +25,30 @@ export interface DashboardStats {
     candidateName?: string;
     jobTitle?: string;
   }>;
+  timeToHire?: {
+    averageDays: number;
+    medianDays: number;
+    totalHires: number;
+    departmentBreakdown: Array<{
+      department: string;
+      averageDays: number;
+      hires: number;
+    }>;
+  };
+  changeMetrics?: {
+    totalCandidates: { current: number; previous: number; change: number };
+    activeJobs: { current: number; previous: number; change: number };
+    applications: { current: number; previous: number; change: number };
+    interviews: { current: number; previous: number; change: number };
+  };
+  topJobs?: Array<{
+    id: string;
+    title: string;
+    department: string;
+    applicationCount: number;
+    location?: string;
+    status: string;
+  }>;
 }
 
 export interface RecruitmentData {
@@ -82,7 +106,9 @@ export const useDashboardStats = () => {
       setError(null);
       
       const response = await analyticsApi.getDashboardStats();
-      setStats(response.data);
+      // Backend returns data directly, not wrapped in { data: ... }
+      console.log('🔍 Dashboard API Response:', response);
+      setStats(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch dashboard statistics');
       console.error('Error fetching dashboard stats:', err);
@@ -114,7 +140,7 @@ export const useRecruitmentData = (period?: string) => {
       setError(null);
       
       const response = await analyticsApi.getRecruitmentData(period);
-      setData(response.data);
+      setData(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch recruitment data');
       console.error('Error fetching recruitment data:', err);
@@ -146,7 +172,7 @@ export const useSourceData = () => {
       setError(null);
       
       const response = await analyticsApi.getSourceData();
-      setData(response.data);
+      setData(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch source data');
       console.error('Error fetching source data:', err);
@@ -178,7 +204,7 @@ export const useConversionFunnel = (jobId?: string) => {
       setError(null);
       
       const response = await analyticsApi.getConversionFunnel(jobId);
-      setData(response.data);
+      setData(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch conversion funnel');
       console.error('Error fetching conversion funnel:', err);

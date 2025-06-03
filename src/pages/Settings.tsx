@@ -28,6 +28,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import PageHeader from '@/components/layout/PageHeader';
 
 interface SettingsData {
   account: {
@@ -191,20 +192,15 @@ const Settings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <SettingsIcon className="h-6 w-6 text-ats-blue" />
-            Settings
-          </h1>
-          <p className="text-sm text-gray-500">
-            Manage your account settings and preferences
-          </p>
-        </div>
-        <Button 
-          onClick={handleSave} 
+      <PageHeader
+        title="Settings"
+        subtitle="Manage your account settings and preferences"
+        icon={SettingsIcon}
+      >
+        <Button
+          onClick={handleSave}
           disabled={isSaving}
-          className="bg-ats-blue hover:bg-ats-dark-blue"
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isSaving ? (
             <>
@@ -218,7 +214,7 @@ const Settings = () => {
             </>
           )}
         </Button>
-      </div>
+      </PageHeader>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-7">

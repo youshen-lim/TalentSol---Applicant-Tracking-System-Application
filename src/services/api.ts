@@ -1,5 +1,6 @@
 // API service for TalentSol ATS
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+console.log('API_BASE_URL:', API_BASE_URL);
 
 // Types
 export interface ApplicationStats {
@@ -80,7 +81,7 @@ const getAuthToken = () => {
 // Helper function to make authenticated requests
 const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
   const token = getAuthToken();
-  
+
   const config: RequestInit = {
     ...options,
     headers: {
@@ -90,14 +91,20 @@ const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
     },
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  
+  const url = `${API_BASE_URL}${endpoint}`;
+  console.log('Making request to:', url);
+
+  const response = await fetch(url, config);
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Network error' }));
+    console.error('API request failed:', error);
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('API response data:', data);
+  return data;
 };
 
 // Application API
@@ -511,6 +518,26 @@ export const analyticsApi = {
     }
 
     return makeRequest(`/analytics/conversion?${searchParams.toString()}`);
+  },
+
+  // Get time to hire metrics
+  getTimeToHire: async () => {
+    return makeRequest('/analytics/time-to-hire');
+  },
+
+  // Get change metrics (percentage changes)
+  getChangeMetrics: async () => {
+    return makeRequest('/analytics/changes');
+  },
+
+  // Get top jobs with enhanced data
+  getTopJobs: async (limit?: number) => {
+    const searchParams = new URLSearchParams();
+    if (limit) {
+      searchParams.append('limit', limit.toString());
+    }
+
+    return makeRequest(`/analytics/top-jobs?${searchParams.toString()}`);
   },
 };
 

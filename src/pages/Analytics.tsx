@@ -5,6 +5,7 @@ import { BarChart2, Download, Plus, FileText, Brain } from "lucide-react";
 import CoreReports from "./analytics/CoreReports";
 import CustomReports from "./analytics/CustomReports";
 import MLReports from "./analytics/MLReports";
+import PageHeader from "@/components/layout/PageHeader";
 
 /**
  * Analytics page component
@@ -15,25 +16,21 @@ const Analytics = () => {
   const [activeTab, setActiveTab] = useState("core");
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-sm text-gray-500">
-            View and create reports to analyze your recruitment data
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button size="sm" variant="default" className="bg-ats-blue hover:bg-ats-dark-blue text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Report
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Analytics"
+        subtitle="View and create reports to analyze your recruitment data"
+        icon={BarChart2}
+      >
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
+        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Report
+        </Button>
+      </PageHeader>
 
       <Tabs
         defaultValue="core"

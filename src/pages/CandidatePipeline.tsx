@@ -34,6 +34,7 @@ import AddCandidateModal from "@/components/dashboard/AddCandidateModal";
 import { Candidate } from "@/components/candidates/CandidateCard";
 import { toast } from "sonner";
 import { useToast } from "@/components/ui/use-toast";
+import PageHeader from "@/components/layout/PageHeader";
 
 /**
  * CandidatePipeline page component
@@ -592,54 +593,43 @@ const CandidatePipeline = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Section - Responsive */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Users className="h-5 w-5 sm:h-6 sm:w-6 text-ats-blue flex-shrink-0" />
-              <span className="truncate">Candidate Pipeline</span>
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Manage and track candidates through your recruitment process
-            </p>
-          </div>
-          {/* Top Action Bar - Responsive layout */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFilterModalOpen(true)}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <Filter className="h-4 w-4" />
-              <span>Filter</span>
-              {activeFiltersCount > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center justify-center gap-2 w-full sm:w-auto"
-              onClick={handleExportData}
-            >
-              <Download className="h-4 w-4" />
-              <span>Export</span>
-            </Button>
-            <Button
-              size="sm"
-              className="bg-ats-blue hover:bg-ats-dark-blue flex items-center justify-center gap-2 w-full sm:w-auto"
-              onClick={() => setAddCandidateModalOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Candidate</span>
-            </Button>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Candidate Pipeline"
+        subtitle="Manage and track candidates through your recruitment process"
+        icon={Users}
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterModalOpen(true)}
+          className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          Filter
+          {activeFiltersCount > 0 && (
+            <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-blue-600 hover:bg-blue-700 flex items-center justify-center">
+              {activeFiltersCount}
+            </Badge>
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportData}
+          className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => setAddCandidateModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Candidate
+        </Button>
+      </PageHeader>
 
       {/* Search and Quick Filters - Responsive */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center">

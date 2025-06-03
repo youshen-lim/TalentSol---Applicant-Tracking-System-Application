@@ -2,50 +2,163 @@ import express from 'express';
 import { prisma } from '../index.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { CachedAnalyticsService } from '../services/CachedAnalyticsService.js';
+import { unifiedDataService } from '../services/UnifiedDataService.js';
 import { cacheManager } from '../cache/CacheManager.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = express.Router();
 const analyticsService = new CachedAnalyticsService();
 
-// Get dashboard analytics (cached)
+// Get unified dashboard analytics (candidate-centric)
 router.get('/dashboard', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user!.companyId;
+  // Use default company for testing when auth is disabled
+  const companyId = req.user?.companyId || 'comp_1';
 
   try {
-    // Use cached analytics service
-    const [
-      summary,
-      statusDistribution,
-      applicationsByDate,
-      topJobs,
-      recentApplications,
-    ] = await Promise.all([
-      analyticsService.getDashboardSummary(companyId),
-      analyticsService.getApplicationsByStatus(companyId),
-      analyticsService.getApplicationsByDate(companyId, 30),
-      analyticsService.getTopJobs(companyId, 5),
-      analyticsService.getRecentApplications(companyId, 10),
-    ]);
+    console.log(`📊 Fetching unified dashboard data for company: ${companyId}`);
+
+    // Use unified data service for candidate-centric metrics
+    const unifiedData = await unifiedDataService.getUnifiedDashboardData(companyId);
+
+    // Transform to match frontend expectations
+    const dashboardResponse = {
+      // Summary stats
+      summary: {
+        totalJobs: unifiedData.topJobs.length,
+        totalApplications: unifiedData.totalApplications,
+        totalCandidates: unifiedData.totalCandidates,
+        totalInterviews: unifiedData.totalInterviews,
+        activeJobs: unifiedData.topJobs.filter(j => j.applicationCount > 0).length,
+        newApplicationsToday: unifiedData.newApplicationsThisMonth, // Simplified for now
+      },
+
+      // Status distribution (candidate-based)
+      statusDistribution: unifiedData.candidatesByStatus,
+
+      // Time series data
+      applicationsByDate: unifiedData.timeSeriesData.map(d => ({
+        date: d.date,
+        count: d.applications,
+      })),
+
+      // Top jobs with candidate metrics
+      topJobs: unifiedData.topJobs,
+
+      // Recent applications (candidate-centric)
+      recentApplications: unifiedData.recentActivity,
+
+      // Time to hire metrics
+      timeToHire: {
+        averageDays: unifiedData.averageTimeToHire,
+        totalHires: unifiedData.totalHires,
+      },
+
+      // Source data (candidate-centric)
+      sources: unifiedData.topSources,
+
+      // Change metrics (simplified)
+      changeMetrics: {
+        totalCandidates: {
+          current: unifiedData.totalCandidates,
+          change: Math.round((unifiedData.newCandidatesThisMonth / Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1)) * 100),
+        },
+        applications: {
+          current: unifiedData.totalApplications,
+          change: Math.round((unifiedData.newApplicationsThisMonth / Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1)) * 100),
+        },
+      },
+
+      unified: true,
+      candidateCentric: true,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log(`✅ Unified dashboard data sent: ${unifiedData.totalCandidates} candidates, ${unifiedData.totalApplications} applications`);
+    res.json(dashboardResponse);
+
+  } catch (error) {
+    console.error('❌ Unified dashboard analytics error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch unified dashboard analytics',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}));
+
+// Get recruitment timeline data
+router.get('/recruitment', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user?.companyId || 'comp_1';
+  const { period = '30d' } = req.query;
+
+  try {
+    // Get applications over time for the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const applications = await prisma.application.findMany({
+      where: {
+        job: { companyId },
+        submittedAt: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      select: {
+        submittedAt: true,
+        status: true,
+      },
+      orderBy: {
+        submittedAt: 'asc',
+      },
+    });
+
+    // Group by date and create timeline
+    const timelineData = [];
+    const dateMap = new Map();
+
+    // Initialize all dates in the range
+    for (let d = new Date(thirtyDaysAgo); d <= new Date(); d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      dateMap.set(dateStr, {
+        date: dateStr,
+        applications: 0,
+        interviews: 0,
+        offers: 0,
+      });
+    }
+
+    // Count applications by date and status
+    applications.forEach(app => {
+      if (app.submittedAt) {
+        const dateStr = app.submittedAt.toISOString().split('T')[0];
+        const dayData = dateMap.get(dateStr);
+        if (dayData) {
+          dayData.applications++;
+          if (['interview', 'assessment'].includes(app.status)) {
+            dayData.interviews++;
+          }
+          if (['offer', 'hired'].includes(app.status)) {
+            dayData.offers++;
+          }
+        }
+      }
+    });
+
+    const data = Array.from(dateMap.values());
 
     res.json({
-      summary,
-      statusDistribution,
-      applicationsByDate,
-      topJobs,
-      recentApplications,
-      cached: true,
-      timestamp: new Date().toISOString(),
+      data,
+      period,
+      totalApplications: applications.length,
     });
   } catch (error) {
-    console.error('Dashboard analytics error:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard analytics' });
+    console.error('Recruitment data error:', error);
+    res.status(500).json({ error: 'Failed to fetch recruitment data' });
   }
 }));
 
 // Cache management endpoints
 router.post('/cache/warm', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user!.companyId;
+  const companyId = req.user?.companyId || 'comp_1';
 
   try {
     await analyticsService.warmCompanyCache(companyId);
@@ -61,7 +174,7 @@ router.post('/cache/warm', asyncHandler(async (req: AuthenticatedRequest, res) =
 }));
 
 router.post('/cache/refresh', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user!.companyId;
+  const companyId = req.user?.companyId || 'comp_1';
 
   try {
     await analyticsService.refreshDashboardCache(companyId);
@@ -91,7 +204,7 @@ router.get('/cache/stats', asyncHandler(async (req: AuthenticatedRequest, res) =
 
 // Get hiring funnel analytics
 router.get('/funnel', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user!.companyId;
+  const companyId = req.user?.companyId || 'comp_1';
   const { jobId, startDate, endDate } = req.query;
 
   const where: any = {
@@ -141,7 +254,7 @@ router.get('/funnel', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 // Get time-to-hire analytics
 router.get('/time-to-hire', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user!.companyId;
+  const companyId = req.user?.companyId || 'comp_1';
 
   // Get hired applications with their timeline
   const hiredApplications = await prisma.application.findMany({
@@ -216,7 +329,7 @@ router.get('/time-to-hire', asyncHandler(async (req: AuthenticatedRequest, res) 
 
 // Get source effectiveness analytics
 router.get('/sources', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user!.companyId;
+  const companyId = req.user?.companyId || 'comp_1';
 
   // Get applications with source data
   const applications = await prisma.application.findMany({
@@ -269,6 +382,33 @@ router.get('/sources', asyncHandler(async (req: AuthenticatedRequest, res) => {
     sourceEffectiveness: sourceEffectiveness.sort((a, b) => b.applications - a.applications),
     totalApplications: applications.length,
   });
+}));
+
+// Get change metrics (percentage changes)
+router.get('/changes', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user?.companyId || 'comp_1';
+
+  try {
+    const changeMetrics = await analyticsService.getChangeMetrics(companyId);
+    res.json(changeMetrics);
+  } catch (error) {
+    console.error('Change metrics error:', error);
+    res.status(500).json({ error: 'Failed to fetch change metrics' });
+  }
+}));
+
+// Get top jobs with enhanced data
+router.get('/top-jobs', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user?.companyId || 'comp_1';
+  const limit = parseInt(req.query.limit as string) || 5;
+
+  try {
+    const topJobs = await analyticsService.getTopJobs(companyId, limit);
+    res.json({ jobs: topJobs });
+  } catch (error) {
+    console.error('Top jobs analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch top jobs' });
+  }
 }));
 
 export default router;

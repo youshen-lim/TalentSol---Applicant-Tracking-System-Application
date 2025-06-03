@@ -114,7 +114,7 @@ model Application {
   submittedAt            DateTime? @map("submitted_at")
   candidateInfo          Json      @map("candidate_info") // CandidateInfo interface
   professionalInfo       Json?     @map("professional_info") // ProfessionalInfo interface
-  documents              Json?     // ApplicationDocuments interface
+  documentData           Json?     @map("document_data") // ApplicationDocuments interface
   customAnswers          Json?     @map("custom_answers") // Record<string, CustomAnswer>
   metadata               Json?     // ApplicationMetadata interface
   scoring                Json?     // ApplicationScoring interface
