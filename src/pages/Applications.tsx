@@ -46,7 +46,7 @@ import PageHeader from '@/components/layout/PageHeader';
 // Import API hooks
 import { applicationApi, formApi } from '@/services/api';
 import { useJobs } from '@/hooks/useJobs';
-import { useDashboardStats } from '@/hooks/useAnalytics';
+import { useDashboardStats, useSourceData } from '@/hooks/useAnalytics';
 
 // Default job data for form building (will be replaced with API data)
 const defaultJob = {
@@ -71,6 +71,7 @@ const Applications: React.FC = () => {
   // API hooks
   const { jobs, loading: jobsLoading } = useJobs({ limit: 1, status: 'open' });
   const { stats: dashboardStats, loading: statsLoading } = useDashboardStats();
+  const { data: sourceData, loading: sourceLoading } = useSourceData();
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [formSchema, setFormSchema] = useState<ApplicationFormSchema | null>(null);
@@ -102,12 +103,8 @@ const Applications: React.FC = () => {
             new: response.newApplications || 0,
             conversionRate: response.conversionRate || 0,
             averageScore: response.averageScore || 0,
-            topSources: response.sourceStats || [
-              { source: 'Company Website', count: Math.floor((response.totalApplications || 0) * 0.43), percentage: 43 },
-              { source: 'LinkedIn', count: Math.floor((response.totalApplications || 0) * 0.29), percentage: 29 },
-              { source: 'Indeed', count: Math.floor((response.totalApplications || 0) * 0.18), percentage: 18 },
-              { source: 'Referrals', count: Math.floor((response.totalApplications || 0) * 0.10), percentage: 10 }
-            ],
+            // Note: topSources will be replaced by sourceData from useSourceData hook
+            topSources: response.sourceStats || [],
             applicationsByStatus: response.applicationsByStatus || [],
             recentApplications: response.recentApplications?.map(app => ({
               name: app.candidateName,
@@ -115,12 +112,7 @@ const Applications: React.FC = () => {
               time: new Date(app.submittedAt).toLocaleString(),
               score: app.score || 0,
               status: app.status
-            })) || [
-              { name: 'Sarah Johnson', position: 'Frontend Developer', time: '2 hours ago', score: 85, status: 'applied' },
-              { name: 'Michael Chen', position: 'Backend Developer', time: '4 hours ago', score: 92, status: 'reviewed' },
-              { name: 'Emily Davis', position: 'UX Designer', time: '6 hours ago', score: 78, status: 'shortlisted' },
-              { name: 'David Wilson', position: 'Product Manager', time: '1 day ago', score: 88, status: 'interviewed' }
-            ]
+            })) || []
           };
 
           setApplicationStats(mappedStats);
@@ -157,12 +149,7 @@ const Applications: React.FC = () => {
           new: 23,
           conversionRate: 15.4,
           averageScore: 72,
-          topSources: [
-            { source: 'Company Website', count: 67, percentage: 43 },
-            { source: 'LinkedIn', count: 45, percentage: 29 },
-            { source: 'Indeed', count: 28, percentage: 18 },
-            { source: 'Referrals', count: 16, percentage: 10 }
-          ]
+          topSources: [] // Will use sourceData instead
         });
         toast({
           title: 'Warning',
@@ -467,7 +454,7 @@ const Applications: React.FC = () => {
               {statsLoading ? '...' : (applicationStats?.total || dashboardStats?.totalApplications || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              +12% from last month
+              Current month (+12% from last month)
             </p>
           </CardContent>
         </Card>
@@ -482,7 +469,7 @@ const Applications: React.FC = () => {
               {statsLoading ? '...' : (applicationStats?.new || dashboardStats?.newApplications || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              +5 this week
+              Last 7 days (+5 this week)
             </p>
           </CardContent>
         </Card>
@@ -497,7 +484,7 @@ const Applications: React.FC = () => {
               {statsLoading ? '...' : (applicationStats?.conversionRate || dashboardStats?.conversionRate || 0)}%
             </div>
             <p className="text-xs text-muted-foreground">
-              +2.1% from last month
+              Applications to hires ratio (+2.1% from last month)
             </p>
           </CardContent>
         </Card>
@@ -512,7 +499,7 @@ const Applications: React.FC = () => {
               {statsLoading ? '...' : (applicationStats?.averageScore || dashboardStats?.averageScore || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Quality metric
+              Average application quality score (0-100)
             </p>
           </CardContent>
         </Card>
@@ -568,54 +555,65 @@ const Applications: React.FC = () => {
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle>Recent Applications</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Applications submitted in the last 7 days</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { name: 'Sarah Johnson', position: 'Frontend Developer', time: '2 hours ago', score: 85 },
-                    { name: 'Michael Chen', position: 'Backend Developer', time: '4 hours ago', score: 92 },
-                    { name: 'Emily Davis', position: 'UX Designer', time: '6 hours ago', score: 78 },
-                    { name: 'David Wilson', position: 'Product Manager', time: '1 day ago', score: 88 }
-                  ].map((app, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{app.name}</p>
-                        <p className="text-sm text-gray-500">{app.position}</p>
+                  {applicationStats?.recentApplications && applicationStats.recentApplications.length > 0 ? (
+                    applicationStats.recentApplications.slice(0, 4).map((app, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-gray-900 truncate">{app.name}</p>
+                          <p className="text-sm text-gray-500 truncate">{app.position}</p>
+                        </div>
+                        <div className="text-right ml-3 flex-shrink-0">
+                          <Badge variant="outline" className="mb-1">
+                            Score: {app.score}
+                          </Badge>
+                          <p className="text-xs text-gray-500">{app.time}</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="mb-1">
-                          Score: {app.score}
-                        </Badge>
-                        <p className="text-xs text-gray-500">{app.time}</p>
-                      </div>
+                    ))
+                  ) : applicationStats === null ? (
+                    // Loading state
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-24"></div>
+                          </div>
+                          <div className="text-right">
+                            <div className="h-6 bg-gray-200 rounded w-16 mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded w-12"></div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    // No data state
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="mb-4">
+                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium">No recent applications</p>
+                      <p className="text-xs text-gray-400 mt-1">Applications will appear here once submitted</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             <Card className={shadows.card}>
               <CardHeader>
-                <CardTitle>Application Sources</CardTitle>
+                <CardTitle>Candidate Sources</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Where candidates are finding your job postings</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {applicationStats?.topSources && applicationStats.topSources.length > 0 ? (
-                    applicationStats.topSources.map((source, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>{source.source}</span>
-                          <span>{source.count} ({source.percentage}%)</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-ats-blue h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${source.percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))
-                  ) : applicationStats === null ? (
+                  {sourceLoading ? (
                     // Loading state
                     <div className="space-y-4">
                       <div className="animate-pulse">
@@ -638,6 +636,21 @@ const Applications: React.FC = () => {
                         <div className="h-2 bg-gray-200 rounded w-full"></div>
                       </div>
                     </div>
+                  ) : sourceData?.sourceEffectiveness && sourceData.sourceEffectiveness.length > 0 ? (
+                    sourceData.sourceEffectiveness.map((source, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium text-gray-700">{source.source}</span>
+                          <span className="text-gray-600">{source.applications} ({Math.round((source.applications / sourceData.totalApplications) * 100)}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-ats-blue h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.round((source.applications / sourceData.totalApplications) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))
                   ) : (
                     // No data state
                     <div className="text-center py-8 text-gray-500">

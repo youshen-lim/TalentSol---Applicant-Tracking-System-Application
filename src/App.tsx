@@ -26,6 +26,7 @@ import Help from "./pages/Help";
 import HiresCurrentQuarter from "./pages/analytics/reports/HiresCurrentQuarter";
 import PipelineMetrics from "./pages/analytics/reports/PipelineMetrics";
 import TimeToHire from "./pages/analytics/reports/TimeToHire";
+
 import SourceEffectiveness from "./pages/analytics/reports/SourceEffectiveness";
 
 // For example components (keeping these for development/testing purposes)
@@ -97,6 +98,7 @@ const App = () => (
           </Route>
           <Route path="/examples" element={<ExamplesPage />} />
           <Route path="/test-sources" element={<TestApplicationSources />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

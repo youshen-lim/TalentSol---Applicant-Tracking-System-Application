@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    strictPort: true, // Force port 8080, don't try alternatives
     open: true, // Keep the auto-open feature from the original config
     proxy: {
       '/api': {
