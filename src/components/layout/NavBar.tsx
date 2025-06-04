@@ -13,107 +13,51 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface NavBarProps {
   className?: string;
 }
 
-// Mock notification data
-interface Notification {
-  id: string;
-  type: 'application' | 'interview' | 'system' | 'update';
-  title: string;
-  message: string;
-  timestamp: string;
-  isRead: boolean;
-}
+// Helper function to format timestamp
+const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'application',
-    title: 'New Application Received',
-    message: 'John Smith applied for Senior Developer position',
-    timestamp: '2 minutes ago',
-    isRead: false,
-  },
-  {
-    id: '2',
-    type: 'interview',
-    title: 'Interview Reminder',
-    message: 'Interview with Sarah Johnson in 30 minutes',
-    timestamp: '15 minutes ago',
-    isRead: false,
-  },
-  {
-    id: '3',
-    type: 'application',
-    title: 'Application Status Update',
-    message: 'Emily Davis application moved to technical review',
-    timestamp: '45 minutes ago',
-    isRead: false,
-  },
-  {
-    id: '4',
-    type: 'system',
-    title: 'Job Posting Alert',
-    message: 'Product Manager position received 25+ applications',
-    timestamp: '1 hour ago',
-    isRead: false,
-  },
-  {
-    id: '5',
-    type: 'interview',
-    title: 'Interview Scheduled',
-    message: 'New interview scheduled with Alex Chen for tomorrow',
-    timestamp: '2 hours ago',
-    isRead: false,
-  },
-  {
-    id: '6',
-    type: 'system',
-    title: 'System Reminder',
-    message: 'Weekly recruitment report is ready for review',
-    timestamp: '3 hours ago',
-    isRead: false,
-  },
-  {
-    id: '7',
-    type: 'update',
-    title: 'Candidate Status Update',
-    message: 'Michael Brown moved to final interview stage',
-    timestamp: '4 hours ago',
-    isRead: true,
-  },
-  {
-    id: '8',
-    type: 'system',
-    title: 'System Update',
-    message: 'New AI matching features are now available',
-    timestamp: '1 day ago',
-    isRead: true,
-  },
-];
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+
+  return date.toLocaleDateString();
+};
 
 const NavBar = ({ className }: NavBarProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  // Use real data hooks
+  const {
+    notifications,
+    unreadCount,
+    loading: notificationsLoading,
+    markAsRead: markNotificationAsRead,
+    markAllAsRead
+  } = useNotifications();
+
+  const {
+    user,
+    loading: userLoading
+  } = useUserProfile();
 
   const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    toast.atsBlue({
-      title: "Notifications marked as read",
-      description: "All notifications have been marked as read",
-    });
+    markNotificationAsRead([id]);
   };
 
   const handleLogout = () => {
@@ -185,7 +129,11 @@ const NavBar = ({ className }: NavBarProps) => {
             </div>
             <DropdownMenuSeparator />
             <div className="max-h-96 overflow-y-auto">
-              {notifications.length === 0 ? (
+              {notificationsLoading ? (
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  Loading notifications...
+                </div>
+              ) : notifications.length === 0 ? (
                 <div className="p-4 text-center text-gray-500 text-sm">
                   No notifications
                 </div>
@@ -208,7 +156,7 @@ const NavBar = ({ className }: NavBarProps) => {
                           )}
                         </div>
                         <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                        <p className="text-xs text-gray-400 mt-1">{notification.timestamp}</p>
+                        <p className="text-xs text-gray-400 mt-1">{formatTimestamp(notification.createdAt)}</p>
                       </div>
                     </div>
                   </DropdownMenuItem>
@@ -258,10 +206,20 @@ const NavBar = ({ className }: NavBarProps) => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
-              <div className="h-8 w-8 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center">
-                <User className="h-4 w-4" />
-              </div>
-              <span className="hidden md:inline text-sm font-medium">Jane Doe</span>
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-8 w-8 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4" />
+                </div>
+              )}
+              <span className="hidden md:inline text-sm font-medium">
+                {userLoading ? '...' : user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email : 'User'}
+              </span>
               <ChevronDown className="h-4 w-4 text-gray-400" />
             </Button>
           </DropdownMenuTrigger>
