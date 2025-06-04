@@ -130,11 +130,15 @@ export interface PipelineData {
   stages: Array<{
     id: string;
     name: string;
-    count: number;
     candidates: Candidate[];
   }>;
   totalCandidates: number;
-  conversionRates: Record<string, number>;
+  summary: {
+    stageCounts: Array<{
+      stage: string;
+      count: number;
+    }>;
+  };
 }
 
 export const useCandidatePipeline = () => {
@@ -148,7 +152,7 @@ export const useCandidatePipeline = () => {
       setError(null);
       
       const response = await candidatesApi.getPipeline();
-      setPipeline(response.data);
+      setPipeline(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch candidate pipeline');
       console.error('Error fetching pipeline:', err);
@@ -180,7 +184,7 @@ export const useCreateCandidate = () => {
       setError(null);
       
       const response = await candidatesApi.createCandidate(candidateData);
-      return response.data;
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create candidate';
       setError(errorMessage);
@@ -208,7 +212,7 @@ export const useUpdateCandidate = () => {
       setError(null);
       
       const response = await candidatesApi.updateCandidate(id, candidateData);
-      return response.data;
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update candidate';
       setError(errorMessage);
@@ -236,7 +240,7 @@ export const useUpdateCandidateStage = () => {
       setError(null);
       
       const response = await candidatesApi.updateStage(id, stage);
-      return response.data;
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update candidate stage';
       setError(errorMessage);

@@ -5,12 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
-import CandidatePipeline from "./pages/CandidatePipeline";
+import Candidates from "./pages/Candidates";
 import Interviews from "./pages/Interviews";
 import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
+import JobEdit from "./pages/JobEdit";
 import Applications from "./pages/Applications";
-import ApplicationManagement from "./pages/ApplicationManagement";
 import ApplicationFormPreview from "./pages/ApplicationFormPreview";
+import PublicApplicationPage from "./pages/PublicApplicationPage";
 import ProfileManagement from "./pages/ProfileManagement";
 import Messages from "./pages/Messages";
 import Documents from "./pages/Documents";
@@ -71,14 +73,15 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/apply/:formSlug" element={<PublicApplicationPage />} />
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/candidates/pipeline" element={<CandidatePipeline />} />
-            <Route path="/candidates/all" element={<CandidatePipeline />} />
+            <Route path="/candidates" element={<Candidates />} />
             <Route path="/interviews" element={<Interviews />} />
             <Route path="/jobs" element={<Jobs />} />
+            <Route path="/jobs/:id" element={<JobDetail />} />
+            <Route path="/jobs/:id/edit" element={<JobEdit />} />
             <Route path="/applications" element={<Applications />} />
-            <Route path="/applications/management" element={<ApplicationManagement />} />
             <Route path="/applications/preview" element={<ApplicationFormPreview />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/documents" element={<Documents />} />

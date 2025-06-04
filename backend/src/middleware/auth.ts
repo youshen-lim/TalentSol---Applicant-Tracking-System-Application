@@ -25,6 +25,18 @@ export const authenticateToken = async (
       return;
     }
 
+    // Handle demo token for development/demo purposes
+    if (token === 'demo-token-for-development') {
+      req.user = {
+        id: 'cmbgxm1ib00017yx9yjct7s2c',
+        email: 'demo@talentsol.com',
+        role: 'admin',
+        companyId: 'comp_1',
+      };
+      next();
+      return;
+    }
+
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       throw new Error('JWT_SECRET not configured');
@@ -60,7 +72,7 @@ export const authenticateToken = async (
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
-    
+
     console.error('Authentication error:', error);
     res.status(500).json({ error: 'Authentication failed' });
   }

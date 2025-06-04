@@ -10,6 +10,17 @@ const prisma = new PrismaClient();
  * Imports data from the complete CSV file into the database
  */
 
+// Diverse candidate sources for realistic analytics
+const CANDIDATE_SOURCES = [
+  'LinkedIn', 'Indeed', 'Company Website', 'Employee Referral',
+  'University Career Fair', 'Glassdoor', 'AngelList', 'Stack Overflow Jobs',
+  'Recruiter', 'Direct Application'
+];
+
+function getRandomSource(): string {
+  return CANDIDATE_SOURCES[Math.floor(Math.random() * CANDIDATE_SOURCES.length)];
+}
+
 interface CSVRow {
   candidate_id: string;
   job_id: string;
@@ -28,6 +39,15 @@ interface CSVRow {
   email: string;
   location_city: string;
   location_state: string;
+  hired_at?: string;
+  interview_id?: string;
+  interview_type?: string;
+  interview_scheduled_date?: string;
+  interview_duration?: string;
+  interview_location?: string;
+  interview_status?: string;
+  interview_notes?: string;
+  candidate_source?: string;
 }
 
 async function importFromCSV() {
@@ -49,6 +69,12 @@ async function importFromCSV() {
     const uniqueCandidates = extractUniqueCandidates(csvData);
     const applications = extractApplications(csvData);
     const interviews = extractInterviews(csvData);
+
+    console.log(`📊 Data extraction summary:`);
+    console.log(`   💼 Jobs: ${uniqueJobs.length}`);
+    console.log(`   👥 Candidates: ${uniqueCandidates.length}`);
+    console.log(`   📝 Applications: ${applications.length}`);
+    console.log(`   🎯 Interviews: ${interviews.length}`);
 
     // Step 5: Import in correct order
     await importJobs(uniqueJobs, company.id, adminUser.id);
@@ -113,29 +139,61 @@ async function setupBaseData() {
 }
 
 async function readCSVFile(): Promise<CSVRow[]> {
-  const csvPath = path.join(process.cwd(), 'data', 'talentsol_complete_data.csv');
-  
+  const csvPath = path.join(process.cwd(), 'data', 'talentsol_with_synthetic_data.csv');
+
+  console.log(`📄 Reading CSV file from: ${csvPath}`);
+
   if (!fs.existsSync(csvPath)) {
     throw new Error(`CSV file not found at: ${csvPath}`);
   }
 
   const csvContent = fs.readFileSync(csvPath, 'utf-8');
   const lines = csvContent.trim().split('\n');
-  const headers = lines[0].split(',');
-  
+
+  console.log(`📊 CSV has ${lines.length} lines (including header)`);
+
+  // Better CSV parsing to handle quoted fields
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    result.push(current.trim());
+    return result;
+  };
+
+  const headers = parseCSVLine(lines[0]);
+  console.log(`📋 CSV headers: ${headers.join(', ')}`);
+
   const data: CSVRow[] = [];
-  
+
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',');
+    if (lines[i].trim() === '') continue; // Skip empty lines
+
+    const values = parseCSVLine(lines[i]);
     const row: any = {};
-    
+
     headers.forEach((header, index) => {
-      row[header] = values[index] || '';
+      row[header.trim()] = values[index] || '';
     });
-    
+
     data.push(row as CSVRow);
   }
 
+  console.log(`✅ Parsed ${data.length} data rows from CSV`);
   return data;
 }
 
@@ -176,9 +234,10 @@ function extractApplications(data: CSVRow[]) {
 }
 
 function extractInterviews(data: CSVRow[]) {
-  // For now, we'll create interviews for applications with 'interview' status
+  // Extract interviews from rows that have interview data
   return data.filter(row =>
-    row.application_status === 'interview' &&
+    row.interview_id &&
+    row.interview_scheduled_date &&
     row.application_id
   );
 }
@@ -267,8 +326,13 @@ async function importApplications(applicationRows: CSVRow[]) {
   console.log(`📝 Importing ${applicationRows.length} applications...`);
 
   for (const row of applicationRows) {
-    const submittedDate = new Date(row.submitted_date);
-    const hiredDate = row.application_status === 'hired' ? submittedDate : null;
+    // Parse submitted_date (simple date format like "2024-11-21")
+    const submittedDate = new Date(row.submitted_date + 'T12:00:00Z');
+
+    // Parse hired_at (ISO datetime format like "2025-01-01T00:00:00Z")
+    const hiredDate = row.hired_at && row.hired_at.trim() ? new Date(row.hired_at) :
+                     (row.application_status === 'hired' ?
+                       new Date(submittedDate.getTime() + (7 + Math.random() * 30) * 24 * 60 * 60 * 1000) : null);
     const skills = row.skills ? row.skills.split(',').map(s => s.trim()) : [];
     const score = parseFloat(row.score) || 75;
     const salaryMin = parseInt(row.expected_salary_min) || 80000;
@@ -311,7 +375,7 @@ async function importApplications(applicationRows: CSVRow[]) {
           remoteWork: row.remote_work === 'True',
         },
         metadata: {
-          source: 'website' as any,
+          source: row.candidate_source || getRandomSource(),
           ipAddress: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
           userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           formVersion: '2.0',
@@ -346,20 +410,24 @@ async function importInterviews(interviewRows: CSVRow[], createdById: string) {
   console.log(`🎯 Importing ${interviewRows.length} interviews...`);
 
   for (const row of interviewRows) {
-    // Create a scheduled date based on submitted date + some days
-    const submittedDate = new Date(row.submitted_date);
-    const scheduledDate = new Date(submittedDate.getTime() + (Math.random() * 14 + 1) * 24 * 60 * 60 * 1000);
+    // Parse interview_scheduled_date (ISO datetime format like "2024-12-25T00:00:00Z")
+    const scheduledDate = new Date(row.interview_scheduled_date!);
+    const duration = parseInt(row.interview_duration!) || 60;
+    const interviewType = row.interview_type || 'technical';
+    const location = row.interview_location || 'Video Call';
+    const status = row.interview_status || 'scheduled';
+    const notes = row.interview_notes || `${interviewType} interview with ${row.first_name} ${row.last_name}`;
 
     await prisma.interview.create({
       data: {
-        id: `int_${row.application_id}`,
+        id: row.interview_id!,
         applicationId: row.application_id,
-        type: 'technical' as any,
-        scheduledAt: scheduledDate,
-        duration: 60,
-        location: Math.random() > 0.5 ? 'Video Call' : 'Office',
-        status: 'scheduled',
-        notes: `Technical interview with ${row.first_name} ${row.last_name}`,
+        title: `${interviewType} Interview`,
+        type: interviewType as any,
+        scheduledDate: scheduledDate,
+        location: location,
+        status: status,
+        notes: notes,
         createdById,
       },
     });
@@ -417,17 +485,25 @@ export { importFromCSV };
 
 // Script execution
 async function runCSVImport() {
+  console.log('🚀 Starting TalentSol CSV Import Script...');
+  console.log('=' + '='.repeat(49));
+
   try {
     await importFromCSV();
+    console.log('\n🎉 CSV import completed successfully!');
+    console.log('💡 You can now check the Dashboard for updated metrics');
   } catch (error) {
     console.error('❌ CSV import failed:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      console.error('Stack trace:', error.stack);
+    }
     process.exit(1);
   } finally {
     await prisma.$disconnect();
+    console.log('🔌 Database connection closed');
   }
 }
 
-// Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runCSVImport();
-}
+// Always run when script is executed
+runCSVImport();

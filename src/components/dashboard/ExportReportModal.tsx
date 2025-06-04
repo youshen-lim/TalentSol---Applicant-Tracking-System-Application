@@ -25,6 +25,7 @@ import { CalendarIcon, Download, FileText, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
+import { reportsApi } from '@/services/api';
 
 interface ExportReportModalProps {
   open: boolean;
@@ -97,39 +98,75 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({ open, onOp
     }
 
     setIsGenerating(true);
-    
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsGenerating(false);
-    
-    const selectedReportType = reportTypes.find(r => r.value === config.type);
-    
-    toast.atsBlue({
-      title: "Report generated successfully",
-      description: `${selectedReportType?.label} has been generated and will download shortly.`,
-    });
 
-    // Send email if recipients are specified
-    if (config.recipients.trim()) {
+    try {
+      // Prepare report data for API
+      const reportData = {
+        type: config.type,
+        format: config.format,
+        dateRange: {
+          from: config.dateRange.from?.toISOString(),
+          to: config.dateRange.to?.toISOString(),
+        },
+        filters: config.filters,
+        recipients: config.recipients.trim() || undefined,
+        includeCharts: config.includeCharts,
+        includeDetails: config.includeDetails,
+      };
+
+      // Call the real API
+      const response = await reportsApi.generateReport(reportData);
+
+      setIsGenerating(false);
+
+      const selectedReportType = reportTypes.find(r => r.value === config.type);
+
       toast.atsBlue({
-        title: "Report sent via email",
-        description: `Report has been sent to ${config.recipients}`,
+        title: "Report generated successfully",
+        description: `${selectedReportType?.label} has been generated and will download shortly.`,
+      });
+
+      // Trigger download if reportUrl is provided
+      if (response.reportUrl) {
+        const link = document.createElement('a');
+        link.href = response.reportUrl;
+        link.download = response.fileName || `report-${Date.now()}.${config.format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Send email if recipients are specified
+      if (config.recipients.trim()) {
+        toast.atsBlue({
+          title: "Report sent via email",
+          description: `Report has been sent to ${config.recipients}`,
+        });
+      }
+
+      onOpenChange(false);
+
+      // Reset form
+      setConfig({
+        type: '',
+        format: 'pdf',
+        dateRange: { from: undefined, to: undefined },
+        filters: { jobPositions: [], candidateStatus: [], departments: [] },
+        recipients: '',
+        includeCharts: true,
+        includeDetails: true,
+      });
+
+    } catch (error) {
+      setIsGenerating(false);
+      console.error('Error generating report:', error);
+
+      toast({
+        variant: "destructive",
+        title: "Report generation failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
       });
     }
-
-    onOpenChange(false);
-    
-    // Reset form
-    setConfig({
-      type: '',
-      format: 'pdf',
-      dateRange: { from: undefined, to: undefined },
-      filters: { jobPositions: [], candidateStatus: [], departments: [] },
-      recipients: '',
-      includeCharts: true,
-      includeDetails: true,
-    });
   };
 
   const updateFilter = (filterType: keyof ReportConfig['filters'], value: string, checked: boolean) => {

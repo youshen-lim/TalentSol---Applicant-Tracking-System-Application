@@ -198,9 +198,12 @@ export class UnifiedDataService {
       percentage: Math.round((count / totalCandidates) * 100),
     }));
 
-    // Recent activity (candidate-centric)
+    // Recent activity (candidate-centric) - last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     const recentActivity = allApplications
-      .filter(a => a.submittedAt >= thirtyDaysAgo)
+      .filter(a => a.submittedAt && a.submittedAt >= sevenDaysAgo)
       .slice(0, 10)
       .map(app => {
         const candidate = candidatesWithApplications.find(c => c.id === app.candidateId)!;

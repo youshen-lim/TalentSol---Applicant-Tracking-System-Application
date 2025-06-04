@@ -160,14 +160,14 @@ interface BackendJob {
     city?: string;
     state?: string;
     remote: boolean;
-  };
+  } | null;
   employmentType: string; // "full_time", "part_time", etc.
   experienceLevel: string;
   salary: {
     min: number;
     max: number;
     currency: string;
-  };
+  } | null;
   description: string;
   responsibilities: string[];
   requiredQualifications: string[];
@@ -248,30 +248,37 @@ export interface Job {
 
 // Transform backend job to frontend job structure
 const transformBackendJob = (backendJob: BackendJob): Job => {
+  // Handle null location data
+  const location = backendJob.location || {};
+  const isRemote = location.remote || false;
+
+  // Handle null salary data
+  const salary = backendJob.salary || { min: 0, max: 0, currency: 'USD' };
+
   return {
     id: backendJob.id,
     title: backendJob.title,
     department: backendJob.department,
     location: {
-      type: backendJob.location.remote ? 'remote' : 'onsite',
-      allowRemote: backendJob.location.remote,
+      type: isRemote ? 'remote' : 'onsite',
+      allowRemote: isRemote,
       country: 'US', // Default to US
-      city: backendJob.location.city,
-      state: backendJob.location.state,
+      city: location.city,
+      state: location.state,
     },
     employmentType: backendJob.employmentType.replace('_', '-'), // Convert "full_time" to "full-time"
     experienceLevel: backendJob.experienceLevel,
     salary: {
-      min: backendJob.salary.min,
-      max: backendJob.salary.max,
-      currency: backendJob.salary.currency,
+      min: salary.min,
+      max: salary.max,
+      currency: salary.currency,
       payFrequency: 'annual',
     },
     description: backendJob.description,
-    responsibilities: backendJob.responsibilities,
-    requiredQualifications: backendJob.requiredQualifications,
-    preferredQualifications: backendJob.preferredQualifications,
-    skills: backendJob.skills,
+    responsibilities: backendJob.responsibilities || [],
+    requiredQualifications: backendJob.requiredQualifications || [],
+    preferredQualifications: backendJob.preferredQualifications || [],
+    skills: backendJob.skills || [],
     benefits: backendJob.benefits || '',
     status: backendJob.status,
     visibility: backendJob.visibility,
@@ -328,68 +335,84 @@ export const useJobs = (params?: UseJobsParams): UseJobsReturn => {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching jobs with params:', params);
       const response = await jobsApi.getJobs(params);
-      console.log('API response:', response);
 
       // Handle the actual backend response structure
       if (response.jobs) {
-        console.log('Found jobs:', response.jobs.length);
         // Transform backend jobs to frontend structure
         const transformedJobs = response.jobs.map((backendJob: BackendJob) => transformBackendJob(backendJob));
-        console.log('Transformed jobs:', transformedJobs);
         setJobs(transformedJobs);
         setTotalPages(response.pagination?.pages || 1);
         setCurrentPage(response.pagination?.page || 1);
         setTotal(response.pagination?.total || 0);
         setError(null); // Clear any previous errors
       } else {
-        console.log('No jobs found in response');
         setJobs([]);
       }
     } catch (err) {
-      console.warn('API not available, using fallback mock data:', err);
+      console.error('Jobs API Error:', err);
 
-      // Use fallback mock data when API is not available
-      let filteredJobs = [...mockJobs];
+      // Check if this is a network/connection error
+      const isConnectionError = err instanceof Error && (
+        err.message.includes('fetch') ||
+        err.message.includes('Network') ||
+        err.message.includes('Failed to fetch') ||
+        err.message.includes('ECONNREFUSED') ||
+        err.message.includes('ERR_NETWORK') ||
+        (err.name === 'TypeError' && err.message.includes('fetch'))
+      );
 
-      // Apply search filter
-      if (params?.search) {
-        const searchLower = params.search.toLowerCase();
-        filteredJobs = filteredJobs.filter(job =>
-          job.title.toLowerCase().includes(searchLower) ||
-          job.department.toLowerCase().includes(searchLower) ||
-          job.description.toLowerCase().includes(searchLower)
-        );
+      if (isConnectionError) {
+        console.warn('Connection error detected, using fallback mock data:', err);
+
+        // Use fallback mock data when API is not available
+        let filteredJobs = [...mockJobs];
+
+        // Apply search filter
+        if (params?.search) {
+          const searchLower = params.search.toLowerCase();
+          filteredJobs = filteredJobs.filter(job =>
+            job.title.toLowerCase().includes(searchLower) ||
+            job.department.toLowerCase().includes(searchLower) ||
+            job.description.toLowerCase().includes(searchLower)
+          );
+        }
+
+        // Apply status filter
+        if (params?.status) {
+          const statusFilters = params.status.split(',');
+          filteredJobs = filteredJobs.filter(job => statusFilters.includes(job.status));
+        }
+
+        // Apply department filter
+        if (params?.department) {
+          const deptFilters = params.department.split(',');
+          filteredJobs = filteredJobs.filter(job => deptFilters.includes(job.department));
+        }
+
+        // Apply pagination
+        const page = params?.page || 1;
+        const limit = params?.limit || 20;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
+        // IMPORTANT: Set the jobs array with mock data
+        setJobs(paginatedJobs);
+        setTotalPages(Math.ceil(filteredJobs.length / limit));
+        setCurrentPage(page);
+        setTotal(filteredJobs.length);
+
+        // Set a user-friendly error message but don't clear the jobs
+        setError('Backend server not available - showing demo data');
+      } else {
+        // For other errors (like 404, 500, etc.), show the actual error
+        setError(err instanceof Error ? err.message : 'Failed to fetch jobs');
+        setJobs([]);
+        setTotalPages(1);
+        setCurrentPage(1);
+        setTotal(0);
       }
-
-      // Apply status filter
-      if (params?.status) {
-        const statusFilters = params.status.split(',');
-        filteredJobs = filteredJobs.filter(job => statusFilters.includes(job.status));
-      }
-
-      // Apply department filter
-      if (params?.department) {
-        const deptFilters = params.department.split(',');
-        filteredJobs = filteredJobs.filter(job => deptFilters.includes(job.department));
-      }
-
-      // Apply pagination
-      const page = params?.page || 1;
-      const limit = params?.limit || 20;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
-
-      // IMPORTANT: Set the jobs array with mock data
-      setJobs(paginatedJobs);
-      setTotalPages(Math.ceil(filteredJobs.length / limit));
-      setCurrentPage(page);
-      setTotal(filteredJobs.length);
-
-      // Set a user-friendly error message but don't clear the jobs
-      setError('Backend server not available - showing demo data');
     } finally {
       setLoading(false);
     }
@@ -419,12 +442,49 @@ export const useJob = (id: string) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await jobsApi.getJob(id);
-      setJob(response.data);
+      // Transform backend job to frontend structure
+      const transformedJob = transformBackendJob(response);
+      setJob(transformedJob);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch job');
-      console.error('Error fetching job:', err);
+      console.warn('API not available for single job, using fallback data:', err);
+
+      // Try to find job in mock data as fallback
+      const mockJob = mockJobs.find(j => j.id === id);
+      if (mockJob) {
+        setJob(mockJob);
+        setError('Backend server not available - showing demo data');
+      } else {
+        // Create a fallback job if not found in mock data
+        const fallbackJob: Job = {
+          id: id,
+          title: "Sample Job Position",
+          department: "Engineering",
+          location: { type: "remote", allowRemote: true, country: "US" },
+          employmentType: "full-time",
+          experienceLevel: "mid",
+          salary: { min: 80000, max: 120000, currency: "USD", payFrequency: "annual" },
+          description: "This is a sample job description for demonstration purposes.",
+          responsibilities: ["Lead development initiatives", "Collaborate with team members"],
+          requiredQualifications: ["Bachelor's degree", "3+ years experience"],
+          preferredQualifications: ["Master's degree", "5+ years experience"],
+          skills: ["JavaScript", "React", "Node.js"],
+          benefits: "Health insurance, 401k, flexible PTO",
+          status: "open",
+          visibility: "public",
+          postedDate: new Date().toISOString(),
+          currentApplicants: 15,
+          pipeline: { screening: 5, interview: 3, assessment: 2, offer: 1 },
+          source: "internal",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          company: { id: "comp_1", name: "TalentSol Inc." },
+          createdBy: { id: "user_demo", firstName: "Demo", lastName: "User" }
+        };
+        setJob(fallbackJob);
+        setError('Backend server not available - showing demo data');
+      }
     } finally {
       setLoading(false);
     }
@@ -478,8 +538,8 @@ export const useJobStats = (id: string) => {
   };
 };
 
-// Hook for creating a new job
-export const useCreateJob = () => {
+// Hook for creating a new job with state management
+export const useCreateJob = (onSuccess?: () => void) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -489,6 +549,12 @@ export const useCreateJob = () => {
       setError(null);
 
       const response = await jobsApi.createJob(jobData);
+
+      // Call success callback to trigger refetch
+      if (onSuccess) {
+        onSuccess();
+      }
+
       return response.data;
     } catch (err) {
       console.warn('API not available for job creation:', err);
@@ -520,7 +586,14 @@ export const useCreateJob = () => {
         createdBy: { id: 'user_demo', firstName: 'Demo', lastName: 'User' }
       };
 
-      // In demo mode, just return the created job
+      // Add to mock data for demo mode
+      mockJobs.push(newJob);
+
+      // Call success callback to trigger refetch
+      if (onSuccess) {
+        onSuccess();
+      }
+
       setError('Backend server not available - job created in demo mode');
       return newJob;
     } finally {
@@ -550,7 +623,12 @@ export const useUpdateJob = () => {
     } catch (err) {
       console.warn('API not available for job update:', err);
 
-      // In demo mode, simulate successful update
+      // In demo mode, update the mock data
+      const jobIndex = mockJobs.findIndex(job => job.id === id);
+      if (jobIndex !== -1) {
+        mockJobs[jobIndex] = { ...mockJobs[jobIndex], ...jobData, updatedAt: new Date().toISOString() };
+      }
+
       setError('Backend server not available - job updated in demo mode');
       return { id, ...jobData };
     } finally {
@@ -580,7 +658,12 @@ export const useDeleteJob = () => {
     } catch (err) {
       console.warn('API not available for job deletion:', err);
 
-      // In demo mode, simulate successful deletion
+      // In demo mode, remove from mock data
+      const jobIndex = mockJobs.findIndex(job => job.id === id);
+      if (jobIndex !== -1) {
+        mockJobs.splice(jobIndex, 1);
+      }
+
       setError('Backend server not available - job deleted in demo mode');
       return true;
     } finally {

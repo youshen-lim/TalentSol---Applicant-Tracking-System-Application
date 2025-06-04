@@ -8,6 +8,19 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
 
 **Key Achievement**: Frontend development completed in 1.5 days using Augment Code Agent and Context Engine.
 
+**Recent Updates**: Consolidated candidate pipeline and candidates pages into unified `/candidates` route with maintained functionality and design consistency.
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Features](#-key-features)
+- [Data Management](#-data-management)
+- [UI/UX Design System](#-uiux-design-system)
+- [AI/ML Integration](#-aiml-integration)
+- [Development Guidelines](#development-guidelines)
+- [API Architecture](#-api-architecture)
+- [Troubleshooting](#-troubleshooting)
+
 ## Developer
 
 **Aaron (Youshen) Lim**
@@ -127,6 +140,29 @@ npm run import-csv  # Imports from backend/data/talentsol_complete_data.csv
 - Use pgAdmin GUI for advanced database operations
 - Maintain candidate-centric data relationships
 
+### **Synthetic Data Generation**
+For development and testing, TalentSol includes comprehensive synthetic data generation:
+
+```bash
+# Generate complete synthetic dataset
+cd backend
+npm run data-full
+
+# This creates:
+# - 500 Candidates (Primary entities)
+# - 1,200+ Applications (2-4 per candidate)
+# - 600+ Interviews (Linked via applications)
+# - 20 Job Openings (Referenced by applications)
+# - 300+ Documents (Resumes, cover letters)
+# - 200+ Notifications (Application updates)
+```
+
+**Data Generation Features**:
+- **Candidate-Centric Architecture**: All data flows from candidate entities
+- **Realistic Timelines**: 12 months of historical data
+- **ML Integration**: Candidate scoring and predictions
+- **Performance Optimized**: Batch processing with validation
+
 ### **Database Architecture**
 **14 Comprehensive Tables**:
 - `candidates`, `applications`, `jobs`, `interviews`
@@ -144,7 +180,7 @@ npm run import-csv  # Imports from backend/data/talentsol_complete_data.csv
 
 ### **Core Pages & Functionality**
 - **Dashboard**: Real-time analytics with dynamic metrics and charts
-- **Candidate Pipeline**: Kanban/list view with drag-and-drop functionality
+- **Candidates**: Unified kanban/list view with drag-and-drop functionality (consolidated from pipeline)
 - **Jobs Management**: Job creation, editing, and application tracking
 - **Interview Scheduler**: Calendar-based interview scheduling system
 - **Documents**: File management with AI-powered chat interface
@@ -194,6 +230,32 @@ npm run import-csv  # Imports from backend/data/talentsol_complete_data.csv
 - **Accessibility**: WCAG-compliant design with proper contrast ratios
 - **Animations**: Smooth transitions and hover effects
 - **Form Validation**: Real-time validation with user-friendly error messages
+
+### **Standardized Shadow System**
+TalentSol uses a comprehensive shadow system for visual consistency:
+
+```typescript
+import { shadows } from '@/components/ui/shadow';
+
+// Usage examples
+<div className={shadows.card}>Standard content</div>
+<div className={shadows.cardEnhanced}>Important metrics</div>
+<div className={shadows.modal}>Dialog content</div>
+<div className={shadows.dropdown}>Menu items</div>
+```
+
+**Shadow Variants**:
+- **`card`**: Standard content containers with subtle shadows
+- **`cardEnhanced`**: Important content with enhanced shadows and backdrop blur
+- **`modal`**: Dialog and overlay shadows
+- **`dropdown`**: Menu and tooltip shadows
+- **`button`**: Interactive element shadows with hover effects
+- **`input`**: Form input shadows with focus states
+
+**Implementation Status**:
+- ✅ Dashboard (Complete)
+- ✅ Candidates (Consolidated and updated)
+- ⏳ Interviews, Jobs, Documents (Planned updates)
 
 ## Project Structure
 
@@ -267,34 +329,7 @@ talentsol-ats/
 5. **Error Handling**: Use consistent error handling patterns
 6. **Testing**: Write tests for critical functionality
 
-## 📁 Project Structure
 
-```
-talentsol-ats/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── ui/             # Shadcn UI components
-│   │   ├── dashboard/      # Dashboard-specific components
-│   │   ├── candidates/     # Candidate management components
-│   │   ├── interviews/     # Interview scheduling components
-│   │   ├── layout/         # Layout components (Sidebar, NavBar, PageHeader)
-│   │   └── forms/          # Application form components
-│   ├── pages/              # Page components (8 main pages)
-│   ├── hooks/              # Custom React hooks
-│   ├── services/           # API services and multi-API client
-│   ├── types/              # TypeScript type definitions
-│   └── lib/                # Utility functions
-├── backend/                # Backend API server
-│   ├── src/
-│   │   ├── routes/         # API route handlers
-│   │   ├── models/         # Database models (Prisma)
-│   │   ├── middleware/     # Express middleware
-│   │   └── utils/          # Backend utilities
-│   ├── prisma/             # Database schema and migrations
-│   ├── data/               # CSV import data files
-│   └── uploads/            # File upload storage
-└── public/                 # Static assets
-```
 
 ## 🔌 API Architecture
 
@@ -340,6 +375,70 @@ JWT_SECRET="your-secret-key"
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX_REQUESTS=1000
 ```
+
+## 🚨 Troubleshooting
+
+### **Database Connection Issues**
+```bash
+# Check PostgreSQL status
+sudo systemctl status postgresql
+
+# Restart PostgreSQL if needed
+sudo systemctl restart postgresql
+
+# Test connection manually
+psql -h localhost -U talentsol_user -d talentsol_ats
+```
+
+**Common Solutions**:
+1. Ensure PostgreSQL is running
+2. Verify DATABASE_URL in .env file
+3. Check database and user exist
+4. Confirm firewall settings allow connections
+
+### **No Data Showing in Dashboard**
+```bash
+# Check database connection
+cd backend && npm run db:check
+
+# Import sample data
+npm run import-csv
+
+# Generate synthetic data
+npm run data-full
+
+# Verify API response
+curl http://localhost:3001/api/analytics/dashboard
+```
+
+### **Frontend Build Issues**
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear Vite cache
+rm -rf node_modules/.vite
+npm run dev
+```
+
+### **Backend API Errors**
+```bash
+# Check backend logs
+cd backend && npm run dev
+
+# Verify environment variables
+cat .env
+
+# Test API health
+curl http://localhost:3001/health
+```
+
+### **Performance Issues**
+1. **Enable Redis caching** for better performance
+2. **Check database indexes** for slow queries
+3. **Monitor memory usage** during data generation
+4. **Reduce batch sizes** if generation fails
 
 ## 📄 License
 

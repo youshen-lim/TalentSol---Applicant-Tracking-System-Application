@@ -95,6 +95,79 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
   });
 }));
 
+// Get upcoming interviews (next 7 days) - MUST BE BEFORE /:id route
+router.get('/upcoming', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const companyId = req.user!.companyId;
+  const now = new Date();
+  const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const upcomingInterviews = await prisma.interview.findMany({
+    where: {
+      application: {
+        job: { companyId },
+      },
+      scheduledDate: {
+        gte: now,
+        lte: nextWeek,
+      },
+      status: 'scheduled',
+    },
+    include: {
+      application: {
+        include: {
+          candidate: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          job: {
+            select: {
+              title: true,
+              department: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      scheduledDate: 'asc',
+    },
+  });
+
+  // Transform data to match frontend expectations
+  const transformedInterviews = upcomingInterviews.map(interview => ({
+    id: interview.id,
+    candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+    candidateId: interview.application.candidateId,
+    position: interview.application.job.title,
+    jobTitle: interview.application.job.title,
+    type: interview.type || 'Interview',
+    interviewers: interview.interviewers || [],
+    dateTime: interview.scheduledDate?.toISOString() || new Date().toISOString(),
+    status: interview.status,
+    location: interview.location,
+    notes: interview.notes,
+    application: {
+      id: interview.applicationId,
+      jobId: interview.application.jobId,
+      candidateInfo: {
+        firstName: interview.application.candidate.firstName,
+        lastName: interview.application.candidate.lastName,
+        email: interview.application.candidate.email,
+      },
+    },
+    createdAt: interview.createdAt.toISOString(),
+    updatedAt: interview.updatedAt.toISOString(),
+  }));
+
+  res.json({
+    data: transformedInterviews,
+    total: transformedInterviews.length,
+  });
+}));
+
 // Get single interview
 router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
@@ -220,6 +293,8 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
     interview,
   });
 }));
+
+
 
 // Update interview
 router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {

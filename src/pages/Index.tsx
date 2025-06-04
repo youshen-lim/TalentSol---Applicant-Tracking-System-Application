@@ -62,7 +62,7 @@ const Index = () => {
 
           <div
             className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => navigateTo('/candidate-pipeline')}
+            onClick={() => navigateTo('/candidates')}
           >
             <div className="h-12 w-12 bg-ats-blue/10 rounded-lg flex items-center justify-center mb-4">
               <Users className="h-6 w-6 text-ats-blue" />
