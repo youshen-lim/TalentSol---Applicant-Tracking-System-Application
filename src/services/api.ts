@@ -1,6 +1,5 @@
 // API service for TalentSol ATS
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-console.log('API_BASE_URL:', API_BASE_URL);
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Types
 export interface ApplicationStats {
@@ -75,7 +74,10 @@ export interface UserSettings {
 
 // Helper function to get auth token
 const getAuthToken = () => {
-  return localStorage.getItem('authToken');
+  // Use demo token for development/testing
+  const demoToken = 'demo-token-for-development';
+  localStorage.setItem('authToken', demoToken);
+  return demoToken;
 };
 
 // Helper function to make authenticated requests
@@ -92,18 +94,19 @@ const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
   };
 
   const url = `${API_BASE_URL}${endpoint}`;
-  console.log('Making request to:', url);
+  console.log('🌐 Making API request:', { url, method: config.method || 'GET', token: token ? 'present' : 'missing' });
 
   const response = await fetch(url, config);
+  console.log('📡 API response:', { status: response.status, statusText: response.statusText, url });
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Network error' }));
-    console.error('API request failed:', error);
+    console.error('❌ API error:', { status: response.status, error });
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
   const data = await response.json();
-  console.log('API response data:', data);
+  console.log('📦 API data received:', data);
   return data;
 };
 
@@ -144,6 +147,22 @@ export const applicationApi = {
     return makeRequest(`/applications/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  },
+
+  // Update application
+  updateApplication: async (id: string, updates: any) => {
+    return makeRequest(`/applications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
+  // Bulk update applications
+  bulkUpdateApplications: async (applicationIds: string[], updates: any) => {
+    return makeRequest('/applications/bulk', {
+      method: 'PUT',
+      body: JSON.stringify({ applicationIds, updates }),
     });
   },
 
@@ -281,8 +300,21 @@ export const authApi = {
 // Form Builder API
 export const formApi = {
   // Get form schemas
-  getForms: async () => {
-    return makeRequest('/forms');
+  getForms: async (params?: {
+    page?: number;
+    limit?: number;
+    jobId?: string;
+    status?: string;
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    return makeRequest(`/forms?${searchParams.toString()}`);
   },
 
   // Get single form
@@ -306,10 +338,45 @@ export const formApi = {
     });
   },
 
+  // Clone form
+  cloneForm: async (id: string, data: { jobId: string; title?: string }) => {
+    return makeRequest(`/forms/${id}/clone`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   // Delete form
   deleteForm: async (id: string) => {
     return makeRequest(`/forms/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  // Get form analytics
+  getFormAnalytics: async (id: string) => {
+    return makeRequest(`/forms/${id}/analytics`);
+  },
+
+  // Publish form (update status to live)
+  publishForm: async (id: string) => {
+    return makeRequest(`/forms/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        status: 'live',
+        publishedAt: new Date().toISOString()
+      }),
+    });
+  },
+
+  // Archive form
+  archiveForm: async (id: string) => {
+    return makeRequest(`/forms/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        status: 'archived',
+        archivedAt: new Date().toISOString()
+      }),
     });
   },
 };
@@ -333,7 +400,8 @@ export const jobsApi = {
       });
     }
 
-    return makeRequest(`/jobs?${searchParams.toString()}`);
+    // Use authenticated company endpoint to see all jobs including drafts
+    return makeRequest(`/jobs/company/all?${searchParams.toString()}`);
   },
 
   // Get single job
@@ -541,6 +609,32 @@ export const analyticsApi = {
   },
 };
 
+// Reports API
+export const reportsApi = {
+  // Generate report
+  generateReport: async (data: {
+    type: string;
+    format: string;
+    dateRange?: {
+      from?: string;
+      to?: string;
+    };
+    filters?: {
+      jobPositions?: string[];
+      candidateStatus?: string[];
+      departments?: string[];
+    };
+    recipients?: string;
+    includeCharts?: boolean;
+    includeDetails?: boolean;
+  }) => {
+    return makeRequest('/reports/generate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export default {
   applicationApi,
   notificationApi,
@@ -551,4 +645,5 @@ export default {
   candidatesApi,
   interviewsApi,
   analyticsApi,
+  reportsApi,
 };

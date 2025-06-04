@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -21,7 +21,9 @@ import {
   TrendingUp,
   Grid,
   List,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -35,8 +37,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
+import { shadows } from '@/components/ui/shadow';
 
 import { Application, ApplicationStatus } from '@/types/application';
+import { useApplications } from '@/hooks/useApplications';
+import ApplicationKanbanBoard from '@/components/applications/ApplicationKanbanBoard';
 
 // Mock data for applications
 const mockApplications: Application[] = [
@@ -103,41 +108,71 @@ const mockApplications: Application[] = [
 interface ApplicationReviewDashboardProps {
   jobId?: string;
   applications?: Application[];
+  viewMode?: 'board' | 'list';
   onApplicationAction: (applicationId: string, action: string) => void;
   onBulkAction: (applicationIds: string[], action: string) => void;
 }
 
 const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
   jobId,
-  applications = mockApplications,
+  applications: propApplications,
+  viewMode: propViewMode = 'list',
   onApplicationAction,
   onBulkAction
 }) => {
   const { toast } = useToast();
-  
+
+  // State for filters and UI
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'board' | 'list'>(propViewMode);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>('submittedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  // Update viewMode when prop changes
+  useEffect(() => {
+    setViewMode(propViewMode);
+  }, [propViewMode]);
+
+  // Use real API data with fallback to props or mock data
+  const {
+    applications: apiApplications,
+    pagination,
+    loading,
+    error,
+    refetch,
+    updateApplication,
+    bulkUpdateApplications
+  } = useApplications({
+    page: currentPage,
+    limit: pageSize,
+    jobId: jobId,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    search: searchQuery || undefined,
+  });
+
+  // Determine which applications to use
+  const applications = propApplications || apiApplications || mockApplications;
 
   // Filter and sort applications
   const filteredApplications = useMemo(() => {
     let filtered = applications.filter(app => {
       // Search filter
-      const searchMatch = !searchQuery || 
+      const searchMatch = !searchQuery ||
         `${app.candidateInfo.firstName} ${app.candidateInfo.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.candidateInfo.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.professionalInfo.currentTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.professionalInfo.currentCompany?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Status filter
-      const statusMatch = statusFilter === 'all' || app.status === statusFilter;
+      // Status filter - only apply in list view, board view shows all statuses
+      const statusMatch = viewMode === 'board' || statusFilter === 'all' || app.status === statusFilter;
 
       // Score filter
-      const scoreMatch = scoreFilter === 'all' || 
+      const scoreMatch = scoreFilter === 'all' ||
         (scoreFilter === 'high' && app.scoring.automaticScore >= 80) ||
         (scoreFilter === 'medium' && app.scoring.automaticScore >= 60 && app.scoring.automaticScore < 80) ||
         (scoreFilter === 'low' && app.scoring.automaticScore < 60);
@@ -174,7 +209,7 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
     });
 
     return filtered;
-  }, [applications, searchQuery, statusFilter, scoreFilter, sortBy, sortOrder]);
+  }, [applications, searchQuery, statusFilter, scoreFilter, sortBy, sortOrder, viewMode]);
 
   const getStatusBadge = (status: ApplicationStatus) => {
     const statusConfig = {
@@ -207,21 +242,85 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
     return 'text-red-600';
   };
 
-  const handleApplicationAction = (applicationId: string, action: string) => {
-    onApplicationAction(applicationId, action);
-    
-    const actionLabels = {
-      view: 'Viewing application',
-      interview: 'Moved to interview',
-      reject: 'Application rejected',
-      hire: 'Candidate hired',
-      note: 'Note added'
-    };
+  const handleApplicationAction = async (applicationId: string, action: string) => {
+    try {
+      // Handle different actions
+      switch (action) {
+        case 'view':
+          // Just call the parent handler for view action
+          onApplicationAction(applicationId, action);
+          break;
 
-    toast.atsBlue({
-      title: 'Action Completed',
-      description: actionLabels[action as keyof typeof actionLabels] || 'Action completed'
-    });
+        case 'interview':
+          // Update status to interview
+          const interviewSuccess = await updateApplication(applicationId, { status: 'interview' });
+          if (interviewSuccess) {
+            onApplicationAction(applicationId, action);
+            toast.atsBlue({
+              title: 'Status Updated',
+              description: 'Application moved to interview stage'
+            });
+          }
+          break;
+
+        case 'reject':
+          // Update status to rejected
+          const rejectSuccess = await updateApplication(applicationId, { status: 'rejected' });
+          if (rejectSuccess) {
+            onApplicationAction(applicationId, action);
+            toast.atsBlue({
+              title: 'Application Rejected',
+              description: 'Application has been rejected'
+            });
+          }
+          break;
+
+        case 'hire':
+          // Update status to hired
+          const hireSuccess = await updateApplication(applicationId, { status: 'hired' });
+          if (hireSuccess) {
+            onApplicationAction(applicationId, action);
+            toast.atsBlue({
+              title: 'Candidate Hired',
+              description: 'Candidate has been hired'
+            });
+          }
+          break;
+
+        case 'note':
+          // For now, just call parent handler
+          onApplicationAction(applicationId, action);
+          toast.atsBlue({
+            title: 'Note Added',
+            description: 'Note has been added to application'
+          });
+          break;
+
+        default:
+          onApplicationAction(applicationId, action);
+      }
+    } catch (error) {
+      console.error('Failed to perform action:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to perform action. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleStatusChange = async (applicationId: string, newStatus: ApplicationStatus) => {
+    try {
+      const success = await updateApplication(applicationId, { status: newStatus });
+      if (success) {
+        // The local state is already updated by the updateApplication function
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to update application status:', error);
+      throw error;
+    }
   };
 
   const handleSelectApplication = (applicationId: string) => {
@@ -240,8 +339,59 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
     }
   };
 
+  const handleBulkAction = async (action: string) => {
+    if (selectedApplications.length === 0) return;
+
+    try {
+      switch (action) {
+        case 'interview':
+          const interviewSuccess = await bulkUpdateApplications(selectedApplications, { status: 'interview' });
+          if (interviewSuccess) {
+            onBulkAction(selectedApplications, action);
+            toast.atsBlue({
+              title: 'Bulk Action Completed',
+              description: `${selectedApplications.length} applications moved to interview stage`
+            });
+            setSelectedApplications([]);
+          }
+          break;
+
+        case 'reject':
+          const rejectSuccess = await bulkUpdateApplications(selectedApplications, { status: 'rejected' });
+          if (rejectSuccess) {
+            onBulkAction(selectedApplications, action);
+            toast.atsBlue({
+              title: 'Bulk Action Completed',
+              description: `${selectedApplications.length} applications rejected`
+            });
+            setSelectedApplications([]);
+          }
+          break;
+
+        case 'export':
+          // Handle export action
+          onBulkAction(selectedApplications, action);
+          toast.atsBlue({
+            title: 'Export Started',
+            description: `Exporting ${selectedApplications.length} applications`
+          });
+          break;
+
+        default:
+          onBulkAction(selectedApplications, action);
+      }
+    } catch (error) {
+      console.error('Failed to perform bulk action:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to perform bulk action. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const ApplicationCard = ({ application }: { application: Application }) => (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`${shadows.card} cursor-pointer`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -270,16 +420,16 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {getStatusBadge(application.status)}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className={`h-8 w-8 ${shadows.button}`}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className={shadows.dropdown}>
                 <DropdownMenuItem onClick={() => handleApplicationAction(application.id, 'view')}>
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
@@ -375,25 +525,39 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Users className="h-6 w-6 text-ats-blue" />
             Applications
+            {loading && <Loader2 className="h-4 w-4 animate-spin text-ats-blue" />}
           </h1>
           <p className="text-sm text-gray-500">
-            Review and manage job applications • {filteredApplications.length} application{filteredApplications.length !== 1 ? 's' : ''} found
+            {loading ? (
+              'Loading applications...'
+            ) : error ? (
+              `Error loading applications • Showing ${filteredApplications.length} cached result${filteredApplications.length !== 1 ? 's' : ''}`
+            ) : (
+              `Review and manage job applications • ${filteredApplications.length} application${filteredApplications.length !== 1 ? 's' : ''} found`
+            )}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={loading}
+            className={shadows.button}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleBulkAction('export')}>
             <Download className="h-4 w-4 mr-2" />
             Export
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
-            {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
           </Button>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card>
+      {/* Filters - Show for both board and list view */}
+      <Card className={shadows.card}>
         <CardContent className="p-4">
           <div className="flex flex-col lg:flex-row gap-4 items-center">
             <div className="relative flex-1">
@@ -402,26 +566,30 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
                 placeholder="Search candidates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className={`pl-10 ${shadows.input}`}
               />
             </div>
-            
+
             <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ApplicationStatus | 'all')}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="reviewed">Reviewed</SelectItem>
-                  <SelectItem value="screening">Screening</SelectItem>
-                  <SelectItem value="interview">Interview</SelectItem>
-                  <SelectItem value="offer">Offer</SelectItem>
-                  <SelectItem value="hired">Hired</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Only show status filter for list view, board view shows all statuses */}
+              {viewMode === 'list' && (
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ApplicationStatus | 'all')}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="applied">Applied</SelectItem>
+                    <SelectItem value="reviewed">Reviewed</SelectItem>
+                    <SelectItem value="screening">Screening</SelectItem>
+                    <SelectItem value="interview">Interview</SelectItem>
+                    <SelectItem value="assessment">Assessment</SelectItem>
+                    <SelectItem value="offer">Offer</SelectItem>
+                    <SelectItem value="hired">Hired</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
 
               <Select value={scoreFilter} onValueChange={setScoreFilter}>
                 <SelectTrigger className="w-40">
@@ -435,16 +603,18 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
                 </SelectContent>
               </Select>
 
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="submittedAt">Date Applied</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="score">Match Score</SelectItem>
-                </SelectContent>
-              </Select>
+              {viewMode === 'list' && (
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="submittedAt">Date Applied</SelectItem>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="score">Match Score</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </CardContent>
@@ -452,7 +622,7 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
 
       {/* Bulk Actions */}
       {selectedApplications.length > 0 && (
-        <Card className="bg-ats-blue/5 border-ats-blue/20">
+        <Card className={`bg-ats-blue/5 border-ats-blue/20 ${shadows.card}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -466,15 +636,33 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
                 </span>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => onBulkAction(selectedApplications, 'interview')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={shadows.button}
+                  onClick={() => handleBulkAction('interview')}
+                  disabled={loading}
+                >
                   <Calendar className="h-4 w-4 mr-1" />
                   Schedule Interviews
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => onBulkAction(selectedApplications, 'reject')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={shadows.button}
+                  onClick={() => handleBulkAction('reject')}
+                  disabled={loading}
+                >
                   <XCircle className="h-4 w-4 mr-1" />
                   Reject
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => onBulkAction(selectedApplications, 'export')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={shadows.button}
+                  onClick={() => handleBulkAction('export')}
+                  disabled={loading}
+                >
                   <Download className="h-4 w-4 mr-1" />
                   Export
                 </Button>
@@ -485,34 +673,208 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
       )}
 
       {/* Applications Grid/List */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredApplications.map((application) => (
-            <ApplicationCard key={application.id} application={application} />
-          ))}
-        </div>
+      {loading && applications.length === 0 ? (
+        // Loading state
+        <Card className={shadows.card}>
+          <CardContent className="p-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-ats-blue" />
+            <p className="text-gray-500">Loading applications...</p>
+          </CardContent>
+        </Card>
+      ) : error && applications.length === 0 ? (
+        // Error state
+        <Card className={shadows.card}>
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
+            <p className="text-gray-900 font-medium mb-2">Failed to load applications</p>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <Button onClick={() => refetch()} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : filteredApplications.length === 0 ? (
+        // Empty state
+        <Card className={shadows.card}>
+          <CardContent className="p-8 text-center">
+            <Users className="h-8 w-8 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-900 font-medium mb-2">No applications found</p>
+            <p className="text-gray-500">
+              {searchQuery || statusFilter !== 'all' || scoreFilter !== 'all'
+                ? 'Try adjusting your filters to see more results.'
+                : 'Applications will appear here once candidates start applying.'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : viewMode === 'board' ? (
+        <ApplicationKanbanBoard
+          applications={filteredApplications}
+          onApplicationAction={handleApplicationAction}
+          onStatusChange={handleStatusChange}
+          loading={loading}
+        />
       ) : (
-        <Card>
+        <Card className={shadows.card}>
           <CardContent className="p-0">
-            {/* List view implementation would go here */}
-            <div className="p-4 text-center text-gray-500">
-              List view implementation coming soon...
+            {/* List View Header */}
+            <div className="border-b bg-gray-50 px-6 py-3">
+              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-600">
+                <div className="col-span-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedApplications.length === filteredApplications.length}
+                    onChange={handleSelectAll}
+                  />
+                </div>
+                <div className="col-span-3">Candidate</div>
+                <div className="col-span-2">Position</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-1">Score</div>
+                <div className="col-span-2">Applied</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+            </div>
+
+            {/* List View Items */}
+            <div className="divide-y">
+              {filteredApplications.map((application) => (
+                <div key={application.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    <div className="col-span-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedApplications.includes(application.id)}
+                        onChange={() => handleSelectApplication(application.id)}
+                      />
+                    </div>
+
+                    <div className="col-span-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${application.candidateInfo.firstName} ${application.candidateInfo.lastName}`} />
+                          <AvatarFallback className="text-xs">
+                            {application.candidateInfo.firstName[0]}{application.candidateInfo.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {application.candidateInfo.firstName} {application.candidateInfo.lastName}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {application.candidateInfo.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <p className="text-sm font-medium">{application.professionalInfo.currentTitle}</p>
+                      <p className="text-xs text-gray-500">{application.professionalInfo.currentCompany}</p>
+                    </div>
+
+                    <div className="col-span-2">
+                      {getStatusBadge(application.status)}
+                    </div>
+
+                    <div className="col-span-1">
+                      <span className={`font-semibold text-sm ${getScoreColor(application.scoring.automaticScore)}`}>
+                        {application.scoring.automaticScore}%
+                      </span>
+                    </div>
+
+                    <div className="col-span-2">
+                      <p className="text-sm">{new Date(application.submittedAt || '').toLocaleDateString()}</p>
+                      <p className="text-xs text-gray-500">
+                        {application.candidateInfo.location.city}, {application.candidateInfo.location.state}
+                      </p>
+                    </div>
+
+                    <div className="col-span-1">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2"
+                          onClick={() => handleApplicationAction(application.id, 'view')}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2"
+                          onClick={() => handleApplicationAction(application.id, 'interview')}
+                        >
+                          <Calendar className="h-3 w-3" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                              <MoreHorizontal className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className={shadows.dropdown}>
+                            <DropdownMenuItem onClick={() => handleApplicationAction(application.id, 'view')}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleApplicationAction(application.id, 'interview')}>
+                              <Calendar className="h-4 w-4 mr-2" />
+                              Schedule Interview
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleApplicationAction(application.id, 'note')}>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Add Note
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleApplicationAction(application.id, 'reject')}>
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Reject
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Empty State */}
-      {filteredApplications.length === 0 && (
-        <Card className="p-12 text-center">
-          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No applications found</h3>
-          <p className="text-gray-500">
-            {searchQuery || statusFilter !== 'all' || scoreFilter !== 'all'
-              ? "Try adjusting your search or filters"
-              : "No applications have been submitted yet"
-            }
-          </p>
+      {/* Pagination */}
+      {pagination && pagination.pages > 1 && (
+        <Card className={shadows.card}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} applications
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={pagination.page <= 1 || loading}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-500">
+                  Page {pagination.page} of {pagination.pages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
+                  disabled={pagination.page >= pagination.pages || loading}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       )}
     </div>

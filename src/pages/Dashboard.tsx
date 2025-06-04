@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, Users, Briefcase, Clock, Calendar, Download, Plus, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { shadows } from "@/components/ui/shadow";
@@ -22,6 +23,7 @@ import { calculateConversionRates, analyzeTrends, generateRankings, formatChartD
  * Displays key metrics and charts for the TalentSol ATS
  */
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [addCandidateModalOpen, setAddCandidateModalOpen] = useState(false);
 
@@ -34,6 +36,19 @@ const Dashboard = () => {
   const { data: recruitmentData, loading: recruitmentLoading } = useRecruitmentData();
   const { data: sourceData, loading: sourceLoading } = useSourceData();
   const { interviews: upcomingInterviews, loading: interviewsLoading } = useUpcomingInterviews();
+
+  // Navigation handlers
+  const handleViewAllInterviews = () => {
+    navigate('/interviews');
+  };
+
+  const handleViewAllApplications = () => {
+    navigate('/applications');
+  };
+
+  const handleViewAllJobs = () => {
+    navigate('/jobs');
+  };
 
   // Use data from analytics API instead of separate calls
   const recentApplications = dashboardStats?.recentApplications || [];
@@ -223,7 +238,12 @@ const Dashboard = () => {
             </div>
 
             <div className="p-6 pt-4 border-t border-slate-100">
-              <Button variant="ghost" size="sm" className="justify-start w-fit px-0 text-blue-600 hover:text-blue-700 font-medium">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleViewAllInterviews}
+                className="justify-start w-fit px-0 text-blue-600 hover:text-blue-700 font-medium"
+              >
                 View all interviews
                 <ArrowUpRight className="ml-1 h-4 w-4" />
               </Button>
@@ -261,7 +281,12 @@ const Dashboard = () => {
             </div>
 
             <div className="p-6 pt-4 border-t border-slate-100">
-              <Button variant="ghost" size="sm" className="justify-start w-fit px-0 text-green-600 hover:text-green-700 font-medium">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleViewAllApplications}
+                className="justify-start w-fit px-0 text-green-600 hover:text-green-700 font-medium"
+              >
                 View all applications
                 <ArrowUpRight className="ml-1 h-4 w-4" />
               </Button>
@@ -296,7 +321,12 @@ const Dashboard = () => {
             </div>
 
             <div className="p-6 pt-4 border-t border-slate-100">
-              <Button variant="ghost" size="sm" className="justify-start w-fit px-0 text-purple-600 hover:text-purple-700 font-medium">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleViewAllJobs}
+                className="justify-start w-fit px-0 text-purple-600 hover:text-purple-700 font-medium"
+              >
                 View all jobs
                 <ArrowUpRight className="ml-1 h-4 w-4" />
               </Button>

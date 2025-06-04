@@ -22,7 +22,8 @@ import {
   CheckSquare,
   Square,
   AlertCircle,
-  Loader2
+  Loader2,
+  RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { shadows } from "@/components/ui/shadow";
@@ -86,8 +87,8 @@ interface JobPipeline {
 
 // Note: Fallback mock data is handled in the useJobs hook
 
-// Utility functions
-const formatSalary = (salary: JobSalary): string => {
+// Utility functions - exported for use in other components
+export const formatSalary = (salary: JobSalary): string => {
   if (!salary || typeof salary.min !== 'number' || typeof salary.max !== 'number') {
     return "Salary not specified";
   }
@@ -100,7 +101,7 @@ const formatSalary = (salary: JobSalary): string => {
   return `${formatter.format(salary.min)} - ${formatter.format(salary.max)}`;
 };
 
-const formatLocation = (location: JobLocation): string => {
+export const formatLocation = (location: JobLocation): string => {
   if (!location) return "Unknown";
   if (location.type === "remote") return "Remote";
   if (location.city && location.state) {
@@ -109,7 +110,7 @@ const formatLocation = (location: JobLocation): string => {
   return location.type ? location.type.charAt(0).toUpperCase() + location.type.slice(1) : "Unknown";
 };
 
-const getRelativeTime = (dateString: string): string => {
+export const getRelativeTime = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
@@ -167,8 +168,8 @@ const PipelineProgress = ({ pipeline, total }: { pipeline: JobPipeline; total: n
         {stages.map((stage) => (
           <div key={stage.key} className={`text-center p-2 rounded-lg ${stage.bgColor}`}>
             <div className={`w-full h-2 ${stage.color} rounded-full mb-2`} />
-            <div className={`font-bold text-lg ${stage.textColor}`}>{safePipeline[stage.key]}</div>
-            <div className={`${stage.textColor} font-medium truncate`}>{stage.label}</div>
+            <div className={`font-inter font-bold text-lg ${stage.textColor}`}>{safePipeline[stage.key]}</div>
+            <div className={`text-sm font-inter font-medium truncate ${stage.textColor}`}>{stage.label}</div>
           </div>
         ))}
       </div>
@@ -177,26 +178,40 @@ const PipelineProgress = ({ pipeline, total }: { pipeline: JobPipeline; total: n
 };
 
 // Enhanced Job Card Component
-const JobCard = ({ job, isSelected, onSelect }: {
+const JobCard = ({
+  job,
+  isSelected,
+  onSelect,
+  onUpdate,
+  onCreate,
+  onDelete,
+  onRefetch
+}: {
   job: Job;
   isSelected?: boolean;
   onSelect?: (jobId: string) => void;
+  onUpdate?: (jobId: string, data: Partial<Job>) => Promise<any>;
+  onCreate?: (data: Partial<Job>) => Promise<any>;
+  onDelete?: (jobId: string) => Promise<any>;
+  onRefetch?: () => void;
 }) => {
   const { toast } = useToast();
 
-  const handleAction = (action: string, jobId?: string) => {
+  const handleAction = async (action: string, jobId?: string) => {
+    const targetJobId = jobId || job.id;
+
     switch (action) {
       case 'view-job':
         // Navigate to job details page
-        window.location.href = `/jobs/${jobId || job.id}`;
+        window.location.href = `/jobs/${targetJobId}`;
         toast.atsBlue({
           title: "Opening Job Details",
           description: `Viewing details for ${job.title}`,
         });
         break;
       case 'edit':
-        // Navigate to job edit page or open edit modal
-        window.location.href = `/jobs/${jobId || job.id}/edit`;
+        // Navigate to job edit page
+        window.location.href = `/jobs/${targetJobId}/edit`;
         toast.atsBlue({
           title: "Edit Job",
           description: `Opening edit form for ${job.title}`,
@@ -204,7 +219,7 @@ const JobCard = ({ job, isSelected, onSelect }: {
         break;
       case 'view-candidates':
         // Navigate to candidates page filtered by this job
-        window.location.href = `/candidates/pipeline?jobId=${jobId || job.id}`;
+        window.location.href = `/candidates?jobId=${targetJobId}`;
         toast.atsBlue({
           title: "View Candidates",
           description: `Showing candidates for ${job.title}`,
@@ -212,25 +227,39 @@ const JobCard = ({ job, isSelected, onSelect }: {
         break;
       case 'clone':
         // Create a copy of the job via API
+        if (!onCreate) {
+          toast.atsBlue({
+            title: "Clone Failed",
+            description: "Clone functionality not available",
+          });
+          return;
+        }
+
         try {
           const clonedJobData = {
-            ...job,
             title: `${job.title} (Copy)`,
+            department: job.department,
+            location: job.location,
+            employmentType: job.employmentType,
+            experienceLevel: job.experienceLevel,
+            salary: job.salary,
+            description: job.description,
+            responsibilities: job.responsibilities,
+            requiredQualifications: job.requiredQualifications,
+            preferredQualifications: job.preferredQualifications,
+            skills: job.skills,
+            benefits: job.benefits,
             status: 'draft',
-            currentApplicants: 0,
-            pipeline: { screening: 0, interview: 0, assessment: 0, offer: 0 },
+            visibility: job.visibility,
+            maxApplicants: job.maxApplicants,
+            source: 'internal'
           };
 
-          // Remove fields that shouldn't be copied
-          delete clonedJobData.id;
-          delete clonedJobData.createdAt;
-          delete clonedJobData.updatedAt;
-          delete clonedJobData.postedDate;
+          await onCreate(clonedJobData);
+          onRefetch?.(); // Refresh the job list
 
-          // Create via API (this would need to be passed down or accessed via context)
-          // For now, show success message
           toast.atsBlue({
-            title: "Job Cloned",
+            title: "Job Cloned Successfully",
             description: `Created a copy of ${job.title}`,
           });
         } catch (error) {
@@ -242,8 +271,18 @@ const JobCard = ({ job, isSelected, onSelect }: {
         break;
       case 'close':
         // Update job status to closed via API
+        if (!onUpdate) {
+          toast.atsBlue({
+            title: "Close Failed",
+            description: "Update functionality not available",
+          });
+          return;
+        }
+
         try {
-          // This would need access to updateJob function
+          await onUpdate(targetJobId, { status: 'closed' });
+          onRefetch?.(); // Refresh the job list
+
           toast.atsBlue({
             title: "Job Closed",
             description: `${job.title} has been closed to new applications`,
@@ -257,8 +296,18 @@ const JobCard = ({ job, isSelected, onSelect }: {
         break;
       case 'archive':
         // Update job status to archived via API
+        if (!onUpdate) {
+          toast.atsBlue({
+            title: "Archive Failed",
+            description: "Update functionality not available",
+          });
+          return;
+        }
+
         try {
-          // This would need access to updateJob function
+          await onUpdate(targetJobId, { status: 'archived' });
+          onRefetch?.(); // Refresh the job list
+
           toast.atsBlue({
             title: "Job Archived",
             description: `${job.title} has been archived`,
@@ -270,11 +319,46 @@ const JobCard = ({ job, isSelected, onSelect }: {
           });
         }
         break;
+      case 'reopen':
+        // Update job status from archived to open via API
+        if (!onUpdate) {
+          toast.atsBlue({
+            title: "Reopen Failed",
+            description: "Update functionality not available",
+          });
+          return;
+        }
+
+        try {
+          await onUpdate(targetJobId, { status: 'open' });
+          onRefetch?.(); // Refresh the job list
+
+          toast.atsBlue({
+            title: "Job Reopened",
+            description: `${job.title} has been reopened and is now accepting applications`,
+          });
+        } catch (error) {
+          toast.atsBlue({
+            title: "Reopen Failed",
+            description: `Failed to reopen ${job.title}`,
+          });
+        }
+        break;
       case 'delete':
-        // Show confirmation dialog before deleting
+        // Delete job via API with confirmation
+        if (!onDelete) {
+          toast.atsBlue({
+            title: "Delete Failed",
+            description: "Delete functionality not available",
+          });
+          return;
+        }
+
         if (window.confirm(`Are you sure you want to delete "${job.title}"? This action cannot be undone.`)) {
           try {
-            // This would need access to deleteJob function
+            await onDelete(targetJobId);
+            onRefetch?.(); // Refresh the job list
+
             toast.atsBlue({
               title: "Job Deleted",
               description: `${job.title} has been permanently deleted`,
@@ -306,15 +390,36 @@ const JobCard = ({ job, isSelected, onSelect }: {
             )}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <CardTitle className="text-xl font-semibold text-gray-900">{job.title}</CardTitle>
+                <CardTitle className="text-lg font-inter font-semibold text-gray-900">{job.title}</CardTitle>
                 {getStatusBadge(job.status)}
+                {/* Application Count Badge - Integrated with Status */}
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-inter flex items-center gap-1 ${
+                    job.currentApplicants >= 10
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : 'bg-gray-50 text-gray-700 border-gray-200'
+                  }`}
+                >
+                  <Users className="h-3 w-3" />
+                  {job.currentApplicants} {job.currentApplicants === 1 ? 'app' : 'apps'}
+                </Badge>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-xs font-inter bg-blue-50 text-blue-700 border-blue-200">
                   {job.department}
                 </Badge>
                 <span className="text-gray-400">•</span>
-                <span className="capitalize text-gray-600 font-medium">{job.experienceLevel}</span>
+                <span className="capitalize text-sm text-gray-600 font-inter font-medium">{job.experienceLevel}</span>
+                {/* Application Limit Indicator - Contextual Information */}
+                {job.maxApplicants && (
+                  <>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-xs text-gray-500 font-inter">
+                      {job.maxApplicants - job.currentApplicants} spots left
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -338,14 +443,28 @@ const JobCard = ({ job, isSelected, onSelect }: {
                 Clone Job
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleAction('close')}>
-                <Archive className="h-4 w-4 mr-2" />
-                Close Job
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleAction('archive')}>
-                <Archive className="h-4 w-4 mr-2" />
-                Archive Job
-              </DropdownMenuItem>
+
+              {/* Show different actions based on job status */}
+              {job.status === 'archived' ? (
+                <DropdownMenuItem onClick={() => handleAction('reopen')} className="text-green-600 focus:text-green-600">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reopen Job
+                </DropdownMenuItem>
+              ) : (
+                <>
+                  {job.status !== 'closed' && (
+                    <DropdownMenuItem onClick={() => handleAction('close')}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Close Job
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => handleAction('archive')}>
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive Job
+                  </DropdownMenuItem>
+                </>
+              )}
+
               <DropdownMenuItem
                 onClick={() => handleAction('delete')}
                 className="text-red-600 focus:text-red-600"
@@ -363,71 +482,56 @@ const JobCard = ({ job, isSelected, onSelect }: {
             <div className="p-2 rounded-lg bg-blue-50">
               <MapPin className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="font-medium text-gray-700">{formatLocation(job.location)}</span>
+            <span className="text-sm text-gray-600 font-inter">{formatLocation(job.location)}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-50">
               <Clock className="h-4 w-4 text-green-600" />
             </div>
-            <span className="capitalize font-medium text-gray-700">{job.employmentType}</span>
+            <span className="capitalize text-sm text-gray-600 font-inter">{job.employmentType}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-purple-50">
               <DollarSign className="h-4 w-4 text-purple-600" />
             </div>
-            <span className="font-medium text-gray-700">{formatSalary(job.salary)}</span>
+            <span className="text-sm text-gray-600 font-inter">{formatSalary(job.salary)}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-orange-50">
               <Calendar className="h-4 w-4 text-orange-600" />
             </div>
-            <span className="font-medium text-gray-700">{getRelativeTime(job.postedDate)}</span>
+            <span className="text-sm text-gray-600 font-inter">{getRelativeTime(job.postedDate)}</span>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 font-medium">Applications</span>
-            <span className="font-semibold text-gray-900">
-              {job.currentApplicants}{job.maxApplicants ? ` of ${job.maxApplicants}` : ''}
-            </span>
-          </div>
-
-          {/* Application Progress Bar and Status */}
-          {job.maxApplicants && (
-            <div className="space-y-2">
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                <div
-                  className={`h-3 rounded-full transition-all duration-500 ${
-                    (job.currentApplicants / job.maxApplicants) >= 0.9
-                      ? 'bg-gradient-to-r from-red-500 to-red-600'
-                      : (job.currentApplicants / job.maxApplicants) >= 0.7
-                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                      : 'bg-gradient-to-r from-blue-500 to-blue-600'
-                  }`}
-                  style={{ width: `${Math.min((job.currentApplicants / job.maxApplicants) * 100, 100)}%` }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600 font-medium">
-                  {job.maxApplicants - job.currentApplicants} spots remaining
-                </span>
-                {(job.currentApplicants / job.maxApplicants) >= 0.8 && (
-                  <span className="text-orange-600 font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
-                    <Clock className="h-3 w-3" />
-                    Filling fast
-                  </span>
-                )}
-                {job.currentApplicants >= job.maxApplicants && (
-                  <span className="text-red-600 font-semibold flex items-center gap-1 bg-red-50 px-2 py-1 rounded-full">
-                    <AlertCircle className="h-3 w-3" />
-                    Applications full
-                  </span>
-                )}
-              </div>
+        {/* Application Progress - Progressive Disclosure */}
+        {job.maxApplicants && (job.currentApplicants / job.maxApplicants) >= 0.7 && (
+          <div className="space-y-2">
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  (job.currentApplicants / job.maxApplicants) >= 0.9
+                    ? 'bg-gradient-to-r from-red-500 to-red-600'
+                    : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                }`}
+                style={{ width: `${Math.min((job.currentApplicants / job.maxApplicants) * 100, 100)}%` }}
+              />
             </div>
-          )}
-        </div>
+            <div className="flex items-center justify-center">
+              {(job.currentApplicants / job.maxApplicants) >= 0.9 ? (
+                <span className="text-xs text-red-600 font-inter font-semibold flex items-center gap-1 bg-red-50 px-2 py-1 rounded-full">
+                  <AlertCircle className="h-3 w-3" />
+                  Applications full
+                </span>
+              ) : (
+                <span className="text-xs text-orange-600 font-inter font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
+                  <Clock className="h-3 w-3" />
+                  Filling fast
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <PipelineProgress pipeline={job.pipeline} total={job.currentApplicants} />
 
@@ -510,10 +614,31 @@ const Jobs = () => {
     department: filters.departments.length > 0 ? filters.departments.join(',') : undefined,
   });
 
-  // Job mutation hooks
+
+
+  // Job mutation hooks with refetch callback
   const { createJob, loading: createLoading } = useCreateJob();
   const { updateJob, loading: updateLoading } = useUpdateJob();
   const { deleteJob, loading: deleteLoading } = useDeleteJob();
+
+  // Enhanced mutation functions that trigger refetch
+  const handleCreateJob = async (jobData: Partial<Job>) => {
+    const result = await createJob(jobData);
+    refetch(); // Refresh the job list
+    return result;
+  };
+
+  const handleUpdateJob = async (id: string, jobData: Partial<Job>) => {
+    const result = await updateJob(id, jobData);
+    refetch(); // Refresh the job list
+    return result;
+  };
+
+  const handleDeleteJob = async (id: string) => {
+    const result = await deleteJob(id);
+    refetch(); // Refresh the job list
+    return result;
+  };
 
   // Form state for job creation
   const [newJobForm, setNewJobForm] = useState({
@@ -625,6 +750,14 @@ const Jobs = () => {
             )
           );
           break;
+        case 'reopen':
+          // Update multiple jobs from archived to open status
+          await Promise.all(
+            selectedJobs.map(jobId =>
+              updateJob(jobId, { status: 'open' })
+            )
+          );
+          break;
         case 'delete':
           if (window.confirm(`Are you sure you want to delete ${selectedJobs.length} job${selectedJobs.length !== 1 ? 's' : ''}? This action cannot be undone.`)) {
             // Delete multiple jobs
@@ -720,8 +853,8 @@ const Jobs = () => {
     setShowBulkActions(selectedJobs.length > 0);
   }, [selectedJobs]);
 
-  // Handle job creation with API
-  const handleCreateJob = async () => {
+  // Handle job creation from dialog
+  const handleCreateJobFromDialog = async () => {
     // Validate required fields
     if (!newJobForm.title || !newJobForm.department || !newJobForm.employmentType ||
         !newJobForm.experienceLevel || !newJobForm.minSalary || !newJobForm.maxSalary ||
@@ -766,7 +899,7 @@ const Jobs = () => {
       };
 
       // Create job via API
-      const createdJob = await createJob(jobData);
+      const createdJob = await handleCreateJob(jobData);
 
       // Reset form
       setNewJobForm({
@@ -789,8 +922,7 @@ const Jobs = () => {
       // Close dialog and show success
       setShowCreateDialog(false);
 
-      // Refetch jobs to update the list
-      refetch();
+      // Jobs list will be automatically updated by handleCreateJob
 
       toast.atsBlue({
         title: "Job Created Successfully",
@@ -811,29 +943,6 @@ const Jobs = () => {
         subtitle={`Manage your open positions • ${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''} found`}
         icon={Briefcase}
       >
-        <Button
-          onClick={async () => {
-            try {
-              const response = await fetch('http://localhost:3001/api/jobs');
-              const data = await response.json();
-              console.log('Direct API test:', data);
-              toast.atsBlue({
-                title: "API Test",
-                description: `Found ${data.jobs?.length || 0} jobs`,
-              });
-            } catch (error) {
-              console.error('Direct API test failed:', error);
-              toast.atsBlue({
-                title: "API Test Failed",
-                description: error instanceof Error ? error.message : 'Unknown error',
-              });
-            }
-          }}
-          variant="outline"
-          className="border-gray-300 hover:border-blue-500 hover:text-blue-600"
-        >
-          Test API
-        </Button>
         <Button
           onClick={() => setShowCreateDialog(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all duration-200"
@@ -946,9 +1055,9 @@ const Jobs = () => {
       {activeFilterCount > 0 && (
         <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-medium text-gray-700">Active filters:</span>
+            <span className="text-sm font-inter font-medium text-gray-700">Active filters:</span>
             {filters.status.map(status => (
-              <Badge key={status} variant="secondary" className="gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
+              <Badge key={status} variant="secondary" className="gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 font-inter text-xs">
                 Status: {status}
                 <X
                   className="h-3 w-3 cursor-pointer hover:text-blue-900"
@@ -960,7 +1069,7 @@ const Jobs = () => {
               </Badge>
             ))}
             {filters.departments.map(dept => (
-              <Badge key={dept} variant="secondary" className="gap-2 bg-green-100 text-green-800 hover:bg-green-200">
+              <Badge key={dept} variant="secondary" className="gap-2 bg-green-100 text-green-800 hover:bg-green-200 font-inter text-xs">
                 {dept}
                 <X
                   className="h-3 w-3 cursor-pointer hover:text-green-900"
@@ -972,7 +1081,7 @@ const Jobs = () => {
               </Badge>
             ))}
             {filters.locations.map(location => (
-              <Badge key={location} variant="secondary" className="gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200">
+              <Badge key={location} variant="secondary" className="gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200 font-inter text-xs">
                 {location}
                 <X
                   className="h-3 w-3 cursor-pointer hover:text-purple-900"
@@ -983,7 +1092,7 @@ const Jobs = () => {
                 />
               </Badge>
             ))}
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-600 hover:text-gray-800">
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-sm font-inter text-gray-600 hover:text-gray-800">
               Clear all
             </Button>
           </div>
@@ -1000,7 +1109,7 @@ const Jobs = () => {
                 onCheckedChange={handleSelectAll}
                 className="border-blue-400 data-[state=checked]:bg-blue-600"
               />
-              <span className="text-sm font-semibold text-blue-900">
+              <span className="text-sm font-inter font-semibold text-blue-900">
                 {selectedJobs.length} job{selectedJobs.length !== 1 ? 's' : ''} selected
               </span>
             </div>
@@ -1012,6 +1121,10 @@ const Jobs = () => {
               <Button variant="outline" size="sm" onClick={() => handleBulkAction('Archive')} className="border-gray-300 hover:border-purple-500 hover:text-purple-600">
                 <Archive className="h-4 w-4 mr-2" />
                 Archive
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Reopen')} className="border-gray-300 hover:border-green-500 hover:text-green-600">
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reopen
               </Button>
               <Button variant="outline" size="sm" onClick={() => handleBulkAction('Export')} className="border-gray-300 hover:border-green-500 hover:text-green-600">
                 <Download className="h-4 w-4 mr-2" />
@@ -1037,7 +1150,7 @@ const Jobs = () => {
           <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-8">
             <div className="flex items-center gap-4">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="text-lg font-medium text-gray-700">Loading jobs...</span>
+              <span className="text-lg font-inter font-medium text-gray-700">Loading jobs...</span>
             </div>
           </div>
         </div>
@@ -1051,9 +1164,12 @@ const Jobs = () => {
               <div className="flex items-center">
                 <AlertCircle className="h-6 w-6 text-blue-500 mr-4" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-blue-900">Demo Mode Active</h3>
-                  <p className="text-blue-700 mt-1">
+                  <h3 className="text-lg font-inter font-semibold text-blue-900">Demo Mode Active</h3>
+                  <p className="text-sm font-inter text-blue-700 mt-1">
                     Backend server not available. Showing demo data with limited functionality.
+                  </p>
+                  <p className="text-xs font-inter text-blue-600 mt-2">
+                    Error: {error}
                   </p>
                 </div>
                 <Button
@@ -1071,8 +1187,8 @@ const Jobs = () => {
               <div className="flex items-center">
                 <AlertCircle className="h-6 w-6 text-red-500 mr-4" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-red-900">Error Loading Jobs</h3>
-                  <p className="text-red-700 mt-1">{error}</p>
+                  <h3 className="text-lg font-inter font-semibold text-red-900">Error Loading Jobs</h3>
+                  <p className="text-sm font-inter text-red-700 mt-1">{error}</p>
                 </div>
                 <Button
                   onClick={refetch}
@@ -1093,8 +1209,8 @@ const Jobs = () => {
         <div className="flex items-center justify-center py-16">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-12 text-center max-w-md">
             <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-6" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">No Jobs Found</h3>
-            <p className="text-gray-600 mb-6 leading-relaxed">
+            <h3 className="text-xl font-inter font-semibold text-gray-900 mb-3">No Jobs Found</h3>
+            <p className="text-sm font-inter text-gray-600 mb-6 leading-relaxed">
               {searchQuery || activeFilterCount > 0
                 ? "No jobs match your current search and filters."
                 : "Get started by creating your first job posting."
@@ -1123,6 +1239,10 @@ const Jobs = () => {
               job={job}
               isSelected={selectedJobs.includes(job.id)}
               onSelect={handleJobSelect}
+              onUpdate={handleUpdateJob}
+              onCreate={handleCreateJob}
+              onDelete={handleDeleteJob}
+              onRefetch={refetch}
             />
           ))}
         </div>
@@ -1132,7 +1252,7 @@ const Jobs = () => {
       {!loading && totalPages > 1 && (
         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-6 mt-8">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-700">
+            <div className="text-sm font-inter font-medium text-gray-700">
               Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} jobs
             </div>
             <div className="flex items-center space-x-3">
@@ -1141,11 +1261,11 @@ const Jobs = () => {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50"
+                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 font-inter"
               >
                 Previous
               </Button>
-              <span className="text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
+              <span className="text-sm font-inter font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
@@ -1153,7 +1273,7 @@ const Jobs = () => {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50"
+                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 font-inter"
               >
                 Next
               </Button>
@@ -1377,7 +1497,7 @@ const Jobs = () => {
             </Button>
             <Button
               className="bg-ats-blue hover:bg-ats-dark-blue"
-              onClick={handleCreateJob}
+              onClick={handleCreateJobFromDialog}
               disabled={createLoading}
             >
               {createLoading ? (

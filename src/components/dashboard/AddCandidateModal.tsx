@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
+import { candidatesApi } from '@/services/api';
 
 interface AddCandidateModalProps {
   open: boolean;
@@ -246,28 +247,59 @@ export const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ open, onOp
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    
-    toast.atsBlue({
-      title: "Candidate added successfully",
-      description: `${formData.personalInfo.firstName} ${formData.personalInfo.lastName} has been added to the pipeline.`,
-    });
 
-    onOpenChange(false);
-    
-    // Reset form
-    setFormData({
-      personalInfo: { firstName: '', lastName: '', email: '', phone: '', location: '' },
-      application: { position: '', source: '', expectedSalary: '', availabilityDate: '' },
-      qualifications: { experience: '', skills: [], education: '', languages: [] },
-      screening: { initialNotes: '', rating: 0 },
-    });
-    setResumeFile(null);
-    setActiveTab('personal');
+    try {
+      // Prepare candidate data for API
+      const candidateData = {
+        firstName: formData.personalInfo.firstName,
+        lastName: formData.personalInfo.lastName,
+        email: formData.personalInfo.email,
+        phone: formData.personalInfo.phone,
+        location: formData.personalInfo.location,
+        source: formData.application.source,
+        expectedSalary: formData.application.expectedSalary ? parseInt(formData.application.expectedSalary) : undefined,
+        availabilityDate: formData.application.availabilityDate || undefined,
+        experience: formData.qualifications.experience,
+        skills: formData.qualifications.skills,
+        education: formData.qualifications.education,
+        languages: formData.qualifications.languages,
+        initialNotes: formData.screening.initialNotes,
+        rating: formData.screening.rating,
+        // TODO: Handle resume file upload when file upload API is implemented
+        resumeUrl: resumeFile ? `resume_${Date.now()}_${resumeFile.name}` : undefined,
+      };
+
+      // Call the real API
+      const response = await candidatesApi.createCandidate(candidateData);
+
+      setIsSubmitting(false);
+
+      toast.atsBlue({
+        title: "Candidate added successfully",
+        description: `${formData.personalInfo.firstName} ${formData.personalInfo.lastName} has been added to the pipeline.`,
+      });
+
+      onOpenChange(false);
+
+      // Reset form
+      setFormData({
+        personalInfo: { firstName: '', lastName: '', email: '', phone: '', location: '' },
+        application: { position: '', source: '', expectedSalary: '', availabilityDate: '' },
+        qualifications: { experience: '', skills: [], education: '', languages: [] },
+        screening: { initialNotes: '', rating: 0 },
+      });
+      setResumeFile(null);
+      setActiveTab('personal');
+
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error('Error creating candidate:', error);
+
+      toast.atsBlue({
+        title: "Failed to add candidate",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
+      });
+    }
   };
 
   const isTabComplete = (tab: string) => {

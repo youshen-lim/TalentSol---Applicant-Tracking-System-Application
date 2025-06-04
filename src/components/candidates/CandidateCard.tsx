@@ -97,34 +97,39 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
   // Determine which status/stage to use
   const candidateStatus = status || stage?.toLowerCase() || 'new';
 
-  // Get the appropriate status color
-  const getStatusColor = () => {
-    if (status && statusColors[status]) {
-      return statusColors[status];
-    } else if (stage) {
-      const stageKey = stage.toLowerCase();
-      if (statusColors[stageKey as keyof typeof statusColors]) {
-        return statusColors[stageKey as keyof typeof statusColors];
-      }
-      // Use the function from the new code for any custom stages
-      switch (stage.toLowerCase()) {
-        case 'applied':
-          return 'bg-blue-100 text-blue-700';
-        case 'screening':
-          return 'bg-blue-100 text-blue-700';
-        case 'interview':
-          return 'bg-blue-100 text-blue-700';
-        case 'assessment':
-          return 'bg-indigo-100 text-indigo-700';
-        case 'offer':
-          return 'bg-green-100 text-green-700';
-        case 'rejected':
-          return 'bg-red-100 text-red-700';
-        default:
-          return 'bg-gray-100 text-gray-700';
-      }
+  // Get stage badge with gradient styling (matching Jobs page design)
+  const getStageBadge = () => {
+    const currentStage = stage || candidateStatus;
+    switch (currentStage) {
+      case 'applied':
+        return 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm';
+      case 'screening':
+        return 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm';
+      case 'interview':
+        return 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-sm';
+      case 'assessment':
+        return 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-sm';
+      case 'offer':
+        return 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-sm';
+      case 'hired':
+        return 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-sm';
+      case 'rejected':
+        return 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-sm';
+      default:
+        return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-sm';
     }
-    return 'bg-gray-100 text-gray-700';
+  };
+
+  // Format stage text properly
+  const formatStageText = (stageValue: string) => {
+    // Handle both stage names and status values
+    if (statusLabels[stageValue as keyof typeof statusLabels]) {
+      return statusLabels[stageValue as keyof typeof statusLabels];
+    }
+    // Fallback: capitalize first letter of each word
+    return stageValue.split(' ').map(word =>
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
   };
 
   // Get initials for avatar fallback
@@ -200,8 +205,8 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
               <CardDescription className="text-xs sm:text-sm truncate">{position}</CardDescription>
             </div>
           </div>
-          <Badge className={cn(getStatusColor(), "flex-shrink-0 text-xs")}>
-            {stage || statusLabels[status || 'new']}
+          <Badge className={cn(getStageBadge(), "flex-shrink-0 text-xs")}>
+            {formatStageText(stage || status || 'new')}
           </Badge>
         </div>
       </CardHeader>

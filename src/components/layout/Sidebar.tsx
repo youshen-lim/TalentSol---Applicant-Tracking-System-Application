@@ -48,7 +48,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     },
     {
       title: 'Candidates',
-      href: '/candidates/pipeline',
+      href: '/candidates',
       icon: <Users className="h-5 w-5" />,
     },
     {

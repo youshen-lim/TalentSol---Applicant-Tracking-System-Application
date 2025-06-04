@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Company {
@@ -43,6 +43,7 @@ model User {
   createdJobs       Job[]         @relation("JobCreator")
   reviewedApps      Application[] @relation("ApplicationReviewer")
   createdInterviews Interview[]   @relation("InterviewCreator")
+  createdForms      ApplicationFormSchema[] @relation("FormCreator")
   notifications     Notification[]
   settings          UserSettings?
 
@@ -112,12 +113,14 @@ model Application {
   candidateId            String    @map("candidate_id")
   status                 String    @default("applied")
   submittedAt            DateTime? @map("submitted_at")
+  hiredAt                DateTime? @map("hired_at")
   candidateInfo          Json      @map("candidate_info") // CandidateInfo interface
   professionalInfo       Json?     @map("professional_info") // ProfessionalInfo interface
   documentData           Json?     @map("document_data") // ApplicationDocuments interface
   customAnswers          Json?     @map("custom_answers") // Record<string, CustomAnswer>
   metadata               Json?     // ApplicationMetadata interface
-  scoring                Json?     // ApplicationScoring interface
+  scoring                Json?     // ApplicationScoring interface (for future ML features)
+  score                  Int?      // Simple numeric score (0-100)
   activity               Json[]    // ApplicationActivity[] interface
   reviewNotes            String?   @map("review_notes")
   reviewedById           String?   @map("reviewed_by_id")
@@ -126,6 +129,7 @@ model Application {
   lastContactDate        DateTime? @map("last_contact_date")
   nextFollowupDate       DateTime? @map("next_followup_date")
   communicationHistory   String[]  @map("communication_history")
+  sourceId               String?   @map("source_id") // Reference to CandidateSource
   createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt              DateTime  @updatedAt @map("updated_at")
 
@@ -133,6 +137,7 @@ model Application {
   job        Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
   candidate  Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   reviewedBy User?       @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
+  source     CandidateSource? @relation(fields: [sourceId], references: [id])
   interviews Interview[]
   documents  Document[]
   mlPredictions MLPrediction[]
@@ -189,13 +194,19 @@ model ApplicationFormSchema {
   sections      Json     // FormSection[] interface
   settings      Json     // Form settings interface
   emailSettings Json     @map("email_settings") // Email settings interface
+  status        String   @default("draft") // 'draft', 'live', 'archived'
   version       Int      @default(1)
+  publishedAt   DateTime? @map("published_at")
+  archivedAt    DateTime? @map("archived_at")
+  viewCount     Int      @default(0) @map("view_count")
+  submissionCount Int    @default(0) @map("submission_count")
   createdById   String   @map("created_by_id")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
   job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdBy User @relation("FormCreator", fields: [createdById], references: [id])
 
   @@map("application_form_schemas")
 }
@@ -211,6 +222,23 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("email_templates")
+}
+
+// Candidate Sources tracking for analytics
+model CandidateSource {
+  id          String   @id @default(cuid())
+  name        String   @unique // 'LinkedIn', 'Indeed', 'Company Website', etc.
+  category    String   // 'job_board', 'social_media', 'referral', 'direct', 'company_website'
+  isActive    Boolean  @default(true) @map("is_active")
+  cost        Float?   // Cost per application/hire if applicable
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  applications Application[]
+
+  @@map("candidate_sources")
 }
 
 // ML Models and Training Data

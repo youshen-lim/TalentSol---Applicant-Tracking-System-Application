@@ -22,6 +22,8 @@ import documentRoutes from './routes/documents.js';
 import analyticsRoutes from './routes/analytics.js';
 import mlRoutes from './routes/ml.js';
 import notificationRoutes from './routes/notifications.js';
+import reportsRoutes from './routes/reports';
+import formRoutes from './routes/forms.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -102,6 +104,8 @@ app.use('/api/documents', authenticateToken, documentRoutes);
 app.use('/api/analytics', analyticsRoutes); // Temporarily removed auth for testing
 app.use('/api/ml', authenticateToken, mlRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
+app.use('/api/reports', authenticateToken, reportsRoutes);
+app.use('/api/forms', formRoutes);
 
 // Error handling middleware
 app.use(notFound);

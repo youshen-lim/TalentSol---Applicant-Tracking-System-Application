@@ -6,7 +6,7 @@ import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all jobs (public endpoint for job listings)
+// Get all jobs (public endpoint for job listings, enhanced with optional authentication)
 router.get('/', asyncHandler(async (req, res) => {
   const {
     page = '1',
@@ -23,11 +23,35 @@ router.get('/', asyncHandler(async (req, res) => {
   const limitNum = parseInt(limit as string);
   const skip = (pageNum - 1) * limitNum;
 
+  // Check if user is authenticated (optional authentication)
+  const authHeader = req.headers.authorization;
+  let authenticatedUser = null;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.substring(7);
+      // Simple check for demo token or JWT
+      if (token === 'demo-token-for-development' || token.includes('.')) {
+        // For demo purposes, assume authenticated user belongs to comp_1
+        authenticatedUser = { companyId: 'comp_1' };
+      }
+    } catch (error) {
+      // Ignore authentication errors for this endpoint
+    }
+  }
+
   // Build where clause
-  const where: any = {
-    status: status as string,
-    visibility: 'public', // Only show public jobs for unauthenticated requests
-  };
+  const where: any = {};
+
+  if (authenticatedUser) {
+    // If authenticated, show all company jobs (including drafts)
+    where.companyId = authenticatedUser.companyId;
+    // Don't filter by status or visibility for authenticated users
+  } else {
+    // If not authenticated, only show public open jobs
+    where.status = status as string;
+    where.visibility = 'public';
+  }
 
   if (search) {
     where.OR = [

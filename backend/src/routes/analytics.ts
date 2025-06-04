@@ -56,15 +56,17 @@ router.get('/dashboard', asyncHandler(async (req: AuthenticatedRequest, res) => 
       // Source data (candidate-centric)
       sources: unifiedData.topSources,
 
-      // Change metrics (simplified)
+      // Change metrics (corrected growth formula)
       changeMetrics: {
         totalCandidates: {
-          current: unifiedData.totalCandidates,
-          change: Math.round((unifiedData.newCandidatesThisMonth / Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1)) * 100),
+          current: unifiedData.newCandidatesThisMonth,
+          previous: Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1),
+          change: Math.round(((unifiedData.newCandidatesThisMonth - Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1)) / Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1)) * 100),
         },
         applications: {
-          current: unifiedData.totalApplications,
-          change: Math.round((unifiedData.newApplicationsThisMonth / Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1)) * 100),
+          current: unifiedData.newApplicationsThisMonth,
+          previous: Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1),
+          change: Math.round(((unifiedData.newApplicationsThisMonth - Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1)) / Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1)) * 100),
         },
       },
 
@@ -99,6 +101,7 @@ router.get('/recruitment', asyncHandler(async (req: AuthenticatedRequest, res) =
       where: {
         job: { companyId },
         submittedAt: {
+          not: null,
           gte: thirtyDaysAgo,
         },
       },
@@ -281,12 +284,12 @@ router.get('/time-to-hire', asyncHandler(async (req: AuthenticatedRequest, res) 
 
   // Calculate time to hire for each application
   const timeToHireData = hiredApplications
-    .filter(app => app.submittedAt && app.reviewedAt)
+    .filter(app => app.submittedAt && app.hiredAt)
     .map(app => {
       const submittedDate = new Date(app.submittedAt!);
-      const hiredDate = new Date(app.reviewedAt!);
+      const hiredDate = new Date(app.hiredAt!);
       const daysToHire = Math.ceil((hiredDate.getTime() - submittedDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       return {
         applicationId: app.id,
         candidate: `${app.candidate.firstName} ${app.candidate.lastName}`,
@@ -294,7 +297,7 @@ router.get('/time-to-hire', asyncHandler(async (req: AuthenticatedRequest, res) 
         department: app.job.department,
         daysToHire,
         submittedAt: app.submittedAt,
-        hiredAt: app.reviewedAt,
+        hiredAt: app.hiredAt,
       };
     });
 
@@ -331,57 +334,119 @@ router.get('/time-to-hire', asyncHandler(async (req: AuthenticatedRequest, res) 
 router.get('/sources', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const companyId = req.user?.companyId || 'comp_1';
 
-  // Get applications with source data
-  const applications = await prisma.application.findMany({
-    where: {
-      job: { companyId },
-    },
-    select: {
-      status: true,
-      metadata: true,
-    },
-  });
+  try {
+    // Get applications with source data (try new schema first, fallback to metadata)
+    const applications = await prisma.application.findMany({
+      where: {
+        job: { companyId },
+      },
+      select: {
+        status: true,
+        metadata: true,
+        source: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            cost: true,
+          },
+        },
+      },
+    });
 
-  // Extract source data and calculate metrics
-  const sourceData = applications.reduce((acc, app) => {
-    const metadata = app.metadata as any;
-    const source = metadata?.source || 'unknown';
-    
-    if (!acc[source]) {
-      acc[source] = {
-        total: 0,
-        hired: 0,
-        interviewed: 0,
-      };
-    }
-    
-    acc[source].total++;
-    
-    if (app.status === 'hired') {
-      acc[source].hired++;
-    }
-    
-    if (['interview', 'assessment', 'offer', 'hired'].includes(app.status)) {
-      acc[source].interviewed++;
-    }
-    
-    return acc;
-  }, {} as Record<string, { total: number; hired: number; interviewed: number }>);
+    // Extract source data and calculate metrics
+    const sourceData = applications.reduce((acc, app) => {
+      // Try to get source from new schema first, then fallback to metadata
+      let sourceName = app.source?.name;
+      if (!sourceName) {
+        const metadata = app.metadata as any;
+        sourceName = metadata?.source || 'Unknown';
+      }
 
-  // Calculate conversion rates
-  const sourceEffectiveness = Object.entries(sourceData).map(([source, data]) => ({
-    source,
-    applications: data.total,
-    interviews: data.interviewed,
-    hires: data.hired,
-    interviewRate: data.total > 0 ? (data.interviewed / data.total) * 100 : 0,
-    hireRate: data.total > 0 ? (data.hired / data.total) * 100 : 0,
-  }));
+      if (!acc[sourceName]) {
+        acc[sourceName] = {
+          total: 0,
+          hired: 0,
+          interviewed: 0,
+          category: app.source?.category || 'unknown',
+          cost: app.source?.cost || 0,
+        };
+      }
 
-  res.json({
-    sourceEffectiveness: sourceEffectiveness.sort((a, b) => b.applications - a.applications),
-    totalApplications: applications.length,
-  });
+      acc[sourceName].total++;
+
+      if (app.status === 'hired') {
+        acc[sourceName].hired++;
+      }
+
+      if (['interview', 'assessment', 'offer', 'hired'].includes(app.status)) {
+        acc[sourceName].interviewed++;
+      }
+
+      return acc;
+    }, {} as Record<string, { total: number; hired: number; interviewed: number; category: string; cost: number }>);
+
+    // Calculate conversion rates
+    const sourceEffectiveness = Object.entries(sourceData).map(([source, data]) => ({
+      source,
+      applications: data.total,
+      interviews: data.interviewed,
+      hires: data.hired,
+      category: data.category,
+      cost: data.cost,
+      interviewRate: data.total > 0 ? (data.interviewed / data.total) * 100 : 0,
+      hireRate: data.total > 0 ? (data.hired / data.total) * 100 : 0,
+      costPerApplication: data.cost,
+      costPerHire: data.hired > 0 ? (data.cost * data.total) / data.hired : 0,
+    }));
+
+    res.json({
+      sourceEffectiveness: sourceEffectiveness.sort((a, b) => b.applications - a.applications),
+      totalApplications: applications.length,
+    });
+  } catch (error) {
+    console.error('Source analytics error:', error);
+
+    // Fallback to simple metadata-based approach if new schema fails
+    const applications = await prisma.application.findMany({
+      where: {
+        job: { companyId },
+      },
+      select: {
+        status: true,
+        metadata: true,
+      },
+    });
+
+    const sourceData = applications.reduce((acc, app) => {
+      const metadata = app.metadata as any;
+      const source = metadata?.source || 'Unknown';
+
+      if (!acc[source]) {
+        acc[source] = { total: 0, hired: 0, interviewed: 0 };
+      }
+
+      acc[source].total++;
+      if (app.status === 'hired') acc[source].hired++;
+      if (['interview', 'assessment', 'offer', 'hired'].includes(app.status)) acc[source].interviewed++;
+
+      return acc;
+    }, {} as Record<string, { total: number; hired: number; interviewed: number }>);
+
+    const sourceEffectiveness = Object.entries(sourceData).map(([source, data]) => ({
+      source,
+      applications: data.total,
+      interviews: data.interviewed,
+      hires: data.hired,
+      interviewRate: data.total > 0 ? (data.interviewed / data.total) * 100 : 0,
+      hireRate: data.total > 0 ? (data.hired / data.total) * 100 : 0,
+    }));
+
+    res.json({
+      sourceEffectiveness: sourceEffectiveness.sort((a, b) => b.applications - a.applications),
+      totalApplications: applications.length,
+    });
+  }
 }));
 
 // Get change metrics (percentage changes)
