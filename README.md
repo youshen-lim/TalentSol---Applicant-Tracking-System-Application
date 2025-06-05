@@ -50,7 +50,7 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
 ### **🏗️ Unified Data Architecture**
 - **Candidate-Centric Design**: All data flows from candidate entities as primary keys
 - **Manual CSV Import**: Professional data management via pgAdmin GUI
-- **PostgreSQL Integration**: 14 comprehensive database tables with optimized relationships
+- **PostgreSQL Integration**: 16 comprehensive database tables with optimized relationships
 - **Real-Time Analytics**: Dynamic dashboard metrics without hardcoded data
 - **Enhanced APIs**: Comprehensive backend endpoints with proper error handling
 
@@ -58,7 +58,7 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
 - **Standardized Components**: Unified shadows, badges, headers, and loading states
 - **Inter Font Family**: Consistent typography with optimized loading and hierarchy
 - **Responsive Design**: Mobile-first approach with 768px breakpoint and consistent spacing
-- **Blue Color Scheme**: Professional #3B82F6 primary with gradient hover states
+- **Blue Color Scheme**: Professional Tailwind blue theme with gradient hover states
 - **Loading States**: Contextual loading indicators with skeleton animations
 
 ### **🚀 Advanced Features**
@@ -76,8 +76,9 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
 - **Tailwind CSS** with custom design tokens and responsive utilities
 - **Shadcn UI** component library with custom responsive components
 - **React Router** for navigation with protected routes
-- **React Query** for data fetching and caching
+- **TanStack React Query** for data fetching and caching
 - **Zustand** for state management
+- **Additional Libraries**: Recharts for data visualization, React Beautiful DnD for drag-and-drop, Framer Motion for animations
 - **Custom Hooks**: useResponsiveLayout, useAnalytics, enhanced data hooks
 
 ### Backend Stack
@@ -153,15 +154,15 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
 TalentSol uses a professional CSV import workflow for data management:
 
 **Data Structure**:
-- **50 Candidates** with complete profiles
-- **50 Applications** distributed across 3 jobs
-- **10 Interviews** with realistic scheduling
-- **3 Job Openings** across different departments
+- **Candidates** with complete profiles and contact information
+- **Applications** distributed across multiple job openings
+- **Interviews** with realistic scheduling and status tracking
+- **Job Openings** across different departments (Engineering, Product, Design)
 
 **Import Process**:
 ```bash
 cd backend
-npm run import-csv  # Imports from backend/data/talentsol_complete_data.csv
+npm run import-csv  # Imports from backend/data/talentsol_with_synthetic_data.csv
 ```
 
 **Manual Data Management**:
@@ -193,11 +194,31 @@ npm run data-full
 - **Performance Optimized**: Batch processing with validation
 
 ### **Database Architecture**
-**14 Comprehensive Tables**:
-- `candidates`, `applications`, `jobs`, `interviews`
-- `documents`, `email_templates`, `notifications`
-- `ml_models`, `ml_predictions`, `training_datasets`
-- `users`, `companies`, `user_settings`, `skill_extractions`
+**16 Comprehensive Tables**:
+
+**Core Tables (6)**:
+- `companies` - Company information and settings
+- `users` - User accounts and authentication
+- `candidates` - Candidate profiles and contact information
+- `jobs` - Job postings and requirements
+- `applications` - Job applications and candidate submissions
+- `interviews` - Interview scheduling and management
+
+**Document & Form Management (3)**:
+- `documents` - File uploads (resumes, cover letters, portfolios)
+- `application_form_schemas` - Custom application form builder
+- `candidate_sources` - Source tracking (LinkedIn, Indeed, etc.)
+
+**Communication & Notifications (3)**:
+- `email_templates` - Email templates for automated communications
+- `notifications` - Real-time notification system
+- `user_settings` - User preferences and configuration
+
+**AI/ML Integration (4)**:
+- `ml_models` - Machine learning model management
+- `ml_predictions` - AI predictions and scoring results
+- `training_datasets` - Training data for ML models
+- `skill_extractions` - AI-powered skill extraction from documents
 
 **Unified Data Model**:
 - **Primary Entity**: Candidate (candidate_ID)
@@ -259,7 +280,7 @@ npm run data-full
 
 ### **🎯 Consistent Design Language**
 - **Typography**: Inter font family with standardized hierarchy (32px titles, 20px headers, 14px body)
-- **Color Scheme**: Professional blue (#4F86F7) with gradient hover states and consistent theming
+- **Color Scheme**: Professional Tailwind blue theme with gradient hover states and consistent theming
 - **Spacing**: 16px-24px grid system with responsive adjustments (px-4 md:px-6 lg:px-8)
 - **Components**: White cards with standardized shadows and consistent padding patterns
 
