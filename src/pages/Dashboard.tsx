@@ -9,6 +9,7 @@ import BarChart from "@/components/dashboard/BarChart";
 import ExportReportModal from "@/components/dashboard/ExportReportModal";
 import AddCandidateModal from "@/components/dashboard/AddCandidateModal";
 import PageHeader from "@/components/layout/PageHeader";
+import LoadingUI from "@/components/ui/loading";
 
 // Import API hooks
 import { useDashboardStats, useRecruitmentData, useSourceData } from "@/hooks/useAnalytics";
@@ -137,8 +138,8 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recruitment Pipeline Chart */}
           {recruitmentLoading ? (
-            <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
-              <div className="text-center text-slate-500 text-base">Loading recruitment data...</div>
+            <div className={`${shadows.card} h-[400px]`}>
+              <LoadingUI message="Loading recruitment data..." />
             </div>
           ) : recruitmentData?.data && recruitmentData.data.length > 0 ? (
             <div className={`${shadows.card} h-[400px]`}>
@@ -171,22 +172,26 @@ const Dashboard = () => {
 
           {/* Candidate Sources Chart */}
           {sourceLoading ? (
-            <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
-              <div className="text-center text-slate-500 text-base">Loading source data...</div>
+            <div className={`${shadows.card} h-[400px]`}>
+              <LoadingUI message="Loading source data..." />
             </div>
           ) : sourceData?.sourceEffectiveness && sourceData.sourceEffectiveness.length > 0 ? (
             <div className={`${shadows.card} h-[400px]`}>
               <BarChart
                 title="Candidate Sources"
                 description="Breakdown of candidates by source"
-                data={sourceData.sourceEffectiveness
-                  .map(item => ({
-                    ...item,
-                    name: item.source,
-                    value: item.applications // Map applications to value for gradient coloring
-                  }))
-                  .sort((a, b) => (b.applications || 0) - (a.applications || 0)) // Sort by value descending
-                }
+                data={(() => {
+                  const transformedData = sourceData.sourceEffectiveness
+                    .map(item => ({
+                      ...item,
+                      name: item.source,
+                      value: item.applications // Map applications to value for gradient coloring
+                    }))
+                    .sort((a, b) => (b.applications || 0) - (a.applications || 0)); // Sort by value descending
+
+                  console.log('🔍 Source Data for Chart:', transformedData);
+                  return transformedData;
+                })()}
                 bars={[{ dataKey: "applications", fill: "#2563EB", name: "Applications" }]}
                 vertical={true}
                 height={400}
@@ -197,7 +202,23 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className={`${shadows.card} p-6 h-[400px] flex items-center justify-center`}>
-              <div className="text-center text-slate-500 text-base">No source data available</div>
+              <div className="text-center">
+                <div className="text-slate-500 text-base mb-4">No source data available</div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await analyticsApi.initializeCandidateSources();
+                      // Refresh source data
+                      window.location.reload();
+                    } catch (error) {
+                      console.error('Failed to initialize sources:', error);
+                    }
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Initialize Source Data
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -214,7 +235,7 @@ const Dashboard = () => {
 
             <div className="p-6 space-y-3 flex-1 overflow-y-auto">
               {interviewsLoading ? (
-                <div className="text-center text-slate-500 py-8 text-base">Loading interviews...</div>
+                <LoadingUI message="Loading interviews..." />
               ) : upcomingInterviews && upcomingInterviews.length > 0 ? (
                 upcomingInterviews.slice(0, 3).map((interview) => (
                   <div key={interview.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:border-blue-200 transition-colors">
@@ -302,7 +323,7 @@ const Dashboard = () => {
 
             <div className="p-6 space-y-3 flex-1 overflow-y-auto">
               {topJobsLoading ? (
-                <div className="text-center text-slate-500 py-8 text-base">Loading top jobs...</div>
+                <LoadingUI message="Loading top jobs..." />
               ) : topJobs && topJobs.length > 0 ? (
                 topJobs.map((job) => (
                   <div key={job.jobId} className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border border-purple-100 hover:border-purple-200 transition-colors">

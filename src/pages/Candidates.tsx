@@ -39,6 +39,7 @@ import { useToast } from "@/components/ui/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { useCandidatePipeline } from "@/hooks/useCandidates";
 import { useJobs } from "@/hooks/useJobs";
+import LoadingUI from "@/components/ui/loading";
 
 /**
  * Candidates page component
@@ -811,36 +812,60 @@ const Candidates = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading candidates...</p>
-          </div>
-        </div>
+        <LoadingUI message="Loading candidates..." />
       )}
 
-      {/* Error State */}
+      {/* Error State / Demo Mode */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <div className="text-red-600 mb-2">
-            <svg className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 className="text-lg font-medium">Error loading candidates</h3>
-          </div>
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button
-            onClick={refetch}
-            variant="outline"
-            className="border-red-300 text-red-600 hover:bg-red-50"
-          >
-            Try Again
-          </Button>
+        <div className="mb-8">
+          {error.includes('Backend server not available') ? (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center">
+                <svg className="h-6 w-6 text-blue-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-lg font-inter font-semibold text-blue-900">Demo Mode Active</h3>
+                  <p className="text-sm font-inter text-blue-700 mt-1">
+                    Backend server not available. Showing demo data with limited functionality.
+                  </p>
+                  <p className="text-xs font-inter text-blue-600 mt-2">
+                    Error: {error}
+                  </p>
+                </div>
+                <Button
+                  onClick={refetch}
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                  Retry Connection
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+              <div className="text-red-600 mb-2">
+                <svg className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-lg font-medium">Error loading candidates</h3>
+              </div>
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button
+                onClick={refetch}
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Main Content */}
-      {!loading && !error && (
+      {/* Main Content - Show candidates even in demo mode (when error exists but pipeline is available) */}
+      {!loading && filteredStages.length > 0 && (
         <>
           {viewMode === 'board' ? (
             <KanbanBoard
@@ -853,6 +878,19 @@ const Candidates = () => {
             <div>List view placeholder</div>
           )}
         </>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && filteredStages.length === 0 && (
+        <div className="text-center py-12">
+          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Candidates Found</h3>
+          <p className="text-gray-600 mb-4">No candidates match your current filters</p>
+          <Button onClick={() => setAddCandidateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Candidate
+          </Button>
+        </div>
       )}
 
       {/* Modals */}
