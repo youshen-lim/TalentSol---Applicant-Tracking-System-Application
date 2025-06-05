@@ -112,9 +112,18 @@ const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
 
 // Application API
 export const applicationApi = {
-  // Get dashboard statistics
+  // Get dashboard statistics (legacy)
   getStats: async (): Promise<ApplicationStats> => {
     return makeRequest('/applications/stats');
+  },
+
+  // Get enhanced overview for Application Management
+  getOverview: async (params?: { timeframe?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.timeframe) {
+      searchParams.append('timeframe', params.timeframe);
+    }
+    return makeRequest(`/applications/overview?${searchParams.toString()}`);
   },
 
   // Get all applications
@@ -133,7 +142,7 @@ export const applicationApi = {
         }
       });
     }
-    
+
     return makeRequest(`/applications?${searchParams.toString()}`);
   },
 
@@ -150,19 +159,32 @@ export const applicationApi = {
     });
   },
 
-  // Update application
-  updateApplication: async (id: string, updates: any) => {
-    return makeRequest(`/applications/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
-  },
-
   // Bulk update applications
   bulkUpdateApplications: async (applicationIds: string[], updates: any) => {
     return makeRequest('/applications/bulk', {
       method: 'PUT',
       body: JSON.stringify({ applicationIds, updates }),
+    });
+  },
+
+  // Export application data
+  exportApplications: async (filters?: any) => {
+    return makeRequest('/applications/export', {
+      method: 'POST',
+      body: JSON.stringify({ filters }),
+    });
+  },
+
+  // Get bulk actions
+  getBulkActions: async () => {
+    return makeRequest('/applications/bulk-actions');
+  },
+
+  // Perform bulk actions
+  performBulkAction: async (action: string, applicationIds: string[], value?: any) => {
+    return makeRequest('/applications/bulk-actions', {
+      method: 'POST',
+      body: JSON.stringify({ action, applicationIds, value }),
     });
   },
 
@@ -354,11 +376,15 @@ export const formApi = {
   },
 
   // Get form analytics
-  getFormAnalytics: async (id: string) => {
-    return makeRequest(`/forms/${id}/analytics`);
+  getFormAnalytics: async (id: string, params?: { timeframe?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.timeframe) {
+      searchParams.append('timeframe', params.timeframe);
+    }
+    return makeRequest(`/forms/${id}/analytics?${searchParams.toString()}`);
   },
 
-  // Publish form (update status to live)
+  // Publish form (set status to live)
   publishForm: async (id: string) => {
     return makeRequest(`/forms/${id}`, {
       method: 'PUT',
@@ -369,7 +395,7 @@ export const formApi = {
     });
   },
 
-  // Archive form
+  // Archive form (set status to archived)
   archiveForm: async (id: string) => {
     return makeRequest(`/forms/${id}`, {
       method: 'PUT',
@@ -377,6 +403,26 @@ export const formApi = {
         status: 'archived',
         archivedAt: new Date().toISOString()
       }),
+    });
+  },
+
+  // Get public form by slug
+  getPublicForm: async (slug: string) => {
+    return makeRequest(`/forms/public/${slug}`);
+  },
+
+  // Submit application via public form
+  submitPublicApplication: async (formId: string, data: any) => {
+    return makeRequest(`/forms/${formId}/submit`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Initialize sample form data
+  initSampleData: async () => {
+    return makeRequest('/forms/init-sample-data', {
+      method: 'POST',
     });
   },
 };
@@ -606,6 +652,44 @@ export const analyticsApi = {
     }
 
     return makeRequest(`/analytics/top-jobs?${searchParams.toString()}`);
+  },
+
+  // Get performance analytics for Application Management
+  getPerformanceAnalytics: async (params?: { timeframe?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.timeframe) {
+      searchParams.append('timeframe', params.timeframe);
+    }
+    return makeRequest(`/analytics/performance?${searchParams.toString()}`);
+  },
+
+  // Get application trends
+  getApplicationTrends: async (params?: { period?: string; granularity?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value);
+        }
+      });
+    }
+    return makeRequest(`/analytics/application-trends?${searchParams.toString()}`);
+  },
+
+  // Get form performance analytics
+  getFormPerformanceAnalytics: async (params?: { timeframe?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.timeframe) {
+      searchParams.append('timeframe', params.timeframe);
+    }
+    return makeRequest(`/analytics/form-performance?${searchParams.toString()}`);
+  },
+
+  // Initialize candidate sources
+  initializeCandidateSources: async () => {
+    return makeRequest('/analytics/init-sources', {
+      method: 'POST',
+    });
   },
 };
 

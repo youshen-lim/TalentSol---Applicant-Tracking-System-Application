@@ -246,14 +246,36 @@ export interface Job {
   };
 }
 
+// Helper function to safely parse JSON strings
+const safeJsonParse = (jsonString: any, fallback: any = null) => {
+  if (typeof jsonString === 'object' && jsonString !== null) {
+    return jsonString; // Already an object
+  }
+  if (typeof jsonString === 'string') {
+    try {
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.warn('Failed to parse JSON:', jsonString, e);
+      return fallback;
+    }
+  }
+  return fallback;
+};
+
 // Transform backend job to frontend job structure
 const transformBackendJob = (backendJob: BackendJob): Job => {
-  // Handle null location data
-  const location = backendJob.location || {};
-  const isRemote = location.remote || false;
+  // Handle location data (could be JSON string or object)
+  const locationData = safeJsonParse(backendJob.location, {});
+  const isRemote = locationData.remote || false;
 
-  // Handle null salary data
-  const salary = backendJob.salary || { min: 0, max: 0, currency: 'USD' };
+  // Handle salary data (could be JSON string or object)
+  const salaryData = safeJsonParse(backendJob.salary, { min: 0, max: 0, currency: 'USD' });
+
+  // Handle array fields that might be JSON strings
+  const responsibilities = safeJsonParse(backendJob.responsibilities, []);
+  const requiredQualifications = safeJsonParse(backendJob.requiredQualifications, []);
+  const preferredQualifications = safeJsonParse(backendJob.preferredQualifications, []);
+  const skills = safeJsonParse(backendJob.skills, []);
 
   return {
     id: backendJob.id,
@@ -263,22 +285,22 @@ const transformBackendJob = (backendJob: BackendJob): Job => {
       type: isRemote ? 'remote' : 'onsite',
       allowRemote: isRemote,
       country: 'US', // Default to US
-      city: location.city,
-      state: location.state,
+      city: locationData.city,
+      state: locationData.state,
     },
     employmentType: backendJob.employmentType.replace('_', '-'), // Convert "full_time" to "full-time"
     experienceLevel: backendJob.experienceLevel,
     salary: {
-      min: salary.min,
-      max: salary.max,
-      currency: salary.currency,
+      min: salaryData.min || 0,
+      max: salaryData.max || 0,
+      currency: salaryData.currency || 'USD',
       payFrequency: 'annual',
     },
     description: backendJob.description,
-    responsibilities: backendJob.responsibilities || [],
-    requiredQualifications: backendJob.requiredQualifications || [],
-    preferredQualifications: backendJob.preferredQualifications || [],
-    skills: backendJob.skills || [],
+    responsibilities: Array.isArray(responsibilities) ? responsibilities : [],
+    requiredQualifications: Array.isArray(requiredQualifications) ? requiredQualifications : [],
+    preferredQualifications: Array.isArray(preferredQualifications) ? preferredQualifications : [],
+    skills: Array.isArray(skills) ? skills : [],
     benefits: backendJob.benefits || '',
     status: backendJob.status,
     visibility: backendJob.visibility,

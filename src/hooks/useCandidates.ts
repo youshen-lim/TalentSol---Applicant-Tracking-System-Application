@@ -150,12 +150,92 @@ export const useCandidatePipeline = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await candidatesApi.getPipeline();
       setPipeline(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch candidate pipeline');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch candidate pipeline';
       console.error('Error fetching pipeline:', err);
+
+      // Check if it's a connection error
+      const isConnectionError = errorMessage.includes('Failed to fetch') ||
+                               errorMessage.includes('Network error') ||
+                               errorMessage.includes('Could not connect') ||
+                               errorMessage.includes('ECONNREFUSED');
+
+      if (isConnectionError) {
+        console.warn('Connection error detected, using fallback mock data:', err);
+
+        // Use fallback mock data when API is not available
+        const mockPipeline = {
+          stages: [
+            {
+              id: 'applied',
+              name: 'Applied',
+              candidates: [
+                {
+                  id: 'mock_1',
+                  name: 'John Doe',
+                  email: 'john.doe@email.com',
+                  phone: '+1-555-0001',
+                  position: 'Software Engineer',
+                  stage: 'applied',
+                  tags: ['JavaScript', 'React'],
+                  lastActivity: new Date().toISOString(),
+                  rating: 4,
+                  location: { city: 'San Francisco', state: 'CA', country: 'USA' },
+                  applications: [{
+                    id: 'app_1',
+                    jobTitle: 'Senior Software Engineer',
+                    status: 'applied',
+                    submittedAt: new Date().toISOString(),
+                    score: 85
+                  }],
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }
+              ]
+            },
+            {
+              id: 'screening',
+              name: 'Screening',
+              candidates: []
+            },
+            {
+              id: 'interview',
+              name: 'Interview',
+              candidates: []
+            },
+            {
+              id: 'assessment',
+              name: 'Assessment',
+              candidates: []
+            },
+            {
+              id: 'offer',
+              name: 'Offer',
+              candidates: []
+            },
+            {
+              id: 'hired',
+              name: 'Hired',
+              candidates: []
+            },
+            {
+              id: 'rejected',
+              name: 'Rejected',
+              candidates: []
+            }
+          ]
+        };
+
+        setPipeline(mockPipeline);
+        setError('Backend server not available - showing demo data');
+      } else {
+        // For other errors (like 404, 500, etc.), show the actual error
+        setError(errorMessage);
+        setPipeline(null);
+      }
     } finally {
       setLoading(false);
     }

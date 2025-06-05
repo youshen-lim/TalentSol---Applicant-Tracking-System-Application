@@ -54,6 +54,7 @@ import { useJobs, useCreateJob, useUpdateJob, useDeleteJob, Job } from '@/hooks/
 import { jobsApi } from '@/services/api';
 import { multiApiClient } from '@/services/multiApiClient';
 import PageHeader from '@/components/layout/PageHeader';
+import LoadingUI from '@/components/ui/loading';
 
 /**
  * Jobs page component
@@ -1146,14 +1147,7 @@ const Jobs = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-8">
-            <div className="flex items-center gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="text-lg font-inter font-medium text-gray-700">Loading jobs...</span>
-            </div>
-          </div>
-        </div>
+        <LoadingUI message="Loading jobs..." />
       )}
 
       {/* Error State / Demo Mode */}

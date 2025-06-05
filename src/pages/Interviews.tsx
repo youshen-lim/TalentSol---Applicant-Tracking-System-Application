@@ -10,6 +10,8 @@ import { format, addDays, startOfWeek, addWeeks, subWeeks } from "date-fns";
 import InterviewScheduler from "@/components/interviews/InterviewScheduler";
 import { toast } from "@/components/ui/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
+import LoadingUI from "@/components/ui/loading";
+import { useInterviews } from "@/hooks/useInterviews";
 
 /**
  * Interviews page component
@@ -132,6 +134,9 @@ const Interviews = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+
+  // API Integration - Replace mock data with real data
+  const { interviews, loading, error, refetch } = useInterviews();
 
   const nextWeek = () => {
     setWeekStart(addWeeks(weekStart, 1));
@@ -259,17 +264,37 @@ const Interviews = () => {
         </TabsContent>
 
         <TabsContent value="list" className="mt-6">
-          <div className={`${shadows.card} overflow-hidden`}>
-            <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
-              <div className="col-span-3">Candidate</div>
-              <div className="col-span-2">Position</div>
-              <div className="col-span-2">Type</div>
-              <div className="col-span-2">Date & Time</div>
-              <div className="col-span-2">Interviewers</div>
-              <div className="col-span-1">Actions</div>
+          {loading ? (
+            <LoadingUI message="Loading interviews..." />
+          ) : error ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+              <div className="text-red-600 mb-2">
+                <svg className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-lg font-medium">Error loading interviews</h3>
+              </div>
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button
+                onClick={refetch}
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Try Again
+              </Button>
             </div>
-            <div className="divide-y">
-              {mockInterviews.map((interview) => (
+          ) : (
+            <div className={`${shadows.card} overflow-hidden`}>
+              <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
+                <div className="col-span-3">Candidate</div>
+                <div className="col-span-2">Position</div>
+                <div className="col-span-2">Type</div>
+                <div className="col-span-2">Date & Time</div>
+                <div className="col-span-2">Interviewers</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+              <div className="divide-y">
+                {(interviews.length > 0 ? interviews : mockInterviews).map((interview) => (
                 <div key={interview.id} className="grid grid-cols-12 gap-4 p-4 items-center">
                   <div className="col-span-3 flex items-center space-x-3">
                     <div className="h-8 w-8 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center">
@@ -295,9 +320,10 @@ const Interviews = () => {
                     </Button>
                   </div>
                 </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </TabsContent>
 
         <TabsContent value="schedule" className="mt-6">

@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Company {
@@ -54,15 +54,15 @@ model Job {
   id                      String   @id @default(cuid())
   title                   String
   department              String?
-  location                Json? // JobLocation interface
+  location                String? // JSON as text - JobLocation interface
   employmentType          String?  @map("employment_type")
   experienceLevel         String?  @map("experience_level")
-  salary                  Json? // JobSalary interface
+  salary                  String? // JSON as text - JobSalary interface
   description             String?
-  responsibilities        String[]
-  requiredQualifications  String[] @map("required_qualifications")
-  preferredQualifications String[] @map("preferred_qualifications")
-  skills                  String[]
+  responsibilities        String? // JSON array as text - nullable to handle existing data
+  requiredQualifications  String? @map("required_qualifications") // JSON array as text - nullable to handle existing data
+  preferredQualifications String? @map("preferred_qualifications") // JSON array as text - nullable to handle existing data
+  skills                  String? // JSON array as text - nullable to handle existing data
   benefits                String?
   status                  String   @default("draft")
   visibility              String   @default("public")
@@ -70,7 +70,7 @@ model Job {
   applicationDeadline     DateTime? @map("application_deadline")
   maxApplicants           Int?     @map("max_applicants")
   currentApplicants       Int      @default(0) @map("current_applicants")
-  pipeline                Json? // JobPipeline interface
+  pipeline                String? // JSON as text - JobPipeline interface
   source                  String   @default("internal")
   createdById             String   @map("created_by_id")
   companyId               String   @map("company_id")
@@ -92,17 +92,19 @@ model Candidate {
   lastName          String   @map("last_name")
   email             String   @unique
   phone             String?
-  location          Json? // Location interface
+  location          String? // JSON as text - Location interface
   willingToRelocate Boolean? @map("willing_to_relocate")
   workAuthorization String?  @map("work_authorization")
   linkedinUrl       String?  @map("linkedin_url")
   portfolioUrl      String?  @map("portfolio_url")
   websiteUrl        String?  @map("website_url")
+  sourceId          String?  @map("source_id") // Reference to CandidateSource - where candidate was originally discovered
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   // Relations
   applications Application[]
+  source       CandidateSource? @relation("CandidateOriginSource", fields: [sourceId], references: [id])
 
   @@map("candidates")
 }
@@ -114,21 +116,21 @@ model Application {
   status                 String    @default("applied")
   submittedAt            DateTime? @map("submitted_at")
   hiredAt                DateTime? @map("hired_at")
-  candidateInfo          Json      @map("candidate_info") // CandidateInfo interface
-  professionalInfo       Json?     @map("professional_info") // ProfessionalInfo interface
-  documentData           Json?     @map("document_data") // ApplicationDocuments interface
-  customAnswers          Json?     @map("custom_answers") // Record<string, CustomAnswer>
-  metadata               Json?     // ApplicationMetadata interface
-  scoring                Json?     // ApplicationScoring interface (for future ML features)
+  candidateInfo          String    @map("candidate_info") // JSON as text - CandidateInfo interface
+  professionalInfo       String?   @map("professional_info") // JSON as text - ProfessionalInfo interface
+  documentData           String?   @map("document_data") // JSON as text - ApplicationDocuments interface
+  customAnswers          String?   @map("custom_answers") // JSON as text - Record<string, CustomAnswer>
+  metadata               String?   // JSON as text - ApplicationMetadata interface
+  scoring                String?   // JSON as text - ApplicationScoring interface (for future ML features)
   score                  Int?      // Simple numeric score (0-100)
-  activity               Json[]    // ApplicationActivity[] interface
+  activity               String?   // JSON array as text - ApplicationActivity[] interface - nullable to handle existing data
   reviewNotes            String?   @map("review_notes")
   reviewedById           String?   @map("reviewed_by_id")
   reviewedAt             DateTime? @map("reviewed_at")
-  tags                   String[]
+  tags                   String?   // JSON array as text - nullable to handle existing data
   lastContactDate        DateTime? @map("last_contact_date")
   nextFollowupDate       DateTime? @map("next_followup_date")
-  communicationHistory   String[]  @map("communication_history")
+  communicationHistory   String?   @map("communication_history") // JSON array as text - nullable to handle existing data
   sourceId               String?   @map("source_id") // Reference to CandidateSource
   createdAt              DateTime  @default(now()) @map("created_at")
   updatedAt              DateTime  @updatedAt @map("updated_at")
@@ -155,9 +157,9 @@ model Interview {
   startTime     String?   @map("start_time")
   endTime       String?   @map("end_time")
   location      String?
-  interviewers  String[] // Array of user IDs
+  interviewers  String? // JSON array as text - Array of user IDs - nullable to handle existing data
   notes         String?
-  feedback      Json? // Interview feedback structure
+  feedback      String? // JSON as text - Interview feedback structure
   status        String    @default("scheduled")
   createdById   String    @map("created_by_id")
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -191,9 +193,9 @@ model ApplicationFormSchema {
   jobId         String   @map("job_id")
   title         String
   description   String?
-  sections      Json     // FormSection[] interface
-  settings      Json     // Form settings interface
-  emailSettings Json     @map("email_settings") // Email settings interface
+  sections      String   // JSON as text - FormSection[] interface
+  settings      String   // JSON as text - Form settings interface
+  emailSettings String   @map("email_settings") // JSON as text - Email settings interface
   status        String   @default("draft") // 'draft', 'live', 'archived'
   version       Int      @default(1)
   publishedAt   DateTime? @map("published_at")
@@ -217,14 +219,14 @@ model EmailTemplate {
   subject   String
   body      String
   type      String // 'confirmation', 'status_update', 'interview_invite', 'rejection', 'offer'
-  variables String[] // Available template variables
+  variables String // JSON array as text - Available template variables
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("email_templates")
 }
 
-// Candidate Sources tracking for analytics
+// Unified Source tracking for both candidates and applications
 model CandidateSource {
   id          String   @id @default(cuid())
   name        String   @unique // 'LinkedIn', 'Indeed', 'Company Website', etc.
@@ -236,7 +238,8 @@ model CandidateSource {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  applications Application[]
+  applications Application[] // Applications submitted through this source
+  candidates   Candidate[]   @relation("CandidateOriginSource") // Candidates originally discovered through this source
 
   @@map("candidate_sources")
 }
@@ -252,8 +255,8 @@ model MLModel {
   precision     Float?
   recall        Float?
   f1Score       Float?   @map("f1_score")
-  trainingData  Json     @map("training_data") // Metadata about training dataset
-  features      String[] // List of features used
+  trainingData  String   @map("training_data") // JSON as text - Metadata about training dataset
+  features      String   // JSON array as text - List of features used
   isActive      Boolean  @default(false) @map("is_active")
   trainedAt     DateTime @map("trained_at")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -270,10 +273,10 @@ model MLPrediction {
   modelId       String   @map("model_id")
   applicationId String   @map("application_id")
   predictionType String  @map("prediction_type") // 'priority_score', 'job_match', 'skill_extraction'
-  inputFeatures Json     @map("input_features") // Features used for prediction
-  prediction    Json     // Prediction results (score, confidence, etc.)
+  inputFeatures String   @map("input_features") // JSON as text - Features used for prediction
+  prediction    String   // JSON as text - Prediction results (score, confidence, etc.)
   confidence    Float?   // Confidence score (0-1)
-  explanation   Json?    // Feature importance/explanation
+  explanation   String?  // JSON as text - Feature importance/explanation
   createdAt     DateTime @default(now()) @map("created_at")
 
   // Relations
@@ -289,12 +292,12 @@ model TrainingDataset {
   description String?
   source      String   // 'kaggle', 'internal', 'synthetic'
   datasetPath String   @map("dataset_path")
-  features    String[] // List of features/columns
+  features    String   // JSON array as text - List of features/columns
   targetVariable String @map("target_variable")
   recordCount Int      @map("record_count")
   version     String   @default("1.0")
   isActive    Boolean  @default(true) @map("is_active")
-  metadata    Json?    // Additional dataset information
+  metadata    String?  // JSON as text - Additional dataset information
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -304,8 +307,8 @@ model TrainingDataset {
 model SkillExtraction {
   id            String   @id @default(cuid())
   applicationId String   @map("application_id")
-  extractedSkills Json   @map("extracted_skills") // Array of skills with confidence scores
-  skillCategories Json   @map("skill_categories") // Categorized skills (technical, soft, etc.)
+  extractedSkills String @map("extracted_skills") // JSON as text - Array of skills with confidence scores
+  skillCategories String @map("skill_categories") // JSON as text - Categorized skills (technical, soft, etc.)
   experienceLevel String? @map("experience_level") // Predicted experience level
   confidence      Float?  // Overall extraction confidence
   method          String  @default("ml") // 'ml', 'nlp', 'manual'
@@ -325,7 +328,7 @@ model Notification {
   title     String
   message   String
   isRead    Boolean  @default(false) @map("is_read")
-  metadata  Json?    // Additional notification data
+  metadata  String?  // JSON as text - Additional notification data
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relations

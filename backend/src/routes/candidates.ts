@@ -210,7 +210,7 @@ router.get('/pipeline', asyncHandler(async (req: AuthenticatedRequest, res) => {
       const rating = Math.min(5, Math.max(1, Math.round(score / 20))); // Convert to 1-5 scale
 
       // Extract skills from tags or generate from job requirements
-      const tags = app.tags.length > 0 ? app.tags : [app.job.title.split(' ')[0], app.job.department || 'General'];
+      const tags = (app.tags && app.tags.length > 0) ? app.tags : [app.job.title.split(' ')[0], app.job.department || 'General'];
 
       // Calculate last activity
       const lastActivity = app.submittedAt

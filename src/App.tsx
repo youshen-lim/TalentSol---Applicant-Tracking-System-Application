@@ -10,7 +10,7 @@ import Interviews from "./pages/Interviews";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import JobEdit from "./pages/JobEdit";
-import Applications from "./pages/Applications";
+import ApplicationManagement from "./pages/ApplicationManagement";
 import ApplicationFormPreview from "./pages/ApplicationFormPreview";
 import PublicApplicationPage from "./pages/PublicApplicationPage";
 import ProfileManagement from "./pages/ProfileManagement";
@@ -82,7 +82,7 @@ const App = () => (
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetail />} />
             <Route path="/jobs/:id/edit" element={<JobEdit />} />
-            <Route path="/applications" element={<Applications />} />
+            <Route path="/applications" element={<ApplicationManagement />} />
             <Route path="/applications/preview" element={<ApplicationFormPreview />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/documents" element={<Documents />} />

@@ -28,6 +28,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { shadows } from '@/components/ui/shadow';
 import PageHeader from '@/components/layout/PageHeader';
 
 interface SettingsData {
@@ -249,7 +250,7 @@ const Settings = () => {
         </TabsList>
 
         <TabsContent value="account" className="space-y-6">
-          <Card>
+          <Card className={shadows.card}>
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
               <CardDescription>
@@ -317,7 +318,7 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="company" className="space-y-6">
-          <Card>
+          <Card className={shadows.card}>
             <CardHeader>
               <CardTitle>Company Profile</CardTitle>
               <CardDescription>
@@ -411,7 +412,7 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
-          <Card>
+          <Card className={shadows.card}>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
               <CardDescription>

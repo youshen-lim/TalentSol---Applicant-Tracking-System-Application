@@ -41,6 +41,7 @@ model User {
   createdJobs       Job[]         @relation("JobCreator")
   reviewedApps      Application[] @relation("ApplicationReviewer")
   createdInterviews Interview[]   @relation("InterviewCreator")
+  createdForms      ApplicationFormSchema[] @relation("FormCreator")
 
   @@map("users")
 }
@@ -76,6 +77,7 @@ model Job {
   createdBy    User          @relation("JobCreator", fields: [createdById], references: [id])
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   applications Application[]
+  formSchemas  ApplicationFormSchema[]
 
   @@map("jobs")
 }
@@ -152,4 +154,29 @@ model Interview {
   createdBy   User        @relation("InterviewCreator", fields: [createdById], references: [id])
 
   @@map("interviews")
+}
+
+model ApplicationFormSchema {
+  id            String   @id @default(cuid())
+  jobId         String   @map("job_id")
+  title         String
+  description   String?
+  sections      String   // JSON as text in SQLite
+  settings      String   // JSON as text in SQLite
+  emailSettings String   @map("email_settings") // JSON as text in SQLite
+  status        String   @default("draft") // 'draft', 'live', 'archived'
+  version       Int      @default(1)
+  publishedAt   DateTime? @map("published_at")
+  archivedAt    DateTime? @map("archived_at")
+  viewCount     Int      @default(0) @map("view_count")
+  submissionCount Int    @default(0) @map("submission_count")
+  createdById   String   @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdBy User @relation("FormCreator", fields: [createdById], references: [id])
+
+  @@map("application_form_schemas")
 }

@@ -122,22 +122,22 @@ export const BarChart: React.FC<BarChartProps> = ({
     switch (screenSize) {
       case 'sm':
         return {
-          yAxisWidth: 90,
-          leftMargin: 110,
+          yAxisWidth: 70,
+          leftMargin: 75,
           maxLabelLength: 10,
           fontSize: 12
         };
       case 'md':
         return {
-          yAxisWidth: 105,
-          leftMargin: 125,
+          yAxisWidth: 80,
+          leftMargin: 85,
           maxLabelLength: 14,
           fontSize: 13
         };
       default:
         return {
-          yAxisWidth: 120,
-          leftMargin: 140,
+          yAxisWidth: 90,
+          leftMargin: 95,
           maxLabelLength: 18,
           fontSize: 14
         };
@@ -264,7 +264,7 @@ export const BarChart: React.FC<BarChartProps> = ({
           name={bar.name}
           fill={bar.fill}
           radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-          barSize={vertical ? 12 : 30}
+          barSize={vertical ? 24 : 40}
           label={<CustomLabel />}
         />
       ));
@@ -280,7 +280,7 @@ export const BarChart: React.FC<BarChartProps> = ({
         name={category}
         fill={colors[index % colors.length]}
         radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-        barSize={vertical ? 12 : 30}
+        barSize={vertical ? 24 : 40}
         label={<CustomLabel />}
       />
     ));
@@ -289,24 +289,24 @@ export const BarChart: React.FC<BarChartProps> = ({
   return (
     <Card className={cn("w-full h-full", className)}>
       {(title || description) && (
-        <CardHeader className="pb-3 px-6 pt-6">
+        <CardHeader className="pb-2 px-4 pt-4">
           {title && <CardTitle className="text-lg font-semibold text-slate-900 text-center">{title}</CardTitle>}
           {description && <CardDescription className="text-sm text-slate-600 mt-1 text-center">{description}</CardDescription>}
         </CardHeader>
       )}
-      <CardContent className="pt-0 px-6 pb-6">
-        <div className="flex justify-center items-center w-full" style={{ height: typeof height === 'number' ? `${height - 100}px` : 'calc(100% - 100px)' }}>
+      <CardContent className="pt-0 px-4 pb-4">
+        <div className="w-full" style={{ height: typeof height === 'number' ? `${height - 80}px` : 'calc(100% - 80px)' }}>
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart
               data={data}
               layout={vertical ? "vertical" : "horizontal"}
               margin={{
-                top: 20,
-                right: vertical ? 50 : 30,
-                left: vertical ? config.leftMargin : 30,
-                bottom: 40,
+                top: vertical ? 5 : 10,
+                right: vertical ? 10 : 15,
+                left: vertical ? config.leftMargin - 35 : 15,
+                bottom: vertical ? 5 : 15,
               }}
-              barCategoryGap={vertical ? "35%" : "8%"}
+              barCategoryGap={vertical ? "10%" : "12%"}
             >
               {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={!vertical} />}
 
