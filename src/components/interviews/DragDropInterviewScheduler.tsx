@@ -98,25 +98,33 @@ const DragDropInterviewScheduler: React.FC<DragDropInterviewSchedulerProps> = ({
     [filterStatus, debouncedSearchTerm]
   );
 
-  // Group time slots by date
-  const timeSlotsByDate = timeSlots.reduce((acc, slot) => {
-    const date = slot.date;
-    if (!acc[date]) {
-      acc[date] = [];
+  // Group time slots by date - ADD NULL CHECK
+  const timeSlotsByDate = useMemo(() => {
+    if (!timeSlots || timeSlots.length === 0) {
+      return {};
     }
-    acc[date].push(slot);
-    return acc;
-  }, {} as Record<string, TimeSlot[]>);
 
-  // Get scheduled interview for a time slot
-  const getScheduledInterview = (timeSlotId: string) => {
+    return timeSlots.reduce((acc, slot) => {
+      const date = slot.date;
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(slot);
+      return acc;
+    }, {} as Record<string, TimeSlot[]>);
+  }, [timeSlots]);
+
+  // Get scheduled interview for a time slot - ADD NULL CHECK
+  const getScheduledInterview = useCallback((timeSlotId: string) => {
+    if (!scheduledInterviews || scheduledInterviews.length === 0) return null;
     return scheduledInterviews.find(interview => interview.timeSlotId === timeSlotId);
-  };
+  }, [scheduledInterviews]);
 
-  // Get candidate by ID
-  const getCandidateById = (candidateId: string) => {
+  // Get candidate by ID - ADD NULL CHECK
+  const getCandidateById = useCallback((candidateId: string) => {
+    if (!candidates || candidates.length === 0) return null;
     return candidates.find(candidate => candidate.id === candidateId);
-  };
+  }, [candidates]);
 
   // Handle drag and drop
   const handleDragEnd = useCallback((result: DropResult) => {
@@ -135,7 +143,16 @@ const DragDropInterviewScheduler: React.FC<DragDropInterviewSchedulerProps> = ({
       const timeSlotId = destination.droppableId.replace('timeslot-', '');
       const candidateId = draggableId.replace('candidate-', '');
       
-      // Check if time slot is available
+      // Check if time slot is available - ADD NULL CHECK
+      if (!timeSlots || timeSlots.length === 0) {
+        toast({
+          title: 'No Time Slots',
+          description: 'No time slots are available for scheduling.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const timeSlot = timeSlots.find(slot => slot.id === timeSlotId);
       if (!timeSlot?.available) {
         toast({
@@ -159,7 +176,16 @@ const DragDropInterviewScheduler: React.FC<DragDropInterviewSchedulerProps> = ({
       
       const interview = getScheduledInterview(sourceTimeSlotId);
       if (interview) {
-        // Check if destination time slot is available
+        // Check if destination time slot is available - ADD NULL CHECK
+        if (!timeSlots || timeSlots.length === 0) {
+          toast({
+            title: 'No Time Slots',
+            description: 'No time slots are available for rescheduling.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
         const destTimeSlot = timeSlots.find(slot => slot.id === destTimeSlotId);
         if (!destTimeSlot?.available) {
           toast({
