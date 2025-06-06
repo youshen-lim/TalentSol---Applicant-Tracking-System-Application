@@ -26,13 +26,22 @@ export interface ApplicationStats {
   }>;
 }
 
+export interface NotificationMetadata {
+  applicationId?: string;
+  candidateId?: string;
+  jobId?: string;
+  interviewId?: string;
+  userId?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface Notification {
   id: string;
-  type: string;
+  type: 'application' | 'interview' | 'candidate' | 'system' | 'reminder';
   title: string;
   message: string;
   isRead: boolean;
-  metadata?: any;
+  metadata?: NotificationMetadata;
   createdAt: string;
 }
 
@@ -70,6 +79,79 @@ export interface UserSettings {
   analyticsOptIn: boolean;
   compactMode: boolean;
   sidebarCollapsed: boolean;
+}
+
+// API Request/Response Types
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data: T;
+  message?: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface ApiError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: string;
+    field?: string;
+    timestamp: string;
+    requestId?: string;
+  };
+}
+
+export interface BulkUpdateData {
+  status?: string;
+  tags?: string[];
+  assignedTo?: string;
+  priority?: 'low' | 'medium' | 'high';
+  notes?: string;
+}
+
+export interface ApplicationFilters {
+  jobId?: string;
+  status?: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  tags?: string[];
+  assignedTo?: string;
+}
+
+export interface JobData {
+  title: string;
+  department?: string;
+  location?: {
+    city?: string;
+    state?: string;
+    country?: string;
+    remote?: boolean;
+  };
+  employmentType?: 'full-time' | 'part-time' | 'contract' | 'internship';
+  experienceLevel?: 'entry' | 'mid' | 'senior' | 'executive';
+  salary?: {
+    min?: number;
+    max?: number;
+    currency?: string;
+    negotiable?: boolean;
+  };
+  description?: string;
+  responsibilities?: string[];
+  requiredQualifications?: string[];
+  preferredQualifications?: string[];
+  skills?: string[];
+  benefits?: string;
+  status: 'draft' | 'open' | 'closed' | 'archived';
+  visibility?: 'public' | 'internal' | 'private';
+  applicationDeadline?: string;
+  maxApplicants?: number;
 }
 
 // Helper function to get auth token
