@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 /**
  * Main layout component for the TalentSol ATS application
  * Provides the overall structure with navbar, sidebar, and content area
+ * Enhanced with improved horizontal scrolling support for all screen sizes
  * Uses the blue color scheme from Tailwind configuration
  */
 const Layout = () => {
@@ -14,9 +15,12 @@ const Layout = () => {
       <NavBar />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-x-auto overflow-y-auto border-t border-ats-border-gray font-sans">
-          <div className="p-6 min-w-fit">
-            <Outlet />
+        <main className="flex-1 min-h-[calc(100vh-4rem)] border-t border-ats-border-gray font-sans">
+          {/* Enhanced scrollable container with proper horizontal scroll support */}
+          <div className="h-[calc(100vh-4rem)] overflow-x-auto overflow-y-auto enhanced-scrollbar smooth-scroll">
+            <div className="p-6 w-max min-w-full">
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>

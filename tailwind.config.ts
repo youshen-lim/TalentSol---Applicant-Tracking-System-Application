@@ -139,7 +139,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), function({ addUtilities }) { addUtilities({ ".scrollbar-thin": { "scrollbar-width": "thin" }, ".scrollbar-thin::-webkit-scrollbar": { width: "8px", height: "8px" }, ".scrollbar-track-transparent::-webkit-scrollbar-track": { background: "transparent" }, ".scrollbar-thumb-gray-300::-webkit-scrollbar-thumb": { background: "#d1d5db", "border-radius": "4px" }, ".scrollbar-thumb-gray-400::-webkit-scrollbar-thumb": { background: "#9ca3af", "border-radius": "4px" }, ".scrollbar-thumb-ats-light-blue\\/60::-webkit-scrollbar-thumb": { background: "rgba(147, 197, 253, 0.6)", "border-radius": "4px" }, ".scrollbar-thumb-ats-blue::-webkit-scrollbar-thumb": { background: "#3b82f6", "border-radius": "4px" } }); }],
 } satisfies Config;
 
 export default config;
