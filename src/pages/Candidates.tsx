@@ -693,12 +693,13 @@ const Candidates = () => {
   ].filter(Boolean).length;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Candidates"
-        subtitle="Manage and track candidates through your recruitment process"
-        icon={Users}
-      >
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 -m-6 p-6">
+      <div className="space-y-6">
+        <PageHeader
+          title="Candidates"
+          subtitle="Manage and track candidates through your recruitment process"
+          icon={Users}
+        >
         <Button
           variant="outline"
           size="sm"
@@ -906,6 +907,7 @@ const Candidates = () => {
         open={addCandidateModalOpen}
         onOpenChange={setAddCandidateModalOpen}
       />
+      </div>
     </div>
   );
 };

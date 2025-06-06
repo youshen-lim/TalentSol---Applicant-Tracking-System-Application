@@ -6,7 +6,6 @@ import { PlusIcon, PlusCircle, Users } from 'lucide-react';
 import CandidateCard, { Candidate } from './CandidateCard';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useStandardizedKanbanColors } from '@/hooks/useABTest';
 import { KanbanScroll } from '@/components/ui/horizontal-scroll';
 
 // Support both naming conventions (Stage and KanbanColumn)
@@ -199,10 +198,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     return colorMap[stageId] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' };
   };
 
-  // A/B tested stage color mapping
-  const useStandardizedColors = useStandardizedKanbanColors();
+  // Use legacy stage color mapping
   const getStageColor = (stageId: string) => {
-    return useStandardizedColors ? getStandardizedStageColor(stageId) : getLegacyStageColor(stageId);
+    return getLegacyStageColor(stageId);
   };
 
   // Render the kanban board with enhanced responsive styling

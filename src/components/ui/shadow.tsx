@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { useStandardizedShadows } from '@/hooks/useABTest';
 
 // Legacy shadow variants (control group)
 export const legacyShadowVariants = {
@@ -40,10 +39,9 @@ export const shadowVariants = {
   dropdown: "",
 };
 
-// Hook to get appropriate shadow variant based on A/B test
+// Hook to get appropriate shadow variant (using legacy shadows)
 export const useShadowVariant = (variant: keyof typeof shadowVariants): string => {
-  const useStandardized = useStandardizedShadows();
-  const variants = useStandardized ? standardizedShadowVariants : legacyShadowVariants;
+  const variants = legacyShadowVariants;
   return variants[variant] || variants.card;
 };
 

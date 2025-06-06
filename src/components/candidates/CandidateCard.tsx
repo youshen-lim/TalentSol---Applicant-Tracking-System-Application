@@ -14,7 +14,6 @@ import {
   UserIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useStandardizedBadges } from '@/hooks/useABTest';
 
 export interface Candidate {
   id: string;
@@ -98,8 +97,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
   // Determine which status/stage to use
   const candidateStatus = status || stage?.toLowerCase() || 'new';
 
-  // A/B tested badge styling
-  const useStandardized = useStandardizedBadges();
+  // Use legacy badge styling
 
   // Legacy stage badge with gradient styling (control group)
   const getLegacyStageBadge = () => {
@@ -147,9 +145,9 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
     }
   };
 
-  // Get stage badge with A/B testing
+  // Get stage badge (using legacy styling)
   const getStageBadge = () => {
-    return useStandardized ? getStandardizedStageBadge() : getLegacyStageBadge();
+    return getLegacyStageBadge();
   };
 
   // Format stage text properly
