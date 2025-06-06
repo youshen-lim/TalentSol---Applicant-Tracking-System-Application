@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect, memo } from 'react';
+import React, { useState, useCallback, useRef, useEffect, memo, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -63,46 +63,11 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
   const [currentView, setCurrentView] = useState('timeGridWeek');
   const [selectedEvent, setSelectedEvent] = useState<EventApi | null>(null);
 
-  // Convert interviews to FullCalendar events
-  const calendarEvents: EventInput[] = interviews.map(interview => {
-    const startDate = new Date(interview.scheduledDate);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour duration
-
-    // If start and end times are provided, use them
-    if (interview.startTime && interview.endTime) {
-      const [startHour, startMinute] = interview.startTime.split(':').map(Number);
-      const [endHour, endMinute] = interview.endTime.split(':').map(Number);
-      
-      startDate.setHours(startHour, startMinute, 0, 0);
-      endDate.setHours(endHour, endMinute, 0, 0);
-    }
-
-    return {
-      id: interview.id,
-      title: `${interview.candidateName} - ${interview.position}`,
-      start: startDate,
-      end: endDate,
-      backgroundColor: getEventColor(interview.type, interview.status),
-      borderColor: getEventBorderColor(interview.status),
-      textColor: '#ffffff',
-      extendedProps: {
-        interview,
-        candidateName: interview.candidateName,
-        position: interview.position,
-        type: interview.type,
-        status: interview.status,
-        location: interview.location,
-        meetingLink: interview.meetingLink,
-        interviewers: interview.interviewers
-      }
-    };
-  });
-
-  // Get event colors based on interview type and status
-  const getEventColor = (type: string, status: string) => {
+  // Get event colors based on interview type and status - MOVED BEFORE USAGE
+  const getEventColor = useCallback((type: string, status: string) => {
     if (status === 'cancelled') return '#ef4444';
     if (status === 'completed') return '#10b981';
-    
+
     switch (type.toLowerCase()) {
       case 'technical': return '#3b82f6';
       case 'behavioral': return '#8b5cf6';
@@ -110,9 +75,9 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
       case 'final': return '#06b6d4';
       default: return '#6b7280';
     }
-  };
+  }, []);
 
-  const getEventBorderColor = (status: string) => {
+  const getEventBorderColor = useCallback((status: string) => {
     switch (status) {
       case 'scheduled': return '#1f2937';
       case 'in_progress': return '#059669';
@@ -120,7 +85,46 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
       case 'cancelled': return '#dc2626';
       default: return '#374151';
     }
-  };
+  }, []);
+
+  // Convert interviews to FullCalendar events - MOVED AFTER FUNCTION DEFINITIONS
+  const calendarEvents: EventInput[] = useMemo(() => {
+    if (!interviews || interviews.length === 0) return [];
+
+    return interviews.map(interview => {
+      const startDate = new Date(interview.scheduledDate);
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+
+      // If start and end times are provided, use them
+      if (interview.startTime && interview.endTime) {
+        const [startHour, startMinute] = interview.startTime.split(':').map(Number);
+        const [endHour, endMinute] = interview.endTime.split(':').map(Number);
+
+        startDate.setHours(startHour, startMinute, 0, 0);
+        endDate.setHours(endHour, endMinute, 0, 0);
+      }
+
+      return {
+        id: interview.id,
+        title: `${interview.candidateName} - ${interview.position}`,
+        start: startDate,
+        end: endDate,
+        backgroundColor: getEventColor(interview.type, interview.status),
+        borderColor: getEventBorderColor(interview.status),
+        textColor: '#ffffff',
+        extendedProps: {
+          interview,
+          candidateName: interview.candidateName,
+          position: interview.position,
+          type: interview.type,
+          status: interview.status,
+          location: interview.location,
+          meetingLink: interview.meetingLink,
+          interviewers: interview.interviewers
+        }
+      };
+    });
+  }, [interviews, getEventColor, getEventBorderColor]);
 
   // Handle event click
   const handleEventClick = useCallback((clickInfo: EventClickArg) => {
@@ -157,7 +161,9 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
       });
     } catch (error) {
       // Revert the change if update fails
-      dropInfo.revert();
+      if (dropInfo.revert && typeof dropInfo.revert === 'function') {
+        dropInfo.revert();
+      }
       toast({
         title: 'Error',
         description: 'Failed to reschedule interview. Please try again.',
@@ -187,7 +193,9 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
         description: `${interview.candidateName}'s interview duration has been updated`,
       });
     } catch (error) {
-      resizeInfo.revert();
+      if (resizeInfo.revert && typeof resizeInfo.revert === 'function') {
+        resizeInfo.revert();
+      }
       toast({
         title: 'Error',
         description: 'Failed to update interview duration. Please try again.',
