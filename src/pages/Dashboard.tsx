@@ -86,19 +86,6 @@ const Dashboard = () => {
           </Button>
         </PageHeader>
 
-        {/* Horizontal Scroll Test - Remove this after testing */}
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Horizontal Scroll Test</h3>
-          <div className="flex gap-4 overflow-x-auto enhanced-scrollbar smooth-scroll pb-2">
-            {Array.from({ length: 10 }, (_, i) => (
-              <div key={i} className="flex-shrink-0 w-64 h-32 bg-blue-100 border border-blue-200 rounded-lg p-4">
-                <div className="font-medium">Test Card {i + 1}</div>
-                <div className="text-sm text-gray-600">This should scroll horizontally</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Statistics Cards - Responsive Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
