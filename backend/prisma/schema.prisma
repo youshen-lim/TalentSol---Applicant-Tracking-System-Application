@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,199 +13,183 @@ model Company {
   domain    String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  users User[]
-  jobs  Job[]
+  jobs      Job[]
+  users     User[]
 
   @@map("companies")
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  firstName    String?  @map("first_name")
-  lastName     String?  @map("last_name")
-  role         String   @default("recruiter")
-  companyId    String   @map("company_id")
-  avatarUrl    String?  @map("avatar_url")
-  phone        String?
-  bio          String?
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  company           Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdJobs       Job[]         @relation("JobCreator")
-  reviewedApps      Application[] @relation("ApplicationReviewer")
-  createdInterviews Interview[]   @relation("InterviewCreator")
+  id                String                  @id @default(cuid())
+  email             String                  @unique
+  passwordHash      String                  @map("password_hash")
+  firstName         String?                 @map("first_name")
+  lastName          String?                 @map("last_name")
+  role              String                  @default("recruiter")
+  companyId         String                  @map("company_id")
+  avatarUrl         String?                 @map("avatar_url")
+  phone             String?
+  bio               String?
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
   createdForms      ApplicationFormSchema[] @relation("FormCreator")
+  reviewedApps      Application[]           @relation("ApplicationReviewer")
+  createdInterviews Interview[]             @relation("InterviewCreator")
+  createdJobs       Job[]                   @relation("JobCreator")
   notifications     Notification[]
   settings          UserSettings?
+  company           Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("users")
 }
 
 model Job {
-  id                      String   @id @default(cuid())
+  id                      String                  @id @default(cuid())
   title                   String
   department              String?
-  location                String? // JSON as text - JobLocation interface
-  employmentType          String?  @map("employment_type")
-  experienceLevel         String?  @map("experience_level")
-  salary                  String? // JSON as text - JobSalary interface
+  location                String?
+  employmentType          String?                 @map("employment_type")
+  experienceLevel         String?                 @map("experience_level")
+  salary                  String?
   description             String?
-  responsibilities        String? // JSON array as text - nullable to handle existing data
-  requiredQualifications  String? @map("required_qualifications") // JSON array as text - nullable to handle existing data
-  preferredQualifications String? @map("preferred_qualifications") // JSON array as text - nullable to handle existing data
-  skills                  String? // JSON array as text - nullable to handle existing data
+  responsibilities        String?
+  requiredQualifications  String?                 @map("required_qualifications")
+  preferredQualifications String?                 @map("preferred_qualifications")
+  skills                  String?
   benefits                String?
-  status                  String   @default("draft")
-  visibility              String   @default("public")
-  postedDate              DateTime? @map("posted_date")
-  applicationDeadline     DateTime? @map("application_deadline")
-  maxApplicants           Int?     @map("max_applicants")
-  currentApplicants       Int      @default(0) @map("current_applicants")
-  pipeline                String? // JSON as text - JobPipeline interface
-  source                  String   @default("internal")
-  createdById             String   @map("created_by_id")
-  companyId               String   @map("company_id")
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  createdBy    User          @relation("JobCreator", fields: [createdById], references: [id])
-  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  applications Application[]
-  formSchemas  ApplicationFormSchema[]
+  status                  String                  @default("draft")
+  visibility              String                  @default("public")
+  postedDate              DateTime?               @map("posted_date")
+  applicationDeadline     DateTime?               @map("application_deadline")
+  maxApplicants           Int?                    @map("max_applicants")
+  currentApplicants       Int                     @default(0) @map("current_applicants")
+  pipeline                String?
+  source                  String                  @default("internal")
+  createdById             String                  @map("created_by_id")
+  companyId               String                  @map("company_id")
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @updatedAt @map("updated_at")
+  formSchemas             ApplicationFormSchema[]
+  applications            Application[]
+  company                 Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy               User                    @relation("JobCreator", fields: [createdById], references: [id])
 
   @@map("jobs")
 }
 
 model Candidate {
-  id                String   @id @default(cuid())
-  firstName         String   @map("first_name")
-  lastName          String   @map("last_name")
-  email             String   @unique
+  id                String           @id @default(cuid())
+  firstName         String           @map("first_name")
+  lastName          String           @map("last_name")
+  email             String           @unique
   phone             String?
-  location          String? // JSON as text - Location interface
-  willingToRelocate Boolean? @map("willing_to_relocate")
-  workAuthorization String?  @map("work_authorization")
-  linkedinUrl       String?  @map("linkedin_url")
-  portfolioUrl      String?  @map("portfolio_url")
-  websiteUrl        String?  @map("website_url")
-  sourceId          String?  @map("source_id") // Reference to CandidateSource - where candidate was originally discovered
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  applications Application[]
-  source       CandidateSource? @relation("CandidateOriginSource", fields: [sourceId], references: [id])
+  location          String?
+  willingToRelocate Boolean?         @map("willing_to_relocate")
+  workAuthorization String?          @map("work_authorization")
+  linkedinUrl       String?          @map("linkedin_url")
+  portfolioUrl      String?          @map("portfolio_url")
+  websiteUrl        String?          @map("website_url")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  sourceId          String?          @map("source_id")
+  applications      Application[]
+  source            CandidateSource? @relation("CandidateOriginSource", fields: [sourceId], references: [id])
 
   @@map("candidates")
 }
 
 model Application {
-  id                     String    @id @default(cuid())
-  jobId                  String    @map("job_id")
-  candidateId            String    @map("candidate_id")
-  status                 String    @default("applied")
-  submittedAt            DateTime? @map("submitted_at")
-  hiredAt                DateTime? @map("hired_at")
-  candidateInfo          String    @map("candidate_info") // JSON as text - CandidateInfo interface
-  professionalInfo       String?   @map("professional_info") // JSON as text - ProfessionalInfo interface
-  documentData           String?   @map("document_data") // JSON as text - ApplicationDocuments interface
-  customAnswers          String?   @map("custom_answers") // JSON as text - Record<string, CustomAnswer>
-  metadata               String?   // JSON as text - ApplicationMetadata interface
-  scoring                String?   // JSON as text - ApplicationScoring interface (for future ML features)
-  score                  Int?      // Simple numeric score (0-100)
-  activity               String?   // JSON array as text - ApplicationActivity[] interface - nullable to handle existing data
-  reviewNotes            String?   @map("review_notes")
-  reviewedById           String?   @map("reviewed_by_id")
-  reviewedAt             DateTime? @map("reviewed_at")
-  tags                   String?   // JSON array as text - nullable to handle existing data
-  lastContactDate        DateTime? @map("last_contact_date")
-  nextFollowupDate       DateTime? @map("next_followup_date")
-  communicationHistory   String?   @map("communication_history") // JSON array as text - nullable to handle existing data
-  sourceId               String?   @map("source_id") // Reference to CandidateSource
-  createdAt              DateTime  @default(now()) @map("created_at")
-  updatedAt              DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  job        Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  candidate  Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  reviewedBy User?       @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
-  source     CandidateSource? @relation(fields: [sourceId], references: [id])
-  interviews Interview[]
-  documents  Document[]
-  mlPredictions MLPrediction[]
-  skillExtractions SkillExtraction[]
+  id                   String            @id @default(cuid())
+  jobId                String            @map("job_id")
+  candidateId          String            @map("candidate_id")
+  status               String            @default("applied")
+  submittedAt          DateTime?         @map("submitted_at")
+  candidateInfo        String            @map("candidate_info")
+  professionalInfo     String?           @map("professional_info")
+  documentData         String?           @map("document_data")
+  customAnswers        String?           @map("custom_answers")
+  metadata             String?
+  scoring              String?
+  activity             String?
+  reviewNotes          String?           @map("review_notes")
+  reviewedById         String?           @map("reviewed_by_id")
+  reviewedAt           DateTime?         @map("reviewed_at")
+  tags                 String?
+  lastContactDate      DateTime?         @map("last_contact_date")
+  nextFollowupDate     DateTime?         @map("next_followup_date")
+  communicationHistory String?           @map("communication_history")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  hiredAt              DateTime?         @map("hired_at")
+  score                Int?
+  sourceId             String?           @map("source_id")
+  candidate            Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job                  Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reviewedBy           User?             @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
+  source               CandidateSource?  @relation(fields: [sourceId], references: [id])
+  documents            Document[]
+  interviews           Interview[]
+  mlPredictions        MLPrediction[]
+  skillExtractions     SkillExtraction[]
 
   @@map("applications")
 }
 
 model Interview {
-  id            String    @id @default(cuid())
-  applicationId String    @map("application_id")
+  id            String      @id @default(cuid())
+  applicationId String      @map("application_id")
   title         String
   type          String?
-  scheduledDate DateTime? @map("scheduled_date")
-  startTime     String?   @map("start_time")
-  endTime       String?   @map("end_time")
+  scheduledDate DateTime?   @map("scheduled_date")
+  startTime     String?     @map("start_time")
+  endTime       String?     @map("end_time")
   location      String?
-  interviewers  String? // JSON array as text - Array of user IDs - nullable to handle existing data
+  interviewers  String?
   notes         String?
-  feedback      String? // JSON as text - Interview feedback structure
-  status        String    @default("scheduled")
-  createdById   String    @map("created_by_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  createdBy   User        @relation("InterviewCreator", fields: [createdById], references: [id])
+  feedback      String?
+  status        String      @default("scheduled")
+  createdById   String      @map("created_by_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  createdBy     User        @relation("InterviewCreator", fields: [createdById], references: [id])
 
   @@map("interviews")
 }
 
 model Document {
-  id            String    @id @default(cuid())
-  applicationId String    @map("application_id")
+  id            String      @id @default(cuid())
+  applicationId String      @map("application_id")
   filename      String
-  fileType      String?   @map("file_type")
-  fileSize      Int?      @map("file_size")
-  fileUrl       String    @map("file_url")
-  documentType  String    @map("document_type") // 'resume', 'cover_letter', 'portfolio', etc.
-  uploadedAt    DateTime  @default(now()) @map("uploaded_at")
-
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fileType      String?     @map("file_type")
+  fileSize      Int?        @map("file_size")
+  fileUrl       String      @map("file_url")
+  documentType  String      @map("document_type")
+  uploadedAt    DateTime    @default(now()) @map("uploaded_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@map("documents")
 }
 
 model ApplicationFormSchema {
-  id            String   @id @default(cuid())
-  jobId         String   @map("job_id")
-  title         String
-  description   String?
-  sections      String   // JSON as text - FormSection[] interface
-  settings      String   // JSON as text - Form settings interface
-  emailSettings String   @map("email_settings") // JSON as text - Email settings interface
-  status        String   @default("draft") // 'draft', 'live', 'archived'
-  version       Int      @default(1)
-  publishedAt   DateTime? @map("published_at")
-  archivedAt    DateTime? @map("archived_at")
-  viewCount     Int      @default(0) @map("view_count")
-  submissionCount Int    @default(0) @map("submission_count")
-  createdById   String   @map("created_by_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  createdBy User @relation("FormCreator", fields: [createdById], references: [id])
+  id              String    @id @default(cuid())
+  jobId           String    @map("job_id")
+  title           String
+  description     String?
+  sections        String
+  settings        String
+  emailSettings   String    @map("email_settings")
+  version         Int       @default(1)
+  createdById     String    @map("created_by_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  archivedAt      DateTime? @map("archived_at")
+  publishedAt     DateTime? @map("published_at")
+  status          String    @default("draft")
+  submissionCount Int       @default(0) @map("submission_count")
+  viewCount       Int       @default(0) @map("view_count")
+  createdBy       User      @relation("FormCreator", fields: [createdById], references: [id])
+  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@map("application_form_schemas")
 }
@@ -218,150 +199,134 @@ model EmailTemplate {
   name      String
   subject   String
   body      String
-  type      String // 'confirmation', 'status_update', 'interview_invite', 'rejection', 'offer'
-  variables String // JSON array as text - Available template variables
+  type      String
+  variables String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("email_templates")
 }
 
-// Unified Source tracking for both candidates and applications
 model CandidateSource {
-  id          String   @id @default(cuid())
-  name        String   @unique // 'LinkedIn', 'Indeed', 'Company Website', etc.
-  category    String   // 'job_board', 'social_media', 'referral', 'direct', 'company_website'
-  isActive    Boolean  @default(true) @map("is_active")
-  cost        Float?   // Cost per application/hire if applicable
-  description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  applications Application[] // Applications submitted through this source
-  candidates   Candidate[]   @relation("CandidateOriginSource") // Candidates originally discovered through this source
+  id           String        @id @default(cuid())
+  name         String        @unique
+  category     String
+  isActive     Boolean       @default(true) @map("is_active")
+  cost         Float?
+  description  String?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  applications Application[]
+  candidates   Candidate[]   @relation("CandidateOriginSource")
 
   @@map("candidate_sources")
 }
 
-// ML Models and Training Data
 model MLModel {
-  id            String   @id @default(cuid())
-  name          String
-  type          String   // 'candidate_scoring', 'job_matching', 'resume_parsing'
-  version       String
-  modelPath     String   @map("model_path")
-  accuracy      Float?
-  precision     Float?
-  recall        Float?
-  f1Score       Float?   @map("f1_score")
-  trainingData  String   @map("training_data") // JSON as text - Metadata about training dataset
-  features      String   // JSON array as text - List of features used
-  isActive      Boolean  @default(false) @map("is_active")
-  trainedAt     DateTime @map("trained_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  predictions MLPrediction[]
+  id           String         @id @default(cuid())
+  name         String
+  type         String
+  version      String
+  modelPath    String         @map("model_path")
+  accuracy     Float?
+  precision    Float?
+  recall       Float?
+  f1Score      Float?         @map("f1_score")
+  trainingData String         @map("training_data")
+  features     String
+  isActive     Boolean        @default(false) @map("is_active")
+  trainedAt    DateTime       @map("trained_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  predictions  MLPrediction[]
 
   @@map("ml_models")
 }
 
 model MLPrediction {
-  id            String   @id @default(cuid())
-  modelId       String   @map("model_id")
-  applicationId String   @map("application_id")
-  predictionType String  @map("prediction_type") // 'priority_score', 'job_match', 'skill_extraction'
-  inputFeatures String   @map("input_features") // JSON as text - Features used for prediction
-  prediction    String   // JSON as text - Prediction results (score, confidence, etc.)
-  confidence    Float?   // Confidence score (0-1)
-  explanation   String?  // JSON as text - Feature importance/explanation
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  // Relations
-  model       MLModel     @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id             String      @id @default(cuid())
+  modelId        String      @map("model_id")
+  applicationId  String      @map("application_id")
+  predictionType String      @map("prediction_type")
+  inputFeatures  String      @map("input_features")
+  prediction     String
+  confidence     Float?
+  explanation    String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  model          MLModel     @relation(fields: [modelId], references: [id], onDelete: Cascade)
 
   @@map("ml_predictions")
 }
 
 model TrainingDataset {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  source      String   // 'kaggle', 'internal', 'synthetic'
-  datasetPath String   @map("dataset_path")
-  features    String   // JSON array as text - List of features/columns
-  targetVariable String @map("target_variable")
-  recordCount Int      @map("record_count")
-  version     String   @default("1.0")
-  isActive    Boolean  @default(true) @map("is_active")
-  metadata    String?  // JSON as text - Additional dataset information
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  source         String
+  datasetPath    String   @map("dataset_path")
+  features       String
+  targetVariable String   @map("target_variable")
+  recordCount    Int      @map("record_count")
+  version        String   @default("1.0")
+  isActive       Boolean  @default(true) @map("is_active")
+  metadata       String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("training_datasets")
 }
 
 model SkillExtraction {
-  id            String   @id @default(cuid())
-  applicationId String   @map("application_id")
-  extractedSkills String @map("extracted_skills") // JSON as text - Array of skills with confidence scores
-  skillCategories String @map("skill_categories") // JSON as text - Categorized skills (technical, soft, etc.)
-  experienceLevel String? @map("experience_level") // Predicted experience level
-  confidence      Float?  // Overall extraction confidence
-  method          String  @default("ml") // 'ml', 'nlp', 'manual'
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  // Relations
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  applicationId   String      @map("application_id")
+  extractedSkills String      @map("extracted_skills")
+  skillCategories String      @map("skill_categories")
+  experienceLevel String?     @map("experience_level")
+  confidence      Float?
+  method          String      @default("ml")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@map("skill_extractions")
 }
 
-// Notifications table for real-time notifications
 model Notification {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
-  type      String   // 'new_application', 'status_change', 'system_alert', 'interview_reminder'
+  type      String
   title     String
   message   String
   isRead    Boolean  @default(false) @map("is_read")
-  metadata  String?  // JSON as text - Additional notification data
+  metadata  String?
   createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
 
-// User settings table for enhanced preferences
 model UserSettings {
-  id                    String  @id @default(cuid())
-  userId                String  @unique @map("user_id")
-  emailNotifications    Boolean @default(true) @map("email_notifications")
-  pushNotifications     Boolean @default(true) @map("push_notifications")
-  browserNotifications  Boolean @default(true) @map("browser_notifications")
-  newApplications       Boolean @default(true) @map("new_applications")
-  interviewReminders    Boolean @default(true) @map("interview_reminders")
-  systemUpdates         Boolean @default(false) @map("system_updates")
-  weeklyReports         Boolean @default(true) @map("weekly_reports")
-  theme                 String  @default("light") // 'light', 'dark'
-  language              String  @default("en")
-  timezone              String  @default("UTC")
-  profileVisibility     String  @default("team") // 'public', 'team', 'private'
-  activityTracking      Boolean @default(true) @map("activity_tracking")
-  dataSharing           Boolean @default(false) @map("data_sharing")
-  analyticsOptIn        Boolean @default(true) @map("analytics_opt_in")
-  compactMode           Boolean @default(false) @map("compact_mode")
-  sidebarCollapsed      Boolean @default(false) @map("sidebar_collapsed")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String   @id @default(cuid())
+  userId               String   @unique @map("user_id")
+  emailNotifications   Boolean  @default(true) @map("email_notifications")
+  pushNotifications    Boolean  @default(true) @map("push_notifications")
+  browserNotifications Boolean  @default(true) @map("browser_notifications")
+  newApplications      Boolean  @default(true) @map("new_applications")
+  interviewReminders   Boolean  @default(true) @map("interview_reminders")
+  systemUpdates        Boolean  @default(false) @map("system_updates")
+  weeklyReports        Boolean  @default(true) @map("weekly_reports")
+  theme                String   @default("light")
+  language             String   @default("en")
+  timezone             String   @default("UTC")
+  profileVisibility    String   @default("team")
+  activityTracking     Boolean  @default(true) @map("activity_tracking")
+  dataSharing          Boolean  @default(false) @map("data_sharing")
+  analyticsOptIn       Boolean  @default(true) @map("analytics_opt_in")
+  compactMode          Boolean  @default(false) @map("compact_mode")
+  sidebarCollapsed     Boolean  @default(false) @map("sidebar_collapsed")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }

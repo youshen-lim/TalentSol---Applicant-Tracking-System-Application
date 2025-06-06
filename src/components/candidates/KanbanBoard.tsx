@@ -6,6 +6,7 @@ import { PlusIcon, PlusCircle, Users } from 'lucide-react';
 import CandidateCard, { Candidate } from './CandidateCard';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useStandardizedKanbanColors } from '@/hooks/useABTest';
 
 // Support both naming conventions (Stage and KanbanColumn)
 interface Stage {
@@ -171,8 +172,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }
   };
 
-  // Stage color mapping for enhanced visual distinction
-  const getStageColor = (stageId: string) => {
+  // Legacy stage color mapping (control group)
+  const getLegacyStageColor = (stageId: string) => {
     const colorMap: Record<string, { bg: string; border: string; text: string }> = {
       applied: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
       screening: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
@@ -182,6 +183,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       rejected: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
     };
     return colorMap[stageId] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' };
+  };
+
+  // Standardized stage color mapping (test group)
+  const getStandardizedStageColor = (stageId: string) => {
+    const colorMap: Record<string, { bg: string; border: string; text: string }> = {
+      applied: { bg: 'bg-ats-blue/5', border: 'border-ats-blue/20', text: 'text-ats-blue' },
+      screening: { bg: 'bg-ats-purple/5', border: 'border-ats-purple/20', text: 'text-ats-purple' },
+      interview: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
+      assessment: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
+      offer: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
+      rejected: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
+    };
+    return colorMap[stageId] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' };
+  };
+
+  // A/B tested stage color mapping
+  const useStandardizedColors = useStandardizedKanbanColors();
+  const getStageColor = (stageId: string) => {
+    return useStandardizedColors ? getStandardizedStageColor(stageId) : getLegacyStageColor(stageId);
   };
 
   // Render the kanban board with enhanced responsive styling

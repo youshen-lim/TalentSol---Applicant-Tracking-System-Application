@@ -14,6 +14,7 @@ import {
   UserIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useStandardizedBadges } from '@/hooks/useABTest';
 
 export interface Candidate {
   id: string;
@@ -97,8 +98,11 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
   // Determine which status/stage to use
   const candidateStatus = status || stage?.toLowerCase() || 'new';
 
-  // Get stage badge with gradient styling (matching Jobs page design)
-  const getStageBadge = () => {
+  // A/B tested badge styling
+  const useStandardized = useStandardizedBadges();
+
+  // Legacy stage badge with gradient styling (control group)
+  const getLegacyStageBadge = () => {
     const currentStage = stage || candidateStatus;
     switch (currentStage) {
       case 'applied':
@@ -118,6 +122,34 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
       default:
         return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-sm';
     }
+  };
+
+  // Standardized stage badge using design tokens (test group)
+  const getStandardizedStageBadge = () => {
+    const currentStage = stage || candidateStatus;
+    switch (currentStage) {
+      case 'applied':
+        return 'bg-ats-status-applied text-white border-0 shadow-sm hover:shadow-md';
+      case 'screening':
+        return 'bg-ats-status-screening text-white border-0 shadow-sm hover:shadow-md';
+      case 'interview':
+        return 'bg-ats-status-interview text-white border-0 shadow-sm hover:shadow-md';
+      case 'assessment':
+        return 'bg-ats-status-interview text-white border-0 shadow-sm hover:shadow-md';
+      case 'offer':
+        return 'bg-ats-status-offer text-white border-0 shadow-sm hover:shadow-md';
+      case 'hired':
+        return 'bg-ats-status-hired text-white border-0 shadow-sm hover:shadow-md';
+      case 'rejected':
+        return 'bg-ats-status-rejected text-white border-0 shadow-sm hover:shadow-md';
+      default:
+        return 'bg-gray-500 text-white border-0 shadow-sm';
+    }
+  };
+
+  // Get stage badge with A/B testing
+  const getStageBadge = () => {
+    return useStandardized ? getStandardizedStageBadge() : getLegacyStageBadge();
   };
 
   // Format stage text properly
