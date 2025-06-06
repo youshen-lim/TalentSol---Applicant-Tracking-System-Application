@@ -99,7 +99,7 @@ const ResponsivePageWrapper: React.FC<ResponsivePageWrapperProps> = ({
 
   // Content area classes
   const contentAreaClasses = cn(
-    'w-full',
+    'w-full min-w-fit overflow-x-auto',
     contentClassName
   );
 

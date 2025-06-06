@@ -18,12 +18,15 @@ import jobRoutes from './routes/jobs.js';
 import candidateRoutes from './routes/candidates.js';
 import applicationRoutes from './routes/applications.js';
 import interviewRoutes from './routes/interviews.js';
+import interviewTemplateRoutes from './routes/interviewTemplates.js';
 import documentRoutes from './routes/documents.js';
 import analyticsRoutes from './routes/analytics.js';
 import mlRoutes from './routes/ml.js';
 import notificationRoutes from './routes/notifications.js';
 import reportsRoutes from './routes/reports';
 import formRoutes from './routes/forms.js';
+import { webSocketServer } from './websocket/server.js';
+import { schedulerService } from './services/schedulerService.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -100,6 +103,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/candidates', candidateRoutes); // Temporarily removed auth for testing
 app.use('/api/applications', applicationRoutes);
 app.use('/api/interviews', authenticateToken, interviewRoutes);
+app.use('/api/interview-templates', authenticateToken, interviewTemplateRoutes);
 app.use('/api/documents', authenticateToken, documentRoutes);
 app.use('/api/analytics', analyticsRoutes); // Temporarily removed auth for testing
 app.use('/api/ml', authenticateToken, mlRoutes);
@@ -117,12 +121,20 @@ async function startServer() {
     // Initialize cache system
     await initializeCache();
 
-    // Start server
+    // Start WebSocket server
+    webSocketServer.start(9000);
+
+    // Start scheduler service
+    schedulerService.start();
+
+    // Start main server
     app.listen(PORT, () => {
       console.log(`🚀 TalentSol ATS Backend running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 CORS enabled for: ${process.env.CORS_ORIGIN}`);
       console.log(`💾 Cache system initialized`);
+      console.log(`🔌 WebSocket server running on port 9000`);
+      console.log(`📅 Scheduler service started`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
@@ -133,6 +145,7 @@ async function startServer() {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('Received SIGINT, shutting down gracefully...');
+  schedulerService.stop();
   await cleanupCache();
   await prisma.$disconnect();
   process.exit(0);
@@ -140,6 +153,7 @@ process.on('SIGINT', async () => {
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM, shutting down gracefully...');
+  schedulerService.stop();
   await cleanupCache();
   await prisma.$disconnect();
   process.exit(0);

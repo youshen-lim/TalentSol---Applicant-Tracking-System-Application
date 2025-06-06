@@ -14,8 +14,8 @@ const Layout = () => {
       <NavBar />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto border-t border-ats-border-gray font-sans">
-          <div className="p-6">
+        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-x-auto overflow-y-auto border-t border-ats-border-gray font-sans">
+          <div className="p-6 min-w-fit">
             <Outlet />
           </div>
         </main>

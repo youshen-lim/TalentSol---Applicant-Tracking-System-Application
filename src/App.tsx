@@ -39,7 +39,7 @@ import { ToggleGroupExample } from '@/components/examples/ToggleGroupExample';
 import { MobileDetectionExample } from '@/components/examples/MobileDetectionExample';
 import { EnhancedToastExample } from '@/components/examples/EnhancedToastExample';
 import { UtilsExample } from '@/components/examples/UtilsExample';
-import TestApplicationSources from './test-application-sources';
+import TestApplicationSources from './pages/TestApplicationSources';
 
 
 

@@ -224,8 +224,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
       {/* Drag and drop context with responsive design */}
       <DragDropContext onDragEnd={onDragEnd}>
-        {/* Mobile: Horizontal scroll, Desktop: Full width */}
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 sm:pb-6 -mx-2 px-2 sm:mx-0 sm:px-0">
+        {/* Enhanced horizontal scroll for all screen sizes */}
+        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 sm:pb-6 -mx-2 px-2 sm:mx-0 sm:px-0 min-w-fit">
           {columns.map(column => {
             const stageColors = getStageColor(column.id);
             return (

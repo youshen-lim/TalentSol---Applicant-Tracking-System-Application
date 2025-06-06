@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -521,48 +522,34 @@ const ApplicationManagement = () => {
         </Button>
       </PageHeader>
 
-      {/* Enhanced Navigation Tabs - Mobile Responsive */}
-      <div className={`${shadows.card} p-1`}>
-        <div className="flex space-x-1">
-          {[
-            { id: 'dashboard', label: 'Overview', icon: BarChart3 },
-            { id: 'applications', label: 'Applications', icon: FileText, count: tabCounts.applications },
-            { id: 'forms', label: 'Forms', icon: Edit, count: tabCounts.forms },
-            { id: 'performance', label: 'Performance', icon: TrendingUp, count: tabCounts.performance }
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+      {/* Standardized Navigation Tabs - Matching Analytics Page Style */}
+      <Tabs
+        defaultValue="dashboard"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-4 mb-6" variant="ats-blue">
+          <TabsTrigger value="dashboard" className="flex items-center" variant="ats-blue">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="applications" className="flex items-center" variant="ats-blue">
+            <FileText className="h-4 w-4 mr-2" />
+            Applications
+          </TabsTrigger>
+          <TabsTrigger value="forms" className="flex items-center" variant="ats-blue">
+            <Edit className="h-4 w-4 mr-2" />
+            Forms
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center" variant="ats-blue">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Performance
+          </TabsTrigger>
+        </TabsList>
 
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                {Icon && <Icon className="h-4 w-4" />}
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    isActive
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Overview Tab */}
-      {activeTab === 'dashboard' && (
-        <div className={`${shadows.card} p-6 space-y-6`}>
+        <TabsContent value="dashboard" className="space-y-6">
+          <div className={`${shadows.card} p-6 space-y-6`}>
           {/* Key Metrics - Mobile Responsive Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className={`${shadows.card} p-6`}>
@@ -738,12 +725,10 @@ const ApplicationManagement = () => {
               </Select>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        </TabsContent>
 
-      {/* Applications Tab */}
-      {activeTab === 'applications' && (
-        <div className="space-y-6">
+        <TabsContent value="applications" className="space-y-6">
           <div className={`${shadows.card} p-4`}>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row gap-3">
@@ -923,12 +908,9 @@ const ApplicationManagement = () => {
               )}
             </div>
           </div>
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Forms Tab */}
-      {activeTab === 'forms' && (
-        <div className="space-y-6">
+        <TabsContent value="forms" className="space-y-6">
           {/* Forms Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -1045,12 +1027,9 @@ const ApplicationManagement = () => {
               </div>
             </div>
           )}
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Performance Tab */}
-      {activeTab === 'performance' && (
-        <div className="space-y-6">
+        <TabsContent value="performance" className="space-y-6">
           {/* Performance Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -1219,8 +1198,8 @@ const ApplicationManagement = () => {
               </div>
             </div>
           )}
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -232,7 +232,7 @@ const ApplicationKanbanBoard: React.FC<ApplicationKanbanBoardProps> = ({
   return (
     <div className="w-full">
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex space-x-4 overflow-x-auto pb-4 -mx-2 px-2">
+        <div className="flex space-x-4 overflow-x-auto pb-4 -mx-2 px-2 min-w-fit">
           {APPLICATION_STAGES.map(stage => {
             const stageApplications = applicationsByStatus[stage.id] || [];
             
