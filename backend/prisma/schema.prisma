@@ -13,8 +13,9 @@ model Company {
   domain    String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  jobs      Job[]
-  users     User[]
+  jobs               Job[]
+  users              User[]
+  interviewTemplates InterviewTemplate[]
 
   @@map("companies")
 }
@@ -35,6 +36,7 @@ model User {
   createdForms      ApplicationFormSchema[] @relation("FormCreator")
   reviewedApps      Application[]           @relation("ApplicationReviewer")
   createdInterviews Interview[]             @relation("InterviewCreator")
+  createdTemplates  InterviewTemplate[]     @relation("TemplateCreator")
   createdJobs       Job[]                   @relation("JobCreator")
   notifications     Notification[]
   settings          UserSettings?
@@ -136,25 +138,62 @@ model Application {
 }
 
 model Interview {
-  id            String      @id @default(cuid())
-  applicationId String      @map("application_id")
+  id            String             @id @default(cuid())
+  applicationId String             @map("application_id")
   title         String
   type          String?
-  scheduledDate DateTime?   @map("scheduled_date")
-  startTime     String?     @map("start_time")
-  endTime       String?     @map("end_time")
+  scheduledDate DateTime?          @map("scheduled_date")
+  startTime     String?            @map("start_time")
+  endTime       String?            @map("end_time")
   location      String?
+  meetingLink   String?            @map("meeting_link")
   interviewers  String?
   notes         String?
   feedback      String?
-  status        String      @default("scheduled")
-  createdById   String      @map("created_by_id")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  createdBy     User        @relation("InterviewCreator", fields: [createdById], references: [id])
+  status        String             @default("scheduled")
+  createdById   String             @map("created_by_id")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  createdBy     User               @relation("InterviewCreator", fields: [createdById], references: [id])
+  reminders     InterviewReminder[]
 
   @@map("interviews")
+}
+
+model InterviewReminder {
+  id           String    @id @default(cuid())
+  interviewId  String    @map("interview_id")
+  reminderType String    @map("reminder_type") // 'day_before', 'hour_before', 'now'
+  sentAt       DateTime? @map("sent_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  interview    Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@unique([interviewId, reminderType], name: "interviewId_reminderType")
+  @@map("interview_reminders")
+}
+
+model InterviewTemplate {
+  id                 String   @id @default(cuid())
+  name               String
+  description        String?
+  type               String   // 'technical', 'behavioral', 'cultural_fit', 'final', 'screening'
+  duration           Int      // in minutes
+  location           String?
+  meetingLink        String?  @map("meeting_link")
+  interviewers       Json     @default("[]") // Array of interviewer names/IDs
+  questions          Json     @default("[]") // Array of interview questions
+  evaluationCriteria Json     @default("[]") @map("evaluation_criteria") // Array of evaluation criteria
+  instructions       String?
+  isDefault          Boolean  @default(false) @map("is_default")
+  companyId          String   @map("company_id")
+  createdById        String   @map("created_by_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy          User     @relation("TemplateCreator", fields: [createdById], references: [id])
+
+  @@map("interview_templates")
 }
 
 model Document {

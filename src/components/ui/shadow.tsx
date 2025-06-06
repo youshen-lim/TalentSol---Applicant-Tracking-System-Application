@@ -69,22 +69,6 @@ export const ShadowWrapper: React.FC<ShadowWrapperProps> = ({
     </Component>
   );
 };
-  
-  // Button shadows - for interactive elements
-  button: "shadow-sm hover:shadow-md transition-shadow duration-200",
-  
-  // Input shadows - for form elements
-  input: "border border-slate-300 shadow-sm focus:shadow-md transition-shadow duration-200",
-  
-  // Sidebar shadows - for navigation panels
-  sidebar: "bg-white border-r border-slate-200 shadow-sm",
-  
-  // Header shadows - for top navigation
-  header: "bg-white border-b border-slate-200 shadow-sm",
-  
-  // None - for elements that should not have shadows
-  none: ""
-} as const;
 
 export type ShadowVariant = keyof typeof shadowVariants;
 

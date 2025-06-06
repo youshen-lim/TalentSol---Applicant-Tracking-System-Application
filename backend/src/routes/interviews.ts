@@ -1,8 +1,15 @@
 import express from 'express';
-import { prisma } from '../index.js';
-import { createInterviewSchema, updateInterviewSchema } from '../types/validation.js';
-import { asyncHandler, AppError } from '../middleware/errorHandler.js';
-import { AuthenticatedRequest, authenticateToken } from '../middleware/auth.js';
+import { asyncHandler } from '../middleware/errorHandler.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { InterviewController } from '../controllers/interviewController.js';
+import { BulkInterviewController } from '../controllers/bulkInterviewController.js';
+import {
+  validateInterviewData,
+  validateBulkOperation,
+  generalLimiter,
+  bulkOperationLimiter,
+  emailLimiter
+} from '../middleware/security.js';
 
 const router = express.Router();
 
@@ -316,6 +323,48 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
     },
   });
 
+  // Send real-time notification and email
+  try {
+    // Prepare interview data for notifications
+    const interviewData = {
+      interviewId: interview.id,
+      candidateEmail: interview.application.candidate.email,
+      candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+      interviewTitle: interview.title,
+      scheduledDate: interview.scheduledDate || new Date(),
+      location: interview.location,
+      meetingLink: interview.meetingLink,
+      interviewers: interview.interviewers ? JSON.parse(interview.interviewers) : [],
+      jobTitle: interview.application.job.title,
+      companyName: 'TalentSol' // You might want to get this from the company table
+    };
+
+    // Send confirmation email to candidate
+    await notificationService.sendInterviewConfirmation(interviewData);
+
+    // Schedule automatic reminders
+    if (interview.scheduledDate) {
+      const scheduledDate = new Date(interview.scheduledDate);
+      const dayBefore = new Date(scheduledDate.getTime() - 24 * 60 * 60 * 1000);
+      const hourBefore = new Date(scheduledDate.getTime() - 60 * 60 * 1000);
+
+      // Schedule reminders
+      await schedulerService.scheduleInterviewReminder(interview.id, dayBefore, 'day_before');
+      await schedulerService.scheduleInterviewReminder(interview.id, hourBefore, 'hour_before');
+    }
+
+    // Broadcast real-time update
+    webSocketServer.broadcastInterviewUpdate(req.user!.companyId, {
+      type: 'interview_created',
+      interview: interview,
+      companyId: req.user!.companyId
+    });
+
+  } catch (notificationError) {
+    console.error('Error sending interview notifications:', notificationError);
+    // Don't fail the request if notifications fail
+  }
+
   res.status(201).json({
     message: 'Interview scheduled successfully',
     interview,
@@ -375,6 +424,52 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
     },
   });
 
+  // Handle notifications for interview updates
+  try {
+    // Check if the scheduled date changed (reschedule)
+    if (validatedData.scheduledDate && existingInterview.scheduledDate !== validatedData.scheduledDate) {
+      const interviewData = {
+        interviewId: interview.id,
+        candidateEmail: interview.application.candidate.email,
+        candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+        interviewTitle: interview.title,
+        scheduledDate: existingInterview.scheduledDate || new Date(),
+        location: interview.location,
+        meetingLink: interview.meetingLink,
+        interviewers: interview.interviewers ? JSON.parse(interview.interviewers) : [],
+        jobTitle: interview.application.job.title,
+        companyName: 'TalentSol'
+      };
+
+      // Send reschedule notification
+      await notificationService.sendInterviewReschedule(
+        interviewData,
+        new Date(validatedData.scheduledDate),
+        'Interview time has been updated'
+      );
+
+      // Cancel old reminders and schedule new ones
+      await schedulerService.cancelInterviewReminders(interview.id);
+
+      const newScheduledDate = new Date(validatedData.scheduledDate);
+      const dayBefore = new Date(newScheduledDate.getTime() - 24 * 60 * 60 * 1000);
+      const hourBefore = new Date(newScheduledDate.getTime() - 60 * 60 * 1000);
+
+      await schedulerService.scheduleInterviewReminder(interview.id, dayBefore, 'day_before');
+      await schedulerService.scheduleInterviewReminder(interview.id, hourBefore, 'hour_before');
+    }
+
+    // Broadcast real-time update
+    webSocketServer.broadcastInterviewUpdate(req.user!.companyId, {
+      type: 'interview_updated',
+      interview: interview,
+      companyId: req.user!.companyId
+    });
+
+  } catch (notificationError) {
+    console.error('Error sending interview update notifications:', notificationError);
+  }
+
   res.json({
     message: 'Interview updated successfully',
     interview,
@@ -395,10 +490,60 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
         },
       },
     },
+    include: {
+      application: {
+        include: {
+          candidate: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          job: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!existingInterview) {
     throw new AppError('Interview not found', 404);
+  }
+
+  // Send cancellation notification before deleting
+  try {
+    const interviewData = {
+      interviewId: existingInterview.id,
+      candidateEmail: existingInterview.application.candidate.email,
+      candidateName: `${existingInterview.application.candidate.firstName} ${existingInterview.application.candidate.lastName}`,
+      interviewTitle: existingInterview.title,
+      scheduledDate: existingInterview.scheduledDate || new Date(),
+      location: existingInterview.location,
+      meetingLink: existingInterview.meetingLink,
+      interviewers: existingInterview.interviewers ? JSON.parse(existingInterview.interviewers) : [],
+      jobTitle: existingInterview.application.job.title,
+      companyName: 'TalentSol'
+    };
+
+    // Send cancellation email
+    await notificationService.sendInterviewCancellation(interviewData, 'Interview has been cancelled');
+
+    // Cancel all scheduled reminders
+    await schedulerService.cancelInterviewReminders(id);
+
+    // Broadcast real-time update
+    webSocketServer.broadcastInterviewUpdate(req.user!.companyId, {
+      type: 'interview_cancelled',
+      interview: existingInterview,
+      companyId: req.user!.companyId
+    });
+
+  } catch (notificationError) {
+    console.error('Error sending interview cancellation notifications:', notificationError);
   }
 
   await prisma.interview.delete({
@@ -407,6 +552,248 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   res.json({
     message: 'Interview deleted successfully',
+  });
+}));
+
+// POST /api/interviews/bulk-operations - Bulk operations
+router.post('/bulk-operations', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { operation, interviewIds, data } = req.body;
+
+  if (!operation || !interviewIds || !Array.isArray(interviewIds)) {
+    throw new AppError('Invalid bulk operation request', 400);
+  }
+
+  // Validate that all interviews belong to user's company
+  const interviews = await prisma.interview.findMany({
+    where: {
+      id: { in: interviewIds },
+      application: {
+        job: {
+          companyId: req.user!.companyId,
+        },
+      },
+    },
+    include: {
+      application: {
+        include: {
+          candidate: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+          job: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (interviews.length !== interviewIds.length) {
+    throw new AppError('Some interviews not found or access denied', 404);
+  }
+
+  let result;
+
+  switch (operation) {
+    case 'reschedule':
+      const { newDate, newTime } = data;
+      if (!newDate || !newTime) {
+        throw new AppError('New date and time are required for rescheduling', 400);
+      }
+
+      // Update all interviews with new date/time
+      result = await prisma.interview.updateMany({
+        where: {
+          id: { in: interviewIds },
+        },
+        data: {
+          scheduledDate: new Date(newDate),
+          startTime: newTime,
+        },
+      });
+
+      // Send notifications for each interview
+      for (const interview of interviews) {
+        try {
+          const interviewData = {
+            interviewId: interview.id,
+            candidateEmail: interview.application.candidate.email,
+            candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+            interviewTitle: interview.title,
+            scheduledDate: new Date(newDate),
+            location: interview.location,
+            meetingLink: interview.meetingLink,
+            interviewers: interview.interviewers ? JSON.parse(interview.interviewers) : [],
+            jobTitle: interview.application.job.title,
+            companyName: 'TalentSol'
+          };
+
+          await notificationService.sendInterviewReschedule(
+            interviewData,
+            new Date(newDate),
+            'Interview has been rescheduled'
+          );
+        } catch (notificationError) {
+          console.error('Error sending reschedule notification:', notificationError);
+        }
+      }
+      break;
+
+    case 'cancel':
+      const { reason } = data;
+
+      // Update all interviews to cancelled status
+      result = await prisma.interview.updateMany({
+        where: {
+          id: { in: interviewIds },
+        },
+        data: {
+          status: 'cancelled',
+          notes: reason ? `Cancelled: ${reason}` : 'Cancelled',
+        },
+      });
+
+      // Send cancellation notifications
+      for (const interview of interviews) {
+        try {
+          const interviewData = {
+            interviewId: interview.id,
+            candidateEmail: interview.application.candidate.email,
+            candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+            interviewTitle: interview.title,
+            scheduledDate: interview.scheduledDate || new Date(),
+            location: interview.location,
+            meetingLink: interview.meetingLink,
+            interviewers: interview.interviewers ? JSON.parse(interview.interviewers) : [],
+            jobTitle: interview.application.job.title,
+            companyName: 'TalentSol'
+          };
+
+          await notificationService.sendInterviewCancellation(interviewData, reason || 'Interview cancelled');
+          await schedulerService.cancelInterviewReminders(interview.id);
+        } catch (notificationError) {
+          console.error('Error sending cancellation notification:', notificationError);
+        }
+      }
+      break;
+
+    case 'send_reminder':
+      const { message } = data;
+
+      // Send reminder emails
+      for (const interview of interviews) {
+        try {
+          const interviewData = {
+            interviewId: interview.id,
+            candidateEmail: interview.application.candidate.email,
+            candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+            interviewTitle: interview.title,
+            scheduledDate: interview.scheduledDate || new Date(),
+            location: interview.location,
+            meetingLink: interview.meetingLink,
+            interviewers: interview.interviewers ? JSON.parse(interview.interviewers) : [],
+            jobTitle: interview.application.job.title,
+            companyName: 'TalentSol'
+          };
+
+          await notificationService.sendInterviewReminder(interviewData, message || 'Interview reminder');
+        } catch (notificationError) {
+          console.error('Error sending reminder:', notificationError);
+        }
+      }
+
+      result = { remindersSent: interviews.length };
+      break;
+
+    case 'delete':
+      // Send cancellation notifications before deletion
+      for (const interview of interviews) {
+        try {
+          const interviewData = {
+            interviewId: interview.id,
+            candidateEmail: interview.application.candidate.email,
+            candidateName: `${interview.application.candidate.firstName} ${interview.application.candidate.lastName}`,
+            interviewTitle: interview.title,
+            scheduledDate: interview.scheduledDate || new Date(),
+            location: interview.location,
+            meetingLink: interview.meetingLink,
+            interviewers: interview.interviewers ? JSON.parse(interview.interviewers) : [],
+            jobTitle: interview.application.job.title,
+            companyName: 'TalentSol'
+          };
+
+          await notificationService.sendInterviewCancellation(interviewData, 'Interview has been cancelled');
+          await schedulerService.cancelInterviewReminders(interview.id);
+        } catch (notificationError) {
+          console.error('Error sending cancellation notification:', notificationError);
+        }
+      }
+
+      result = await prisma.interview.deleteMany({
+        where: {
+          id: { in: interviewIds },
+        },
+      });
+      break;
+
+    case 'update_status':
+      const { status } = data;
+      if (!status) {
+        throw new AppError('Status is required for status update', 400);
+      }
+
+      result = await prisma.interview.updateMany({
+        where: {
+          id: { in: interviewIds },
+        },
+        data: {
+          status,
+        },
+      });
+      break;
+
+    case 'assign_interviewer':
+      const { interviewerId, interviewerName } = data;
+      if (!interviewerId || !interviewerName) {
+        throw new AppError('Interviewer ID and name are required', 400);
+      }
+
+      result = await prisma.interview.updateMany({
+        where: {
+          id: { in: interviewIds },
+        },
+        data: {
+          interviewers: JSON.stringify([interviewerName]),
+        },
+      });
+      break;
+
+    default:
+      throw new AppError('Invalid bulk operation', 400);
+  }
+
+  // Broadcast real-time updates
+  try {
+    webSocketServer.broadcastInterviewUpdate(req.user!.companyId, {
+      type: `bulk_${operation}`,
+      interviewIds,
+      companyId: req.user!.companyId,
+      operation,
+      data
+    });
+  } catch (broadcastError) {
+    console.error('Error broadcasting bulk operation:', broadcastError);
+  }
+
+  res.json({
+    message: `Bulk ${operation} completed successfully`,
+    result,
+    affectedCount: interviewIds.length,
   });
 }));
 
