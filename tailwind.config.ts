@@ -84,6 +84,35 @@ const config = {
       fontFamily: {
         sans: ["Inter", ...fontFamily.sans],
       },
+      // TalentSol standardized spacing scale
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+      },
+      // TalentSol standardized typography scale
+      fontSize: {
+        'metric': ['2rem', { lineHeight: '2.5rem', fontWeight: '700' }], // 32px bold for metrics
+        'page-title': ['1.5rem', { lineHeight: '2rem', fontWeight: '600' }], // 24px semi-bold for page titles
+        'section-header': ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }], // 20px semi-bold for headers
+      },
+      // TalentSol standardized shadows
+      boxShadow: {
+        'ats-card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        'ats-card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'ats-modal': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'ats-dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      },
+      // TalentSol standardized gradients
+      backgroundImage: {
+        'ats-blue-gradient': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+        'ats-purple-gradient': 'linear-gradient(135deg, #8A70D6 0%, #6046b6 100%)',
+        'ats-status-applied': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+        'ats-status-screening': 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+        'ats-status-interview': 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+        'ats-status-offer': 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+        'ats-status-hired': 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+        'ats-status-rejected': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

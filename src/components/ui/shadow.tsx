@@ -1,19 +1,74 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useStandardizedShadows } from '@/hooks/useABTest';
 
-// Standardized shadow variants for TalentSol application
-export const shadowVariants = {
+// Legacy shadow variants (control group)
+export const legacyShadowVariants = {
   // Card shadows - for main content containers
   card: "bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300",
-  
+
   // Enhanced card shadows - for important content like StatCards
   cardEnhanced: "bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300",
-  
+
   // Modal shadows - for overlays and modals
   modal: "bg-white rounded-lg border border-slate-200 shadow-xl",
-  
+
   // Dropdown shadows - for menus and dropdowns
   dropdown: "bg-white rounded-md border border-slate-200 shadow-lg",
+};
+
+// Standardized shadow variants for TalentSol application using Tailwind config
+export const standardizedShadowVariants = {
+  // Card shadows - for main content containers
+  card: "bg-white rounded-lg border border-slate-200 shadow-ats-card hover:shadow-ats-card-hover transition-shadow duration-300",
+
+  // Enhanced card shadows - for important content like StatCards
+  cardEnhanced: "bg-white/80 backdrop-blur-sm border border-gray-200 shadow-ats-card-hover hover:shadow-ats-modal transition-all duration-300",
+
+  // Modal shadows - for overlays and modals
+  modal: "bg-white rounded-lg border border-slate-200 shadow-ats-modal",
+
+  // Dropdown shadows - for menus and dropdowns
+  dropdown: "bg-white rounded-md border border-slate-200 shadow-ats-dropdown",
+};
+
+// A/B tested shadow variants - automatically switches based on user's test group
+export const shadowVariants = {
+  card: "",
+  cardEnhanced: "",
+  modal: "",
+  dropdown: "",
+};
+
+// Hook to get appropriate shadow variant based on A/B test
+export const useShadowVariant = (variant: keyof typeof shadowVariants): string => {
+  const useStandardized = useStandardizedShadows();
+  const variants = useStandardized ? standardizedShadowVariants : legacyShadowVariants;
+  return variants[variant] || variants.card;
+};
+
+// Component wrapper for A/B tested shadows
+interface ShadowWrapperProps {
+  variant: keyof typeof shadowVariants;
+  children: React.ReactNode;
+  className?: string;
+  as?: keyof JSX.IntrinsicElements;
+}
+
+export const ShadowWrapper: React.FC<ShadowWrapperProps> = ({
+  variant,
+  children,
+  className,
+  as: Component = 'div'
+}) => {
+  const shadowClass = useShadowVariant(variant);
+
+  return (
+    <Component className={cn(shadowClass, className)}>
+      {children}
+    </Component>
+  );
+};
   
   // Button shadows - for interactive elements
   button: "shadow-sm hover:shadow-md transition-shadow duration-200",
