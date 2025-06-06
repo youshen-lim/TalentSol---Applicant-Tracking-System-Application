@@ -2,45 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import './App.css';
-
-// Error boundary component
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
-  constructor(props: {children: React.ReactNode}) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{
-          padding: '20px',
-          margin: '20px',
-          backgroundColor: '#FEE2E2',
-          border: '1px solid #EF4444',
-          borderRadius: '8px'
-        }}>
-          <h1 style={{ color: '#B91C1C' }}>Something went wrong</h1>
-          <p>{this.state.error?.message}</p>
-          <pre style={{
-            backgroundColor: '#FECACA',
-            padding: '10px',
-            borderRadius: '4px',
-            overflow: 'auto'
-          }}>
-            {this.state.error?.stack}
-          </pre>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+import { ErrorBoundary } from './components/error/ErrorBoundary';
 
 // Simple fallback component
 const FallbackApp = () => {
@@ -94,7 +56,12 @@ const rootElement = document.getElementById('root');
 if (rootElement) {
   try {
     createRoot(rootElement).render(
-      <ErrorBoundary>
+      <ErrorBoundary
+        showDetails={process.env.NODE_ENV === 'development'}
+        onError={(error, errorInfo) => {
+          console.error('Application Error:', error, errorInfo);
+        }}
+      >
         <AppWithErrorHandling />
       </ErrorBoundary>
     );

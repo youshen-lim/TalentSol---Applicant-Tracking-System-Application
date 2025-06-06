@@ -13,15 +13,23 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "moduleDetection": "force",
-    "allowJs": true,
+    "allowJs": false,
 
-    /* Linting - Relaxed settings for development */
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": false,
-    "strictNullChecks": false,
+    /* Strict Type Checking - Production Ready */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true,
 
     /* Paths */
     "baseUrl": ".",
