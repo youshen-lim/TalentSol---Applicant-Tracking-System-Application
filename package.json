@@ -15,7 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run src/__tests__/e2e",
     "test:components": "vitest run src/__tests__/components",
-    "test:watch": "vitest --watch",
+    "test:watch": "vitest",
     "backend:dev": "cd backend && npm run dev",
     "backend:build": "cd backend && npm run build",
     "backend:start": "cd backend && npm start",
@@ -61,7 +61,9 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@supabase/supabase-js": "^2.49.8",
     "@tanstack/react-query": "^5.76.2",
+    "@tanstack/react-query-devtools": "^5.80.6",
     "@tanstack/react-table": "^8.10.7",
+    "@tanstack/react-virtual": "^3.13.9",
     "@types/socket.io-client": "^1.4.36",
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
@@ -71,6 +73,7 @@
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.12.1",
     "i18next": "^25.2.0",
+    "immer": "^10.1.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
     "moment": "^2.30.1",
@@ -90,7 +93,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
     "zod": "^3.23.8",
-    "zustand": "^4.4.6"
+    "zustand": "^4.5.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

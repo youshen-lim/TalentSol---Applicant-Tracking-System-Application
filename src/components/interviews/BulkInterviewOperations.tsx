@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -145,22 +145,40 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
     }
   ];
 
-  // Get selected interview objects
-  const selectedInterviewObjects = interviews.filter(interview => 
-    selectedInterviews.includes(interview.id)
-  );
+  // Get selected interview objects - ADD NULL CHECKS
+  const selectedInterviewObjects = useMemo(() => {
+    if (!interviews || interviews.length === 0 || !selectedInterviews || selectedInterviews.length === 0) {
+      return [];
+    }
 
-  // Handle select all
+    return interviews.filter(interview =>
+      selectedInterviews.includes(interview.id)
+    );
+  }, [interviews, selectedInterviews]);
+
+  // Handle select all - ADD NULL CHECKS
   const handleSelectAll = useCallback(() => {
-    if (selectedInterviews.length === interviews.length) {
+    if (!interviews || interviews.length === 0) {
+      onSelectionChange([]);
+      return;
+    }
+
+    if (!selectedInterviews || selectedInterviews.length === 0) {
+      onSelectionChange(interviews.map(interview => interview.id));
+    } else if (selectedInterviews.length === interviews.length) {
       onSelectionChange([]);
     } else {
       onSelectionChange(interviews.map(interview => interview.id));
     }
   }, [interviews, selectedInterviews, onSelectionChange]);
 
-  // Handle individual selection
+  // Handle individual selection - ADD NULL CHECKS
   const handleIndividualSelection = useCallback((interviewId: string, checked: boolean) => {
+    if (!selectedInterviews) {
+      onSelectionChange(checked ? [interviewId] : []);
+      return;
+    }
+
     if (checked) {
       onSelectionChange([...selectedInterviews, interviewId]);
     } else {
@@ -187,7 +205,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
       
       toast({
         title: 'Interviews Rescheduled',
-        description: `${selectedInterviews.length} interview(s) have been rescheduled successfully.`,
+        description: `${selectedInterviews?.length || 0} interview(s) have been rescheduled successfully.`,
       });
     } catch (error) {
       toast({
@@ -207,7 +225,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
       
       toast({
         title: 'Interviews Cancelled',
-        description: `${selectedInterviews.length} interview(s) have been cancelled.`,
+        description: `${selectedInterviews?.length || 0} interview(s) have been cancelled.`,
       });
     } catch (error) {
       toast({
@@ -227,7 +245,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
       
       toast({
         title: 'Reminders Sent',
-        description: `Reminder emails sent to ${selectedInterviews.length} candidate(s).`,
+        description: `Reminder emails sent to ${selectedInterviews?.length || 0} candidate(s).`,
       });
     } catch (error) {
       toast({
@@ -246,7 +264,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
       
       toast({
         title: 'Export Complete',
-        description: `${selectedInterviews.length} interview(s) exported successfully.`,
+        description: `${selectedInterviews?.length || 0} interview(s) exported successfully.`,
       });
     } catch (error) {
       toast({
@@ -265,7 +283,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
       
       toast({
         title: 'Interviews Deleted',
-        description: `${selectedInterviews.length} interview(s) have been deleted permanently.`,
+        description: `${selectedInterviews?.length || 0} interview(s) have been deleted permanently.`,
       });
     } catch (error) {
       toast({
@@ -285,7 +303,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
             <DialogHeader>
               <DialogTitle>Reschedule Interviews</DialogTitle>
               <DialogDescription>
-                Reschedule {selectedInterviews.length} selected interview(s) to a new date and time.
+                Reschedule {selectedInterviews?.length || 0} selected interview(s) to a new date and time.
               </DialogDescription>
             </DialogHeader>
             
@@ -337,7 +355,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
             <DialogHeader>
               <DialogTitle>Cancel Interviews</DialogTitle>
               <DialogDescription>
-                Cancel {selectedInterviews.length} selected interview(s) and notify candidates.
+                Cancel {selectedInterviews?.length || 0} selected interview(s) and notify candidates.
               </DialogDescription>
             </DialogHeader>
             
@@ -377,7 +395,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
             <DialogHeader>
               <DialogTitle>Send Reminder Emails</DialogTitle>
               <DialogDescription>
-                Send reminder emails to {selectedInterviews.length} candidate(s).
+                Send reminder emails to {selectedInterviews?.length || 0} candidate(s).
               </DialogDescription>
             </DialogHeader>
             
@@ -417,7 +435,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
             <DialogHeader>
               <DialogTitle>Export Interviews</DialogTitle>
               <DialogDescription>
-                Export {selectedInterviews.length} selected interview(s) to a file.
+                Export {selectedInterviews?.length || 0} selected interview(s) to a file.
               </DialogDescription>
             </DialogHeader>
             
@@ -475,16 +493,20 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-3">
             <Checkbox
-              checked={selectedInterviews.length === interviews.length && interviews.length > 0}
+              checked={
+                interviews && selectedInterviews &&
+                selectedInterviews.length === interviews.length &&
+                interviews.length > 0
+              }
               onCheckedChange={handleSelectAll}
               disabled={loading}
             />
             <span className="text-sm font-medium">
-              {selectedInterviews.length} of {interviews.length} interviews selected
+              {selectedInterviews?.length || 0} of {interviews?.length || 0} interviews selected
             </span>
           </div>
           
-          {selectedInterviews.length > 0 && (
+          {selectedInterviews && selectedInterviews.length > 0 && (
             <Badge variant="secondary">
               {selectedInterviews.length} selected
             </Badge>
@@ -492,7 +514,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
         </div>
 
         {/* Selected Interviews List */}
-        {selectedInterviews.length > 0 && (
+        {selectedInterviews && selectedInterviews.length > 0 && (
           <div className="max-h-48 overflow-y-auto space-y-2">
             {selectedInterviewObjects.map(interview => (
               <div key={interview.id} className="flex items-center gap-3 p-2 bg-white border rounded">
@@ -518,7 +540,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
         )}
 
         {/* Bulk Operations */}
-        {selectedInterviews.length > 0 && (
+        {selectedInterviews && selectedInterviews.length > 0 && (
           <div className="space-y-2">
             <Label className="text-sm font-medium">Available Operations:</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -583,7 +605,7 @@ const BulkInterviewOperations: React.FC<BulkInterviewOperationsProps> = ({
         )}
 
         {/* No Selection State */}
-        {selectedInterviews.length === 0 && (
+        {(!selectedInterviews || selectedInterviews.length === 0) && (
           <div className="text-center py-8 text-gray-400">
             <CheckSquare className="h-12 w-12 mx-auto mb-4" />
             <p className="text-sm">Select interviews to perform bulk operations</p>
