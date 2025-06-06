@@ -2,11 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ABTestProvider } from "@/hooks/useABTest";
-import ABTestPanel from "@/components/admin/ABTestPanel";
-import { StoreProvider } from "@/store/StoreProvider";
+// import { ABTestProvider } from "@/hooks/useABTest";
+// import ABTestPanel from "@/components/admin/ABTestPanel";
+// import { StoreProvider } from "@/store/StoreProvider";
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Candidates from "./pages/Candidates";
@@ -42,7 +42,7 @@ import { MobileDetectionExample } from '@/components/examples/MobileDetectionExa
 import { EnhancedToastExample } from '@/components/examples/EnhancedToastExample';
 import { UtilsExample } from '@/components/examples/UtilsExample';
 import TestApplicationSources from './pages/TestApplicationSources';
-import HorizontalScrollTest from './pages/HorizontalScrollTest';
+
 
 
 
@@ -72,8 +72,8 @@ const ExamplesPage = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <StoreProvider>
-      <ABTestProvider>
+    {/* <StoreProvider> */}
+      {/* <ABTestProvider> */}
         <TooltipProvider>
           <Toaster variant="ats-blue" />
           <Sonner />
@@ -108,12 +108,12 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
         </Routes>
-          <ABTestPanel />
+          {/* <ABTestPanel /> */}
         </BrowserRouter>
       </TooltipProvider>
-    </ABTestProvider>
-    <ReactQueryDevtools initialIsOpen={false} />
-  </StoreProvider>
+    {/* </ABTestProvider> */}
+    {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+  {/* </StoreProvider> */}
   </QueryClientProvider>
 );
 
