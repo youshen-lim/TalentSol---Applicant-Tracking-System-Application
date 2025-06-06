@@ -1,9 +1,9 @@
+/* Enhanced scrolling styles for better horizontal scroll experience */
+@import './styles/enhanced-scroll.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Enhanced scrolling styles for better horizontal scroll experience */
-@import './styles/enhanced-scroll.css';
 @layer base {
   :root {
     --background: 0 0% 100%;

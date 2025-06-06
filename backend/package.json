@@ -43,6 +43,7 @@
     "@fullcalendar/react": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
     "@prisma/client": "^5.7.1",
+    "@tanstack/react-query-devtools": "^5.80.6",
     "@types/node-cron": "^3.0.11",
     "@types/node-fetch": "^2.6.12",
     "@types/nodemailer": "^6.4.17",
