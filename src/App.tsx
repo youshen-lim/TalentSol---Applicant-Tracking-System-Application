@@ -40,6 +40,7 @@ import { MobileDetectionExample } from '@/components/examples/MobileDetectionExa
 import { EnhancedToastExample } from '@/components/examples/EnhancedToastExample';
 import { UtilsExample } from '@/components/examples/UtilsExample';
 import TestApplicationSources from './pages/TestApplicationSources';
+import HorizontalScrollTest from './pages/HorizontalScrollTest';
 
 
 

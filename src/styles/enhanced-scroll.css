@@ -1,0 +1,284 @@
+/* TalentSol Horizontal Scroll Design System Styles */
+/* Comprehensive scrollbar and scroll behavior styles for consistent UX across all pages */
+
+/* Custom scrollbar for webkit browsers */
+.enhanced-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+  background-clip: content-box;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #6b7280;
+  background-clip: content-box;
+}
+
+/* Blue themed scrollbar for candidates page */
+.enhanced-scrollbar-blue {
+  scrollbar-width: thin;
+  scrollbar-color: #93c5fd transparent;
+}
+
+.enhanced-scrollbar-blue::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.enhanced-scrollbar-blue::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.enhanced-scrollbar-blue::-webkit-scrollbar-thumb {
+  background: #93c5fd;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+.enhanced-scrollbar-blue::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+  background-clip: content-box;
+}
+
+.enhanced-scrollbar-blue::-webkit-scrollbar-thumb:active {
+  background: #3b82f6;
+  background-clip: content-box;
+}
+
+/* Auto-hide scrollbar */
+.scrollbar-auto-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-auto-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-auto-hide:hover {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.scrollbar-auto-hide:hover::-webkit-scrollbar {
+  display: block;
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-auto-hide:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-auto-hide:hover::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+/* Smooth scrolling for all containers */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile touch optimizations */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+
+/* Kanban column scroll snap */
+.kanban-scroll-snap {
+  scroll-snap-align: start;
+}
+
+/* Fade indicators for scroll edges */
+.scroll-fade-left::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.8), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scroll-fade-right::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.8), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Responsive scrollbar sizing */
+@media (max-width: 640px) {
+  .enhanced-scrollbar::-webkit-scrollbar,
+  .enhanced-scrollbar-blue::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .enhanced-scrollbar::-webkit-scrollbar,
+  .enhanced-scrollbar-blue::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .enhanced-scrollbar::-webkit-scrollbar-thumb,
+  .enhanced-scrollbar-blue::-webkit-scrollbar-thumb {
+    background: #000000;
+    border: 1px solid #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .smooth-scroll {
+    scroll-behavior: auto;
+  }
+}
+
+/* TalentSol Design System Scroll Utilities */
+
+/* Scroll snap utilities for better alignment */
+.scroll-snap-type-x-mandatory {
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-snap-type-x-proximity {
+  scroll-snap-type: x proximity;
+}
+
+.scroll-snap-align-start {
+  scroll-snap-align: start;
+}
+
+.scroll-snap-align-center {
+  scroll-snap-align: center;
+}
+
+/* Focus management for accessibility */
+.horizontal-scroll-container:focus {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+.horizontal-scroll-container:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Button focus states */
+.scroll-button:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Animation utilities */
+@keyframes scroll-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+
+.scroll-button-enter {
+  animation: scroll-fade-in 0.2s ease-out;
+}
+
+.scroll-button-exit {
+  animation: scroll-fade-out 0.2s ease-out;
+}
+
+/* Performance optimizations */
+.horizontal-scroll-optimized {
+  will-change: scroll-position;
+  transform: translateZ(0);
+}
+
+/* Print styles */
+@media print {
+  .horizontal-scroll-container {
+    overflow: visible !important;
+  }
+
+  .scroll-button,
+  .scroll-indicator {
+    display: none !important;
+  }
+}
+
+/* Tailwind-compatible scrollbar utilities */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.scrollbar-thumb-gray-400::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 4px;
+}

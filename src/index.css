@@ -2,10 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* FullCalendar Styles */
-@import '@fullcalendar/core/main.css';
-@import '@fullcalendar/daygrid/main.css';
-@import '@fullcalendar/timegrid/main.css';
+/* Enhanced scrolling styles for better horizontal scroll experience */
+@import './styles/enhanced-scroll.css';
 
 @layer base {
   :root {

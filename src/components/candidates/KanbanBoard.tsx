@@ -7,6 +7,7 @@ import CandidateCard, { Candidate } from './CandidateCard';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useStandardizedKanbanColors } from '@/hooks/useABTest';
+import { KanbanScroll } from '@/components/ui/horizontal-scroll';
 
 // Support both naming conventions (Stage and KanbanColumn)
 interface Stage {
@@ -222,19 +223,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         )}
       </div>
 
-      {/* Drag and drop context with responsive design */}
+      {/* Drag and drop context with enhanced horizontal scrolling */}
       <DragDropContext onDragEnd={onDragEnd}>
-        {/* Enhanced horizontal scroll for all screen sizes */}
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 sm:pb-6 -mx-2 px-2 sm:mx-0 sm:px-0 min-w-fit">
+        {/* Enhanced horizontal scroll container with scroll indicators and smooth scrolling */}
+        <KanbanScroll columnWidth="320px" variant="blue" snapToItems={true} className="enhanced-scrollbar-blue smooth-scroll touch-scroll">
           {columns.map(column => {
             const stageColors = getStageColor(column.id);
             return (
               <div
                 key={column.id}
                 className={cn(
-                  // Responsive column sizing
-                  "min-w-[280px] w-[280px] sm:min-w-[300px] sm:w-[300px] md:min-w-[320px] md:w-[320px] lg:min-w-[340px] lg:w-[340px]",
-                  "rounded-lg border-2 flex-shrink-0 transition-all duration-200",
+                  // Width handled by KanbanScroll columnWidth prop - fill the wrapper width
+                  "w-full rounded-lg border-2 flex-shrink-0 transition-all duration-200",
+                  "kanban-scroll-snap", // Add scroll snap alignment
                   stageColors.bg,
                   stageColors.border
                 )}
@@ -322,7 +323,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               </div>
             );
           })}
-        </div>
+        </KanbanScroll>
       </DragDropContext>
     </div>
   );
