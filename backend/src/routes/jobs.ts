@@ -6,6 +6,21 @@ import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Helper function to parse JSON fields in job data
+function parseJobFields(job: any) {
+  if (!job) return job;
+
+  return {
+    ...job,
+    location: job.location ? JSON.parse(job.location) : null,
+    salary: job.salary ? JSON.parse(job.salary) : null,
+    responsibilities: job.responsibilities ? JSON.parse(job.responsibilities) : [],
+    requiredQualifications: job.requiredQualifications ? JSON.parse(job.requiredQualifications) : [],
+    preferredQualifications: job.preferredQualifications ? JSON.parse(job.preferredQualifications) : [],
+    skills: job.skills ? JSON.parse(job.skills) : [],
+  };
+}
+
 // Get all jobs (public endpoint for job listings, enhanced with optional authentication)
 router.get('/', asyncHandler(async (req, res) => {
   const {
@@ -100,7 +115,7 @@ router.get('/', asyncHandler(async (req, res) => {
   ]);
 
   res.json({
-    jobs,
+    jobs: jobs.map(parseJobFields),
     pagination: {
       page: pageNum,
       limit: limitNum,
@@ -140,7 +155,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
     throw new AppError('Job not found', 404);
   }
 
-  res.json(job);
+  res.json(parseJobFields(job));
 }));
 
 // Protected routes (require authentication)
@@ -206,7 +221,7 @@ router.get('/company/all', asyncHandler(async (req: AuthenticatedRequest, res) =
   ]);
 
   res.json({
-    jobs,
+    jobs: jobs.map(parseJobFields),
     pagination: {
       page: pageNum,
       limit: limitNum,
@@ -220,13 +235,22 @@ router.get('/company/all', asyncHandler(async (req: AuthenticatedRequest, res) =
 router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const validatedData = createJobSchema.parse(req.body);
 
+  // Serialize complex fields to JSON strings for database storage
+  const jobData = {
+    ...validatedData,
+    location: validatedData.location ? JSON.stringify(validatedData.location) : null,
+    salary: validatedData.salary ? JSON.stringify(validatedData.salary) : null,
+    responsibilities: JSON.stringify(validatedData.responsibilities || []),
+    requiredQualifications: JSON.stringify(validatedData.requiredQualifications || []),
+    preferredQualifications: JSON.stringify(validatedData.preferredQualifications || []),
+    skills: JSON.stringify(validatedData.skills || []),
+    createdById: req.user!.id,
+    companyId: req.user!.companyId,
+    postedDate: validatedData.status === 'open' ? new Date() : null,
+  };
+
   const job = await prisma.job.create({
-    data: {
-      ...validatedData,
-      createdById: req.user!.id,
-      companyId: req.user!.companyId,
-      postedDate: validatedData.status === 'open' ? new Date() : null,
-    },
+    data: jobData,
     include: {
       company: {
         select: {
@@ -246,7 +270,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   res.status(201).json({
     message: 'Job created successfully',
-    job,
+    job: parseJobFields(job),
   });
 }));
 
@@ -267,8 +291,30 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw new AppError('Job not found', 404);
   }
 
-  // Set posted date if status is changing to open
+  // Serialize complex fields to JSON strings for database storage
   const updateData: any = { ...validatedData };
+
+  // Only serialize fields that are being updated
+  if (validatedData.location !== undefined) {
+    updateData.location = validatedData.location ? JSON.stringify(validatedData.location) : null;
+  }
+  if (validatedData.salary !== undefined) {
+    updateData.salary = validatedData.salary ? JSON.stringify(validatedData.salary) : null;
+  }
+  if (validatedData.responsibilities !== undefined) {
+    updateData.responsibilities = JSON.stringify(validatedData.responsibilities || []);
+  }
+  if (validatedData.requiredQualifications !== undefined) {
+    updateData.requiredQualifications = JSON.stringify(validatedData.requiredQualifications || []);
+  }
+  if (validatedData.preferredQualifications !== undefined) {
+    updateData.preferredQualifications = JSON.stringify(validatedData.preferredQualifications || []);
+  }
+  if (validatedData.skills !== undefined) {
+    updateData.skills = JSON.stringify(validatedData.skills || []);
+  }
+
+  // Set posted date if status is changing to open
   if (validatedData.status === 'open' && existingJob.status !== 'open') {
     updateData.postedDate = new Date();
   }
@@ -295,7 +341,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   res.json({
     message: 'Job updated successfully',
-    job,
+    job: parseJobFields(job),
   });
 }));
 

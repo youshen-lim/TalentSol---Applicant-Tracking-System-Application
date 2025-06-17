@@ -84,7 +84,7 @@ export const professionalInfoSchema = z.object({
 
 // Application schemas
 export const createApplicationSchema = z.object({
-  jobId: z.string().cuid('Invalid job ID'),
+  jobId: z.string().min(1, 'Job ID is required'),
   candidateInfo: candidateInfoSchema,
   professionalInfo: professionalInfoSchema.optional(),
   customAnswers: z.record(z.any()).optional(),
@@ -116,14 +116,14 @@ export const updateApplicationSchema = z.object({
 
 // Interview schemas
 export const createInterviewSchema = z.object({
-  applicationId: z.string().cuid('Invalid application ID'),
+  applicationId: z.string().min(1, 'Application ID is required'),
   title: z.string().min(1, 'Interview title is required'),
   type: z.enum(['phone', 'video', 'in-person', 'technical', 'behavioral']).optional(),
   scheduledDate: z.string().datetime().optional(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   location: z.string().optional(),
-  interviewers: z.array(z.string().cuid()).default([]),
+  interviewers: z.array(z.string().min(1)).default([]),
   notes: z.string().optional(),
 });
 
