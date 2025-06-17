@@ -32,6 +32,7 @@ import { schedulerService } from './services/schedulerService.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 import { authenticateToken } from './middleware/auth.js';
+import { conditional as cacheControl } from './middleware/cacheControl.js';
 
 // Load environment variables
 dotenv.config();
@@ -43,7 +44,7 @@ export const prisma = new PrismaClient({
 
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3001;
 
 // Rate limiting
 const limiter = rateLimit({
@@ -76,6 +77,9 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Apply cache control middleware
+app.use(cacheControl());
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
