@@ -10,7 +10,7 @@ const mlService = MLService.getInstance();
 
 // Validation schemas
 const trainModelSchema = z.object({
-  datasetId: z.string().cuid(),
+  datasetId: z.string().min(1, 'Dataset ID is required'),
   modelType: z.enum(['candidate_scoring', 'job_matching', 'resume_parsing']),
   modelName: z.string().min(1),
   features: z.array(z.string()),
@@ -18,7 +18,7 @@ const trainModelSchema = z.object({
 });
 
 const predictSchema = z.object({
-  applicationIds: z.array(z.string().cuid()),
+  applicationIds: z.array(z.string().min(1, 'Application ID is required')),
   modelType: z.enum(['candidate_scoring', 'job_matching', 'resume_parsing']).default('candidate_scoring'),
 });
 

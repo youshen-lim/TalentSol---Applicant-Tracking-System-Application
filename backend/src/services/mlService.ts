@@ -263,17 +263,17 @@ export class MLService {
           modelId,
           applicationId,
           predictionType: 'priority_score',
-          inputFeatures: features,
-          prediction: {
+          inputFeatures: JSON.stringify(features),
+          prediction: JSON.stringify({
             priorityScore: prediction.priorityScore,
             confidence: prediction.confidence,
             reasoning: prediction.reasoning,
-          },
+          }),
           confidence: prediction.confidence,
-          explanation: {
+          explanation: JSON.stringify({
             skillsExtracted: prediction.skillsExtracted,
             recommendedActions: prediction.recommendedActions,
-          },
+          }),
         },
       });
     }
@@ -282,12 +282,12 @@ export class MLService {
     await prisma.skillExtraction.create({
       data: {
         applicationId,
-        extractedSkills: prediction.skillsExtracted,
-        skillCategories: {
+        extractedSkills: JSON.stringify(prediction.skillsExtracted),
+        skillCategories: JSON.stringify({
           technical: prediction.skillsExtracted.filter(s => s.category === 'technical'),
           soft: prediction.skillsExtracted.filter(s => s.category === 'soft'),
           domain: prediction.skillsExtracted.filter(s => s.category === 'domain'),
-        },
+        }),
         confidence: prediction.confidence,
         method: modelId ? 'ml' : 'rule_based',
       },
