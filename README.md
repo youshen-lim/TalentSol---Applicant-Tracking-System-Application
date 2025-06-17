@@ -4,9 +4,11 @@ TalentSol is a comprehensive, modern applicant tracking system featuring AI-powe
 
 ## About This Project
 
-This is a hobbyist AI/machine learning project developed with Augment Code as development partner. TalentSol demonstrates modern web development practices, unified data architecture, comprehensive mobile responsiveness, and AI/ML integration capabilities for recruitment optimization.
+This is a **hobbyist AI/machine learning project** developed with Augment Code as development partner. TalentSol serves as a **demonstration platform** and **testing interface** for ML models in the recruitment domain, showcasing modern web development practices and AI/ML integration capabilities.
 
-**Key Achievement**: Complete responsive ATS developed using Augment Code Agent and Context Engine with production-ready features.
+**Important**: This is a **development/demo project** designed for learning, experimentation, and ML model testing. It is **not production-ready** for actual recruitment use.
+
+**Key Achievement**: Complete responsive ATS interface developed using Augment Code Agent and Context Engine with comprehensive demo functionality.
 
 **Latest Updates (June 2025)**:
 - ✅ **TypeScript Implementation Quality**: Strict mode enabled with comprehensive type safety and null checks
@@ -110,19 +112,21 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
 - **pgAdmin** for professional database operations
 - **Git** with conventional commit messages
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - **Node.js 18+** and npm/yarn
 - **PostgreSQL** database server
-- **Redis** (optional, falls back to in-memory cache)
+- **Redis** (optional - will fallback to in-memory cache if not available)
 
-### Quick Start
+### ⚡ Quick Demo Setup (Recommended)
+
+**For exploring TalentSol's features without full configuration:**
 
 1. **Clone and Install**
    ```bash
-   git clone https://github.com/yourusername/talentsol-ats.git
-   cd talentsol-ats
+   git clone https://github.com/youshen-lim/TalentSol---Applicant-Tracking-System-Application.git
+   cd "TalentSol - Applicant Tracking System Application"
    npm install
    ```
 
@@ -131,7 +135,7 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
    cd backend
    npm install
    cp .env.example .env
-   # Edit .env with your PostgreSQL connection details
+   # Edit .env with basic PostgreSQL connection (see Configuration section below)
    ```
 
 3. **Database Setup**
@@ -140,8 +144,8 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
    npx prisma generate
    npx prisma db push
 
-   # Import sample data (recommended)
-   npm run import-csv
+   # Generate demo data (50 candidates, 50 applications)
+   npm run data-minimal
    ```
 
 4. **Start Development Servers**
@@ -158,9 +162,29 @@ This is a hobbyist AI/machine learning project developed with Augment Code as de
    - **Backend API**: `http://localhost:3001`
    - **Health Check**: `http://localhost:3001/health`
 
-### Demo Credentials
-- **Admin**: `admin@talentsol-demo.com` / `password123`
-- **Recruiter**: `recruiter@talentsol-demo.com` / `password123`
+### 🔧 Configuration
+
+**Minimum .env setup for backend:**
+```bash
+DATABASE_URL="postgresql://username:password@localhost:5432/talentsol"
+JWT_SECRET="your-secret-key-here"
+NODE_ENV="development"
+# Redis is optional - will use in-memory cache if not configured
+```
+
+### 🎭 Demo Mode Features
+
+TalentSol includes intelligent demo mode that activates when:
+- Backend server is unavailable
+- Database connection fails
+- Redis cache is not configured
+
+**Demo mode provides:**
+- ✅ Full UI exploration with mock data
+- ✅ Interactive components and navigation
+- ✅ Responsive design testing
+- ⚠️ Limited functionality (no data persistence)
+- ⚠️ "Demo Mode Active" notifications
 
 ## 🏗️ Architecture & Performance
 
@@ -392,15 +416,19 @@ npm run data-full
 
 ## 🎯 Application Features
 
-### **Core Pages & Functionality**
+### **✅ Fully Implemented Pages**
 - **Dashboard**: Real-time analytics with dynamic metrics, charts, and candidate source visualization
-- **Application Management**: Comprehensive system with dashboard, applications, forms, and performance analytics tabs
 - **Candidates**: Unified kanban/list view with drag-and-drop functionality and mobile-responsive design
 - **Jobs Management**: Job creation, editing, application tracking, and responsive grid layout
-- **Interview Scheduler**: Calendar-based interview scheduling with mobile-optimized interface
-- **Documents**: File management with AI-powered chat interface
+- **Application Management**: Comprehensive system with dashboard, applications, forms, and performance analytics tabs
 - **Analytics**: Comprehensive reporting and data visualization with responsive charts
 - **Settings**: User preferences and company configuration with mobile-friendly forms
+
+### **🚧 Partially Implemented / Demo Features**
+- **Interview Scheduler**: Calendar-based interface (frontend complete, backend integration in progress)
+- **Documents**: File management interface (AI-powered chat interface planned)
+- **ML Integration**: Database schema ready, prediction endpoints available (models not trained)
+- **Real-time Notifications**: WebSocket infrastructure ready (full implementation in progress)
 
 ### **📱 Mobile-Responsive Features**
 - **Adaptive Navigation**: Collapsible sidebar with mobile menu and touch-friendly interactions
@@ -678,6 +706,25 @@ REDIS_URL="redis://localhost:6379"  # Optional for caching
 
 ## 🚨 Troubleshooting
 
+### **"Demo Mode Active" Message**
+This is **normal behavior** when:
+- Backend server is not running
+- Database connection fails
+- Redis cache is unavailable
+
+**Solutions:**
+1. **For UI exploration**: Demo mode is fully functional - explore all features with mock data
+2. **For full functionality**: Follow the Quick Demo Setup steps above
+3. **Check backend status**: Visit `http://localhost:3001/health`
+
+### **Cache System "Unhealthy" Status**
+The health check may show cache as "unhealthy" if Redis is not configured. This is **expected behavior**.
+
+**Solutions:**
+- **Ignore if using demo mode**: In-memory cache fallback works fine
+- **Install Redis** (optional): `brew install redis` (Mac) or `sudo apt install redis` (Ubuntu)
+- **Configure Redis URL** in .env: `REDIS_URL="redis://localhost:6379"`
+
 ### **Database Connection Issues**
 ```bash
 # Check PostgreSQL status
@@ -687,24 +734,24 @@ sudo systemctl status postgresql
 sudo systemctl restart postgresql
 
 # Test connection manually
-psql -h localhost -U talentsol_user -d talentsol_ats
+psql -h localhost -U your_username -d talentsol
 ```
 
 **Common Solutions**:
 1. Ensure PostgreSQL is running
 2. Verify DATABASE_URL in .env file
-3. Check database and user exist
-4. Confirm firewall settings allow connections
+3. Create database: `createdb talentsol`
+4. Check user permissions
 
 ### **No Data Showing in Dashboard**
 ```bash
 # Check database connection
 cd backend && npm run db:check
 
-# Import sample data
-npm run import-csv
+# Generate minimal demo data (recommended)
+npm run data-minimal
 
-# Generate synthetic data
+# Generate full synthetic data (500+ records)
 npm run data-full
 
 # Verify API response
@@ -812,4 +859,39 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **TalentSol** - Modern AI-powered recruitment management with strict TypeScript implementation, comprehensive error recovery, and performance-optimized virtual scrolling.
 
 **Latest Features**: TypeScript Strict Mode • Global State Management • React Query Integration • Virtual Scrolling Implementation • Comprehensive Error Recovery • Enhanced Component Architecture • Standardized Error Handling
+
+---
+
+## 🎯 Project Status & Intended Use
+
+### **Current Development State**
+- ✅ **Frontend**: Fully functional with comprehensive UI/UX
+- ✅ **Backend API**: Core endpoints implemented with demo data support
+- ✅ **Database Schema**: Complete 16-table structure ready for ML integration
+- 🚧 **ML Integration**: Infrastructure ready, awaiting model training
+- 🚧 **Production Features**: Authentication, real-time updates, advanced caching
+
+### **Intended Use Cases**
+1. **ML Model Testing**: Use TalentSol as an interface to test recruitment ML models
+2. **Web Development Learning**: Study modern React/TypeScript/Node.js patterns
+3. **UI/UX Exploration**: Experience comprehensive ATS interface design
+4. **Academic Projects**: Reference implementation for recruitment system architecture
+
+### **Not Suitable For**
+- ❌ Production recruitment workflows
+- ❌ Handling real candidate data
+- ❌ Enterprise deployment without significant additional development
+- ❌ GDPR/compliance-critical environments
+
+### **Future Development Plans**
+- 🔮 Integration with Kaggle recruitment datasets
+- 🔮 ML model training pipeline for candidate scoring
+- 🔮 Advanced analytics and reporting features
+- 🔮 Production-ready authentication and security
+
+### **Deployment Notes**
+- **Demo Mode**: TalentSol gracefully handles missing dependencies by switching to demo mode
+- **Cache System**: Redis is optional - system falls back to in-memory caching
+- **Database**: PostgreSQL required for data persistence, but demo mode works without it
+- **Environment**: Designed for development/testing environments, not production deployment
 
