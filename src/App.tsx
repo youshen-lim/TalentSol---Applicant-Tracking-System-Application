@@ -32,6 +32,7 @@ import PipelineMetrics from "./pages/analytics/reports/PipelineMetrics";
 import TimeToHire from "./pages/analytics/reports/TimeToHire";
 
 import SourceEffectiveness from "./pages/analytics/reports/SourceEffectiveness";
+import MLAnalyticsDashboard from "./pages/analytics/MLAnalyticsDashboard";
 
 // For example components (keeping these for development/testing purposes)
 import { ToastExample } from '@/components/examples/ToastExample';
@@ -98,6 +99,7 @@ const App = () => (
             <Route path="/analytics/reports/pipeline-metrics" element={<PipelineMetrics />} />
             <Route path="/analytics/reports/time-to-hire" element={<TimeToHire />} />
             <Route path="/analytics/reports/source-effectiveness" element={<SourceEffectiveness />} />
+            <Route path="/analytics/ml-dashboard" element={<MLAnalyticsDashboard />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<ProfileEnhanced />} />
             <Route path="/profile/management" element={<ProfileManagement />} />

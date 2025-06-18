@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useUI } from '@/store';
 import {
   BarChart2,
   Briefcase,
@@ -36,7 +37,7 @@ interface NavItem {
 }
 
 const Sidebar = ({ className }: SidebarProps) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { sidebarCollapsed, toggleSidebar } = useUI();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -87,7 +88,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     <aside
       className={cn(
         "bg-white border-r border-ats-border-gray flex flex-col h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300",
-        collapsed ? "w-16" : "w-64",
+        sidebarCollapsed ? "w-16" : "w-64",
         className
       )}
     >
@@ -110,10 +111,10 @@ const Sidebar = ({ className }: SidebarProps) => {
                       )}
                     >
                       {item.icon}
-                      {!collapsed && <span>{item.title}</span>}
+                      {!sidebarCollapsed && <span>{item.title}</span>}
                     </Link>
                   </TooltipTrigger>
-                  {collapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
+                  {sidebarCollapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
                 </Tooltip>
               </TooltipProvider>
             );
@@ -136,11 +137,11 @@ const Sidebar = ({ className }: SidebarProps) => {
                       )}
                     >
                       <Settings className="h-5 w-5" />
-                      {!collapsed && <span>Settings</span>}
+                      {!sidebarCollapsed && <span>Settings</span>}
                     </Button>
                   </TooltipTrigger>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align={collapsed ? "start" : "end"} side={collapsed ? "right" : "top"}>
+                <DropdownMenuContent align={sidebarCollapsed ? "start" : "end"} side={sidebarCollapsed ? "right" : "top"}>
                   <DropdownMenuLabel>Settings</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/settings?tab=account')}>
@@ -164,7 +165,7 @@ const Sidebar = ({ className }: SidebarProps) => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {collapsed && <TooltipContent side="right">Settings</TooltipContent>}
+              {sidebarCollapsed && <TooltipContent side="right">Settings</TooltipContent>}
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -174,9 +175,9 @@ const Sidebar = ({ className }: SidebarProps) => {
         variant="ghost"
         size="icon"
         className="self-end mb-4 mr-2 text-gray-600 hover:bg-ats-light-blue/10 hover:text-ats-blue"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={toggleSidebar}
       >
-        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </Button>
     </aside>
   );

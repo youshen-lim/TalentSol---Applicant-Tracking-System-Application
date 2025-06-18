@@ -7,8 +7,8 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
-    strictPort: true, // Force port 8080, don't try alternatives
+    port: 8080, // Target port 8080
+    strictPort: false, // Allow fallback to next available port if 8080 is busy
     open: true, // Keep the auto-open feature from the original config
     proxy: {
       '/api': {

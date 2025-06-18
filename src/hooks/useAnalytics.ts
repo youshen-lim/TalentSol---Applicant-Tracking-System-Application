@@ -2,82 +2,88 @@ import { useState, useEffect } from 'react';
 import { analyticsApi } from '@/services/api';
 
 export interface DashboardStats {
-  totalApplications: number;
-  newApplications: number;
-  conversionRate: number;
-  averageScore: number;
-  totalJobs: number;
-  activeJobs: number;
-  totalCandidates: number;
-  interviewsScheduled: number;
-  offersExtended: number;
-  hires: number;
-  applicationsByStatus: Array<{
+  // Summary stats (nested in backend response)
+  summary: {
+    totalJobs: number;
+    totalApplications: number;
+    totalCandidates: number;
+    totalInterviews: number;
+    activeJobs: number;
+    newApplicationsToday: number;
+  };
+  // Status distribution
+  statusDistribution: Array<{
     status: string;
     count: number;
     percentage: number;
   }>;
-  recentActivity: Array<{
-    id: string;
-    type: string;
-    description: string;
-    timestamp: string;
-    candidateName?: string;
-    jobTitle?: string;
+  // Applications by date
+  applicationsByDate: Array<{
+    date: string;
+    count: number;
   }>;
-  timeToHire?: {
-    averageDays: number;
-    medianDays: number;
-    totalHires: number;
-    departmentBreakdown: Array<{
-      department: string;
-      averageDays: number;
-      hires: number;
-    }>;
-  };
-  changeMetrics?: {
-    totalCandidates: { current: number; previous: number; change: number };
-    activeJobs: { current: number; previous: number; change: number };
-    applications: { current: number; previous: number; change: number };
-    interviews: { current: number; previous: number; change: number };
-  };
-  topJobs?: Array<{
-    id: string;
-    title: string;
+  // Top jobs
+  topJobs: Array<{
+    jobId: string;
+    jobTitle: string;
     department: string;
     applicationCount: number;
-    location?: string;
-    status: string;
+    interviewCount: number;
+    hireCount: number;
+    candidateCount: number;
   }>;
+  // Recent applications
+  recentApplications: Array<{
+    candidateId: string;
+    candidateName: string;
+    jobTitle: string;
+    timestamp: string;
+  }>;
+  // Time to hire metrics
+  timeToHire?: {
+    averageDays: number;
+    totalHires: number;
+  };
+  // Sources
+  sources: Array<{
+    source: string;
+    candidateCount: number;
+    applicationCount: number;
+    hireCount: number;
+    conversionRate: number;
+  }>;
+  // Change metrics
+  changeMetrics?: {
+    totalCandidates: { current: number; previous: number; change: number };
+    applications: { current: number; previous: number; change: number };
+  };
 }
 
 export interface RecruitmentData {
   period: string;
   data: Array<{
-    name: string;
+    date: string;
     applications: number;
     interviews: number;
     offers: number;
-    hires: number;
   }>;
-  trends: {
-    applications: number;
-    interviews: number;
-    offers: number;
-    hires: number;
-  };
+  totalApplications: number;
 }
 
 export interface SourceData {
-  sources: Array<{
-    name: string;
-    candidates: number;
+  sourceEffectiveness: Array<{
+    source: string;
     applications: number;
-    percentage: number;
-    conversionRate: number;
+    interviews: number;
+    hires: number;
+    category: string;
+    cost: number;
+    interviewRate: number;
+    hireRate: number;
+    costPerApplication: number;
+    costPerHire: number;
   }>;
-  totalSources: number;
-  topPerformer: string;
+  totalApplications: number;
 }
 
 export interface ConversionFunnel {
