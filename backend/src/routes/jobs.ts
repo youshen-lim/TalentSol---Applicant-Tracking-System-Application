@@ -6,18 +6,29 @@ import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Helper function to parse JSON fields in job data
+// Helper function to parse JSON fields in job data with error handling
 function parseJobFields(job: any) {
   if (!job) return job;
 
+  // Safe JSON parsing function
+  const safeJsonParse = (jsonString: string | null, fallback: any = null) => {
+    if (!jsonString) return fallback;
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.warn(`Failed to parse JSON field: ${jsonString}`, error);
+      return fallback;
+    }
+  };
+
   return {
     ...job,
-    location: job.location ? JSON.parse(job.location) : null,
-    salary: job.salary ? JSON.parse(job.salary) : null,
-    responsibilities: job.responsibilities ? JSON.parse(job.responsibilities) : [],
-    requiredQualifications: job.requiredQualifications ? JSON.parse(job.requiredQualifications) : [],
-    preferredQualifications: job.preferredQualifications ? JSON.parse(job.preferredQualifications) : [],
-    skills: job.skills ? JSON.parse(job.skills) : [],
+    location: safeJsonParse(job.location, null),
+    salary: safeJsonParse(job.salary, null),
+    responsibilities: safeJsonParse(job.responsibilities, []),
+    requiredQualifications: safeJsonParse(job.requiredQualifications, []),
+    preferredQualifications: safeJsonParse(job.preferredQualifications, []),
+    skills: safeJsonParse(job.skills, []),
   };
 }
 

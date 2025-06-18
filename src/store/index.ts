@@ -60,6 +60,7 @@ export const useUI = () => useAppStore((state) => ({
   timezone: state.timezone,
   setTheme: state.setTheme,
   toggleSidebar: state.toggleSidebar,
+  setSidebarCollapsed: state.setSidebarCollapsed,
   setCompactMode: state.setCompactMode,
   setLanguage: state.setLanguage,
   setTimezone: state.setTimezone,

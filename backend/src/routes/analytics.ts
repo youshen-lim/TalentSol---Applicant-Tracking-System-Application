@@ -133,9 +133,22 @@ router.get('/dashboard', asyncHandler(async (req: AuthenticatedRequest, res) => 
     // Use unified data service for candidate-centric metrics
     const unifiedData = await unifiedDataService.getUnifiedDashboardData(companyId);
 
-    // Transform to match frontend expectations
+    // Transform to match frontend expectations - expand nested structure to flat properties
     const dashboardResponse = {
-      // Summary stats
+      // Flat summary stats (for backward compatibility with frontend interface)
+      totalJobs: unifiedData.topJobs.length,
+      totalApplications: unifiedData.totalApplications,
+      totalCandidates: unifiedData.totalCandidates,
+      totalInterviews: unifiedData.totalInterviews,
+      activeJobs: unifiedData.topJobs.filter(j => j.applicationCount > 0).length,
+      newApplications: unifiedData.newApplicationsThisMonth,
+      conversionRate: unifiedData.totalApplications > 0 ? Math.round((unifiedData.totalHires / unifiedData.totalApplications) * 100) : 0,
+      averageScore: 85, // Mock data - would calculate from actual scores
+      interviewsScheduled: unifiedData.scheduledInterviews,
+      offersExtended: unifiedData.candidatesByStatus.find(s => s.status === 'offer')?.count || 0,
+      hires: unifiedData.totalHires,
+
+      // Nested summary (for new frontend components that expect nested structure)
       summary: {
         totalJobs: unifiedData.topJobs.length,
         totalApplications: unifiedData.totalApplications,
@@ -146,7 +159,12 @@ router.get('/dashboard', asyncHandler(async (req: AuthenticatedRequest, res) => 
       },
 
       // Status distribution (candidate-based)
+      applicationsByStatus: unifiedData.candidatesByStatus,
       statusDistribution: unifiedData.candidatesByStatus,
+
+      // Recent activity
+      recentActivity: unifiedData.recentActivity,
+      recentApplications: unifiedData.recentActivity,
 
       // Time series data
       applicationsByDate: unifiedData.timeSeriesData.map(d => ({
@@ -154,32 +172,59 @@ router.get('/dashboard', asyncHandler(async (req: AuthenticatedRequest, res) => 
         count: d.applications,
       })),
 
-      // Top jobs with candidate metrics
-      topJobs: unifiedData.topJobs,
+      // Top jobs (both formats for compatibility)
+      topJobs: unifiedData.topJobs.map(job => ({
+        id: job.jobId,
+        title: job.jobTitle,
+        department: job.department,
+        applicationCount: job.applicationCount,
+        location: '', // Would need to add location data
+        status: 'open', // Would need to add status data
+        // Keep original format too
+        jobId: job.jobId,
+        jobTitle: job.jobTitle,
+        interviewCount: job.interviewCount,
+        hireCount: job.hireCount,
+        candidateCount: job.candidateCount,
+      })),
 
-      // Recent applications (candidate-centric)
-      recentApplications: unifiedData.recentActivity,
-
-      // Time to hire metrics
+      // Time to hire
       timeToHire: {
         averageDays: unifiedData.averageTimeToHire,
+        medianDays: unifiedData.averageTimeToHire, // Mock - would calculate median
         totalHires: unifiedData.totalHires,
+        departmentBreakdown: [], // Mock - would calculate by department
       },
 
-      // Source data (candidate-centric)
+      // Sources
       sources: unifiedData.topSources,
 
-      // Change metrics (corrected growth formula)
+      // Change metrics
       changeMetrics: {
         totalCandidates: {
           current: unifiedData.newCandidatesThisMonth,
           previous: Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1),
           change: Math.round(((unifiedData.newCandidatesThisMonth - Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1)) / Math.max(unifiedData.totalCandidates - unifiedData.newCandidatesThisMonth, 1)) * 100),
         },
+        activeJobs: {
+          current: unifiedData.topJobs.filter(j => j.applicationCount > 0).length,
+          previous: Math.max(unifiedData.topJobs.length - 1, 1),
+          change: 0, // Mock - would calculate actual change
+        },
         applications: {
           current: unifiedData.newApplicationsThisMonth,
           previous: Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1),
           change: Math.round(((unifiedData.newApplicationsThisMonth - Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1)) / Math.max(unifiedData.totalApplications - unifiedData.newApplicationsThisMonth, 1)) * 100),
+        },
+        interviews: {
+          current: unifiedData.scheduledInterviews,
+          previous: Math.max(unifiedData.totalInterviews - unifiedData.scheduledInterviews, 1),
+          change: 0, // Mock - would calculate actual change
+        },
+        timeToHire: {
+          current: unifiedData.averageTimeToHire,
+          previous: unifiedData.averageTimeToHire + 2, // Mock - would calculate actual change
+          change: -2, // Mock - would calculate actual change
         },
       },
 
@@ -261,10 +306,36 @@ router.get('/recruitment', asyncHandler(async (req: AuthenticatedRequest, res) =
 
     const data = Array.from(dateMap.values());
 
+    // Calculate trends (comparing current period vs previous period)
+    const currentPeriodApps = data.reduce((sum, d) => sum + d.applications, 0);
+    const currentPeriodInterviews = data.reduce((sum, d) => sum + d.interviews, 0);
+    const currentPeriodOffers = data.reduce((sum, d) => sum + d.offers, 0);
+
+    // Mock previous period data for trend calculation (would be actual historical data)
+    const previousPeriodApps = Math.floor(currentPeriodApps * 0.85);
+    const previousPeriodInterviews = Math.floor(currentPeriodInterviews * 0.9);
+    const previousPeriodOffers = Math.floor(currentPeriodOffers * 0.8);
+
+    // Transform data to match frontend expectations (add name field and hires)
+    const transformedData = data.map(item => ({
+      name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      date: item.date,
+      applications: item.applications,
+      interviews: item.interviews,
+      offers: item.offers,
+      hires: Math.floor(item.offers * 0.7), // Mock hires data - would calculate from actual hired status
+    }));
+
     res.json({
-      data,
       period,
+      data: transformedData,
       totalApplications: applications.length,
+      trends: {
+        applications: currentPeriodApps - previousPeriodApps,
+        interviews: currentPeriodInterviews - previousPeriodInterviews,
+        offers: currentPeriodOffers - previousPeriodOffers,
+        hires: Math.floor(currentPeriodOffers * 0.7) - Math.floor(previousPeriodOffers * 0.7),
+      },
     });
   } catch (error) {
     console.error('Recruitment data error:', error);
@@ -554,9 +625,31 @@ router.get('/sources', asyncHandler(async (req: AuthenticatedRequest, res) => {
       costPerHire: data.hired > 0 ? (data.cost * data.total) / data.hired : 0,
     }));
 
+    // Transform to match frontend SourceData interface expectations
+    const sources = sourceEffectiveness.map(source => ({
+      name: source.source,
+      candidates: source.applications, // Assuming 1:1 mapping for now
+      applications: source.applications,
+      percentage: applications.length > 0 ? Math.round((source.applications / applications.length) * 100) : 0,
+      conversionRate: source.hireRate,
+    }));
+
+    // Find top performer
+    const topPerformer = sourceEffectiveness.length > 0
+      ? sourceEffectiveness.reduce((top, current) =>
+          current.hireRate > top.hireRate ? current : top
+        ).source
+      : 'N/A';
+
     res.json({
+      // Original format for backward compatibility
       sourceEffectiveness: sourceEffectiveness.sort((a, b) => b.applications - a.applications),
       totalApplications: applications.length,
+
+      // Frontend interface format
+      sources: sources.sort((a, b) => b.applications - a.applications),
+      totalSources: sources.length,
+      topPerformer,
     });
   } catch (error) {
     console.error('Source analytics error:', error);
@@ -640,9 +733,31 @@ router.get('/sources', asyncHandler(async (req: AuthenticatedRequest, res) => {
       }
     }
 
+    // Transform to match frontend SourceData interface expectations
+    const sources = finalSourceEffectiveness.map(source => ({
+      name: source.source,
+      candidates: source.applications, // Assuming 1:1 mapping for now
+      applications: source.applications,
+      percentage: applications.length > 0 ? Math.round((source.applications / applications.length) * 100) : 0,
+      conversionRate: source.hireRate,
+    }));
+
+    // Find top performer
+    const topPerformer = finalSourceEffectiveness.length > 0
+      ? finalSourceEffectiveness.reduce((top, current) =>
+          current.hireRate > top.hireRate ? current : top
+        ).source
+      : 'N/A';
+
     res.json({
+      // Original format for backward compatibility
       sourceEffectiveness: finalSourceEffectiveness.sort((a, b) => b.applications - a.applications),
-      totalApplications: updatedApplications.length,
+      totalApplications: applications.length,
+
+      // Frontend interface format
+      sources: sources.sort((a, b) => b.applications - a.applications),
+      totalSources: sources.length,
+      topPerformer,
       sourcesInitialized: true,
       generatedAt: new Date().toISOString(),
     });

@@ -41,6 +41,8 @@ model User {
   notifications     Notification[]
   settings          UserSettings?
   company           Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  mlInteractions    MLInteraction[]
+  recommendationBatches RecommendationBatch[]
 
   @@map("users")
 }
@@ -71,10 +73,34 @@ model Job {
   companyId               String                  @map("company_id")
   createdAt               DateTime                @default(now()) @map("created_at")
   updatedAt               DateTime                @updatedAt @map("updated_at")
+
+  // Enhanced ML-aligned fields
+  jobPortal               String?                 @map("job_portal") // Platform where job was posted
+  contactPerson           String?                 @map("contact_person") // Contact person name
+  contactInfo             String?                 @map("contact_info") // Contact information
+  role                    String?                 // Role category (e.g., software developer, marketing manager)
+  workType                String?                 @map("work_type") // full-time, part-time, contract
+  companySizeCategory     String?                 @map("company_size_category") // startup, small, medium, large, enterprise
+  salaryMin               Int?                    @map("salary_min") // Minimum salary
+  salaryMax               Int?                    @map("salary_max") // Maximum salary
+  salaryCurrency          String?                 @map("salary_currency") // Currency code
+  locationCity            String?                 @map("location_city") // City
+  locationState           String?                 @map("location_state") // State/Province
+  locationCountry         String?                 @map("location_country") // Country
+  locationLatitude        Float?                  @map("location_latitude") // Latitude coordinate
+  locationLongitude       Float?                  @map("location_longitude") // Longitude coordinate
+  remoteWorkAllowed       Boolean?                @map("remote_work_allowed") // Remote work option
+  preference              String?                 // Special preferences (e.g., Only Male, Only Female, Both)
+  requiredSkillsArray     String?                 @map("required_skills_array") // JSON array of required skills
+  preferredSkillsArray    String?                 @map("preferred_skills_array") // JSON array of preferred skills
+  industryTags            String?                 @map("industry_tags") // JSON array of industry tags
+
   formSchemas             ApplicationFormSchema[]
   applications            Application[]
   company                 Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdBy               User                    @relation("JobCreator", fields: [createdById], references: [id])
+  marketData              JobMarketData[]
+  candidateMatches        CandidateJobMatch[]
 
   @@map("jobs")
 }
@@ -94,8 +120,38 @@ model Candidate {
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
   sourceId          String?          @map("source_id")
+
+  // Enhanced ML-aligned fields
+  experienceYears         Int?                    @map("experience_years") // Years of experience
+  currentPosition         String?                 @map("current_position") // Current job title
+  currentCompany          String?                 @map("current_company") // Current employer
+  educationLevel          String?                 @map("education_level") // Education qualifications
+  educationField          String?                 @map("education_field") // Field of study
+  skillsArray             String?                 @map("skills_array") // JSON array of skills
+  certifications          String?                 // JSON array of certifications
+  languagesSpoken         String?                 @map("languages_spoken") // JSON array of languages
+  availabilityStatus      String?                 @map("availability_status") // available, employed, not-looking
+  noticePeriodDays        Int?                    @map("notice_period_days") // Notice period in days
+  expectedSalaryMin       Int?                    @map("expected_salary_min") // Minimum expected salary
+  expectedSalaryMax       Int?                    @map("expected_salary_max") // Maximum expected salary
+  salaryCurrency          String?                 @map("salary_currency") // Currency preference
+  preferredWorkType       String?                 @map("preferred_work_type") // full-time, part-time, contract
+  remoteWorkPreference    String?                 @map("remote_work_preference") // remote, hybrid, onsite, flexible
+  locationCity            String?                 @map("location_city") // Current city
+  locationState           String?                 @map("location_state") // Current state/province
+  locationCountry         String?                 @map("location_country") // Current country
+  locationLatitude        Float?                  @map("location_latitude") // Location coordinates
+  locationLongitude       Float?                  @map("location_longitude") // Location coordinates
+  preferredCompanySize    String?                 @map("preferred_company_size") // startup, small, medium, large
+  industryPreferences     String?                 @map("industry_preferences") // JSON array of preferred industries
+  careerGoals             String?                 @map("career_goals") // JSON array of career objectives
+  personalityTraits       String?                 @map("personality_traits") // JSON object of personality assessments
+  workValues              String?                 @map("work_values") // JSON array of work values/preferences
+
   applications      Application[]
   source            CandidateSource? @relation("CandidateOriginSource", fields: [sourceId], references: [id])
+  candidateProfiles CandidateProfile[]
+  jobMatches        CandidateJobMatch[]
 
   @@map("candidates")
 }
@@ -278,6 +334,8 @@ model MLModel {
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
   predictions  MLPrediction[]
+  performance  MLModelPerformance[]
+  featureImportance FeatureImportance[]
 
   @@map("ml_models")
 }
@@ -368,4 +426,246 @@ model UserSettings {
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
+}
+
+// Enhanced ML and Analytics Models
+
+model CandidateProfile {
+  id                    String    @id @default(cuid())
+  candidateId           String    @map("candidate_id")
+  profileVersion        String    @default("1.0") @map("profile_version")
+
+  // Comprehensive profile data for ML
+  skillsVector          String?   @map("skills_vector") // Encoded skills representation
+  experienceVector      String?   @map("experience_vector") // Encoded experience representation
+  educationScore        Float?    @map("education_score") // Calculated education score
+  skillsScore           Float?    @map("skills_score") // Calculated skills score
+  experienceScore       Float?    @map("experience_score") // Calculated experience score
+  locationFlexibility   Float?    @map("location_flexibility") // 0-1 score for location flexibility
+  salaryFlexibility     Float?    @map("salary_flexibility") // 0-1 score for salary flexibility
+  cultureScore          Float?    @map("culture_score") // Cultural fit prediction score
+  performancePrediction Float?    @map("performance_prediction") // Predicted job performance
+  retentionPrediction   Float?    @map("retention_prediction") // Predicted retention likelihood
+
+  // Behavioral and psychometric data
+  personalityProfile    String?   @map("personality_profile") // JSON of personality assessment results
+  workStylePreferences  String?   @map("work_style_preferences") // JSON of work style data
+  motivationFactors     String?   @map("motivation_factors") // JSON of motivation drivers
+  communicationStyle    String?   @map("communication_style") // Communication preferences
+  leadershipPotential   Float?    @map("leadership_potential") // Leadership score 0-1
+  teamworkScore         Float?    @map("teamwork_score") // Teamwork compatibility score
+  adaptabilityScore     Float?    @map("adaptability_score") // Change adaptability score
+
+  // Market and competitive data
+  marketValue           Float?    @map("market_value") // Estimated market value
+  demandScore           Float?    @map("demand_score") // Market demand for this profile
+  rarityScore           Float?    @map("rarity_score") // How rare/unique this profile is
+  competitionLevel      Float?    @map("competition_level") // Competition level for similar profiles
+
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  candidate             Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_profiles")
+}
+
+model JobMarketData {
+  id                    String   @id @default(cuid())
+  jobId                 String   @map("job_id")
+
+  // Market analysis data
+  averageSalary         Float?   @map("average_salary") // Market average salary
+  salaryPercentile25    Float?   @map("salary_percentile_25") // 25th percentile salary
+  salaryPercentile75    Float?   @map("salary_percentile_75") // 75th percentile salary
+  demandScore           Float?   @map("demand_score") // Market demand for this role
+  supplyScore           Float?   @map("supply_score") // Candidate supply for this role
+  competitionLevel      Float?   @map("competition_level") // Competition among employers
+  timeToFillAverage     Int?     @map("time_to_fill_average") // Average days to fill similar roles
+  applicationVolume     Int?     @map("application_volume") // Expected application volume
+  qualityScore          Float?   @map("quality_score") // Expected candidate quality score
+
+  // Geographic data
+  locationDemand        Float?   @map("location_demand") // Demand in this specific location
+  remoteCompatibility   Float?   @map("remote_compatibility") // How suitable for remote work
+  relocationLikelihood  Float?   @map("relocation_likelihood") // Likelihood candidates will relocate
+
+  // Industry and role data
+  industryGrowthRate    Float?   @map("industry_growth_rate") // Industry growth percentage
+  roleEvolutionScore    Float?   @map("role_evolution_score") // How fast this role is changing
+  automationRisk        Float?   @map("automation_risk") // Risk of automation 0-1
+  skillsEvolutionRate   Float?   @map("skills_evolution_rate") // How fast required skills change
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  job                   Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("job_market_data")
+}
+
+model CandidateJobMatch {
+  id                    String      @id @default(cuid())
+  candidateId           String      @map("candidate_id")
+  jobId                 String      @map("job_id")
+
+  // ML-generated match scores
+  overallMatchScore     Float       @map("overall_match_score") // 0-100 overall match
+  skillsMatchScore      Float       @map("skills_match_score") // Skills compatibility
+  experienceMatchScore  Float       @map("experience_match_score") // Experience alignment
+  locationMatchScore    Float       @map("location_match_score") // Location compatibility
+  salaryMatchScore      Float       @map("salary_match_score") // Salary alignment
+  cultureMatchScore     Float       @map("culture_match_score") // Cultural fit
+
+  // Detailed analysis
+  matchedSkills         String?     @map("matched_skills") // JSON array of matched skills
+  missingSkills         String?     @map("missing_skills") // JSON array of missing skills
+  overqualifications    String?     @map("overqualifications") // JSON array of overqualifications
+  riskFactors           String?     @map("risk_factors") // JSON array of potential risks
+  strengthFactors       String?     @map("strength_factors") // JSON array of strengths
+
+  // Predictions
+  successProbability    Float?      @map("success_probability") // Predicted success 0-1
+  retentionProbability  Float?      @map("retention_probability") // Predicted retention 0-1
+  performanceScore      Float?      @map("performance_score") // Predicted performance 0-100
+  timeToProductivity    Int?        @map("time_to_productivity") // Days to become productive
+
+  // Recommendation metadata
+  modelVersion          String      @map("model_version") // ML model version used
+  confidence            Float       @map("confidence") // Prediction confidence 0-1
+  explanation           String?     // Human-readable explanation
+  recommendationRank    Int?        @map("recommendation_rank") // Rank in recommendation list
+
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+  candidate             Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job                   Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, jobId], name: "candidate_job_unique")
+  @@map("candidate_job_matches")
+}
+
+model MLInteraction {
+  id                    String   @id @default(cuid())
+  userId                String   @map("user_id")
+  candidateId           String   @map("candidate_id")
+  jobId                 String   @map("job_id")
+
+  // Interaction details
+  actionType            String   @map("action_type") // view, click, shortlist, reject, interview, hire
+  interactionContext    String?  @map("interaction_context") // recommendation, search, manual
+  candidateScore        Float?   @map("candidate_score") // Score at time of interaction
+  candidateRank         Int?     @map("candidate_rank") // Rank in recommendation list
+  sessionId             String?  @map("session_id") // User session identifier
+
+  // ML model context
+  modelVersion          String?  @map("model_version") // ML model version
+  recommendationId      String?  @map("recommendation_id") // Recommendation batch ID
+  abTestGroup           String?  @map("ab_test_group") // A/B test variant
+
+  // Outcome tracking
+  outcome               String?  // hired, rejected, withdrawn, pending
+  outcomeDate           DateTime? @map("outcome_date")
+  timeToOutcome         Int?     @map("time_to_outcome") // Days from interaction to outcome
+  satisfactionScore     Int?     @map("satisfaction_score") // 1-5 user satisfaction
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ml_interactions")
+}
+
+model MLModelPerformance {
+  id                    String   @id @default(cuid())
+  modelId               String   @map("model_id")
+  evaluationDate        DateTime @map("evaluation_date")
+
+  // Performance metrics
+  accuracy              Float
+  precision             Float
+  recall                Float
+  f1Score               Float    @map("f1_score")
+  auc                   Float    // Area under ROC curve
+  calibration           Float    // Calibration score
+
+  // Bias metrics
+  genderBias            Float?   @map("gender_bias")
+  ageBias               Float?   @map("age_bias")
+  locationBias          Float?   @map("location_bias")
+  educationBias         Float?   @map("education_bias")
+  experienceBias        Float?   @map("experience_bias")
+
+  // Business metrics
+  conversionRate        Float?   @map("conversion_rate") // Recommendation to hire rate
+  timeToHire            Float?   @map("time_to_hire") // Average time to hire
+  qualityOfHire         Float?   @map("quality_of_hire") // Average performance of hires
+  retentionRate         Float?   @map("retention_rate") // 12-month retention rate
+
+  // Dataset info
+  testSetSize           Int      @map("test_set_size")
+  trainingSetSize       Int      @map("training_set_size")
+  dataFreshness         DateTime @map("data_freshness") // Date of most recent training data
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  model                 MLModel  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("ml_model_performance")
+}
+
+model RecommendationBatch {
+  id                    String   @id @default(cuid())
+  jobId                 String   @map("job_id")
+  userId                String   @map("user_id")
+
+  // Batch metadata
+  batchSize             Int      @map("batch_size")
+  modelVersion          String   @map("model_version")
+  processingTime        Int      @map("processing_time") // milliseconds
+  cacheHit              Boolean  @map("cache_hit")
+
+  // Request parameters
+  requestFilters        String?  @map("request_filters") // JSON of applied filters
+  maxResults            Int?     @map("max_results")
+  minScore              Float?   @map("min_score")
+  includeReasoning      Boolean  @default(false) @map("include_reasoning")
+
+  // Results summary
+  averageScore          Float?   @map("average_score")
+  topScore              Float?   @map("top_score")
+  scoreDistribution     String?  @map("score_distribution") // JSON histogram
+  diversityScore        Float?   @map("diversity_score") // Recommendation diversity
+
+  // A/B testing
+  abTestGroup           String?  @map("ab_test_group")
+  experimentId          String?  @map("experiment_id")
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recommendation_batches")
+}
+
+model FeatureImportance {
+  id                    String   @id @default(cuid())
+  modelId               String   @map("model_id")
+  featureName           String   @map("feature_name")
+
+  // Importance metrics
+  importance            Float    // Feature importance score
+  rank                  Int      // Rank by importance
+  category              String   // skill, experience, location, qualification, preference
+  description           String?  // Human-readable description
+
+  // Stability metrics
+  importanceStdDev      Float?   @map("importance_std_dev") // Standard deviation across folds
+  stabilityScore        Float?   @map("stability_score") // How stable this importance is
+
+  // Business impact
+  businessImpact        String?  @map("business_impact") // high, medium, low
+  actionability         String?  @map("actionability") // How actionable this feature is
+
+  evaluationDate        DateTime @map("evaluation_date")
+  createdAt             DateTime @default(now()) @map("created_at")
+  model                 MLModel  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@unique([modelId, featureName, evaluationDate], name: "model_feature_date_unique")
+  @@map("feature_importance")
 }

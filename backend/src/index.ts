@@ -126,7 +126,7 @@ async function startServer() {
     await initializeCache();
 
     // Start WebSocket server
-    webSocketServer.start(9000);
+    webSocketServer.start(9001);
 
     // Start scheduler service
     schedulerService.start();
@@ -137,7 +137,7 @@ async function startServer() {
       console.log(`📊 Environment: ${process.env.NODE_ENV}`);
       console.log(`🔗 CORS enabled for: ${process.env.CORS_ORIGIN}`);
       console.log(`💾 Cache system initialized`);
-      console.log(`🔌 WebSocket server running on port 9000`);
+      console.log(`🔌 WebSocket server running on port 9001`);
       console.log(`📅 Scheduler service started`);
     });
   } catch (error) {

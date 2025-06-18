@@ -205,7 +205,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   // Render the kanban board with enhanced responsive styling
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full overflow-hidden", className)}>
       {/* Kanban Board Header Layout - Title with adjacent button */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Candidate Pipeline</h2>

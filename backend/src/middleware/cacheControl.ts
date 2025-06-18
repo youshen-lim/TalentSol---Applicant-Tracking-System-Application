@@ -190,74 +190,65 @@ export class CacheControlMiddleware {
       next();
     };
   }
-}
 
   /**
    * Conditional cache based on request/response characteristics
+   * Uses safer header setting approach without overriding res.send
    */
   static conditional(): (req: Request, res: Response, next: NextFunction) => void {
     return (req: Request, res: Response, next: NextFunction) => {
-      // Store original send method
-      const originalSend = res.send;
-
-      // Override send method to apply cache headers based on response
-      res.send = function(body: any) {
-        // Apply cache headers based on route and method with RAM/disk optimization
-        if (req.method === 'GET') {
-          if (req.path.includes('/api/dashboard')) {
-            // Dashboard: Medium-term mixed cache (15 min RAM, then disk)
-            res.set({
-              'Cache-Control': 'private, max-age=900, stale-while-revalidate=1800',
-              'Vary': 'Authorization',
-              'Cache-Storage-Policy': 'adaptive',
-              'X-Cache-Hint': 'mixed-storage',
-            });
-          } else if (req.path.includes('/api/jobs') && !req.path.includes('/applications')) {
-            // Job listings: Medium-term disk cache (public, longer duration)
-            res.set({
-              'Cache-Control': 'public, max-age=1800, s-maxage=3600',
-              'Vary': 'Accept-Encoding',
-              'Cache-Storage-Policy': 'disk-preferred',
-              'X-Cache-Hint': 'disk-storage',
-            });
-          } else if (req.path.includes('/api/candidates') || req.path.includes('/api/applications')) {
-            // User data: Short-term RAM cache (frequent updates)
-            res.set({
-              'Cache-Control': 'private, max-age=300, must-revalidate',
-              'Vary': 'Authorization',
-              'Cache-Storage-Policy': 'memory-preferred',
-              'X-Cache-Hint': 'ram-preferred',
-            });
-          } else if (req.path.includes('/api/analytics')) {
-            // Analytics: Medium-term mixed cache
-            res.set({
-              'Cache-Control': 'private, max-age=1800, stale-while-revalidate=3600',
-              'Vary': 'Authorization',
-              'Cache-Storage-Policy': 'adaptive',
-              'X-Cache-Hint': 'mixed-storage',
-            });
-          } else {
-            // Default: Short-term RAM cache
-            res.set({
-              'Cache-Control': 'private, max-age=300, must-revalidate',
-              'Vary': 'Authorization, Accept-Encoding',
-              'Cache-Storage-Policy': 'memory-preferred',
-              'X-Cache-Hint': 'ram-preferred',
-            });
-          }
-        } else {
-          // POST, PUT, DELETE - no cache
+      // Apply cache headers based on route and method with RAM/disk optimization
+      if (req.method === 'GET') {
+        if (req.path.includes('/api/dashboard')) {
+          // Dashboard: Medium-term mixed cache (15 min RAM, then disk)
           res.set({
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Cache-Storage-Policy': 'none',
+            'Cache-Control': 'private, max-age=900, stale-while-revalidate=1800',
+            'Vary': 'Authorization',
+            'Cache-Storage-Policy': 'adaptive',
+            'X-Cache-Hint': 'mixed-storage',
+          });
+        } else if (req.path.includes('/api/jobs') && !req.path.includes('/applications')) {
+          // Job listings: Medium-term disk cache (public, longer duration)
+          res.set({
+            'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+            'Vary': 'Accept-Encoding',
+            'Cache-Storage-Policy': 'disk-preferred',
+            'X-Cache-Hint': 'disk-storage',
+          });
+        } else if (req.path.includes('/api/candidates') || req.path.includes('/api/applications')) {
+          // User data: Short-term RAM cache (frequent updates)
+          res.set({
+            'Cache-Control': 'private, max-age=300, must-revalidate',
+            'Vary': 'Authorization',
+            'Cache-Storage-Policy': 'memory-preferred',
+            'X-Cache-Hint': 'ram-preferred',
+          });
+        } else if (req.path.includes('/api/analytics')) {
+          // Analytics: Medium-term mixed cache
+          res.set({
+            'Cache-Control': 'private, max-age=1800, stale-while-revalidate=3600',
+            'Vary': 'Authorization',
+            'Cache-Storage-Policy': 'adaptive',
+            'X-Cache-Hint': 'mixed-storage',
+          });
+        } else {
+          // Default: Short-term RAM cache
+          res.set({
+            'Cache-Control': 'private, max-age=300, must-revalidate',
+            'Vary': 'Authorization, Accept-Encoding',
+            'Cache-Storage-Policy': 'memory-preferred',
+            'X-Cache-Hint': 'ram-preferred',
           });
         }
-
-        // Call original send method
-        return originalSend.call(this, body);
-      };
+      } else {
+        // POST, PUT, DELETE - no cache
+        res.set({
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Cache-Storage-Policy': 'none',
+        });
+      }
 
       next();
     };
