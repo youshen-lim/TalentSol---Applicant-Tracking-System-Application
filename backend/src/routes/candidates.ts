@@ -69,6 +69,12 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
           orderBy: {
             submittedAt: 'desc',
           },
+          take: 5, // Limit applications per candidate to prevent N+1
+        },
+        _count: {
+          select: {
+            applications: true,
+          },
         },
       },
       orderBy: {
