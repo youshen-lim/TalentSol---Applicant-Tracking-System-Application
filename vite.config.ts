@@ -44,9 +44,33 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
+        // Enhanced code splitting for better caching
+        manualChunks: {
+          // Vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          'chart-vendor': ['recharts', 'date-fns'],
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'query-vendor': ['@tanstack/react-query'],
+          'calendar-vendor': ['@fullcalendar/core', '@fullcalendar/react', '@fullcalendar/daygrid'],
+        },
       },
     },
+    chunkSizeWarningLimit: 1000,
     // Enable source maps for production debugging
     sourcemap: mode === 'production' ? false : true,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'recharts',
+      'date-fns',
+      'zod',
+      'zustand'
+    ],
   },
 }));
