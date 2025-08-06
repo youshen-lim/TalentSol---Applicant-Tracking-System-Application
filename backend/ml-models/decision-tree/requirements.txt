@@ -1,23 +1,56 @@
 # TalentSol Decision Tree Model Requirements
-# Based on your GitHub repository dependencies
+# IMPORTANT: Version Compatibility Notice for Future Developers
 
-# Core ML libraries
-joblib>=1.3.0
-scikit-learn>=1.3.0
-pandas>=2.0.0
-numpy>=1.24.0
+# ⚠️ CRITICAL VERSION CONSTRAINTS ⚠️
+# This Decision Tree model was trained with scikit-learn 1.6.1 and has strict version dependencies.
+# DO NOT upgrade these versions without retraining the model, as it will cause compatibility errors.
 
-# XGBoost (if your model uses it)
-xgboost>=1.7.0
+# 🔧 VERIFIED COMPATIBLE VERSIONS (Required for model loading)
+scikit-learn==1.6.1    # EXACT VERSION REQUIRED - model trained with this version
+joblib==1.3.2          # Compatible with scikit-learn 1.6.1
+pandas>=2.0.0          # Current pandas versions are compatible
+numpy>=1.24.0          # Current numpy versions are compatible
 
-# Text processing (for resume/job description analysis)
-nltk>=3.8
-scikit-learn>=1.3.0
+# 📋 VERSION COMPATIBILITY ISSUE EXPLANATION:
+# The trained model contains serialized objects from scikit-learn 1.6.1, specifically:
+# - HashingVectorizer from version 1.6.1
+# - OneHotEncoder from version 1.6.1
+# - _RemainderColsList from sklearn.compose._column_transformer
+#
+# These objects are not compatible with scikit-learn 1.7.1+ due to internal API changes.
+# Attempting to load the model with newer versions will result in:
+# "Can't get attribute '_RemainderColsList' on <module 'sklearn.compose._column_transformer'>"
 
-# Additional utilities
-scipy>=1.10.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
+# 🚀 FUTURE UPGRADE PATH:
+# To upgrade to scikit-learn 1.7.1 or later:
+# 1. Retrain the Decision Tree model with the new scikit-learn version
+# 2. Update this requirements.txt file with new version constraints
+# 3. Test the retrained model with the TalentSol integration
+# 4. Update the model file: best_performing_model_pipeline.joblib
 
-# JSON handling
-json5>=0.9.0
+# 📊 PERFORMANCE IMPACT:
+# Using scikit-learn 1.6.1 vs 1.7.1+ has minimal performance impact for inference.
+# The model prediction accuracy and speed remain the same.
+
+# 🔍 TESTING VERIFICATION:
+# Run `python test_model.py` to verify compatibility after any version changes.
+# Expected output: "🎉 All tests passed! Your model is ready for TalentSol integration."
+
+# Additional ML libraries (optional - can be upgraded independently)
+xgboost>=1.7.0         # Optional: if model uses XGBoost features
+nltk>=3.8              # Optional: for advanced text processing
+scipy>=1.10.0          # Dependency of scikit-learn
+matplotlib>=3.7.0      # Optional: for visualization
+seaborn>=0.12.0        # Optional: for visualization
+json5>=0.9.0           # Optional: for JSON handling
+
+# 📝 INSTALLATION INSTRUCTIONS:
+# For new environments, install in this order:
+# 1. pip install scikit-learn==1.6.1
+# 2. pip install joblib==1.3.2
+# 3. pip install pandas numpy scipy
+# 4. pip install -r requirements.txt (for optional packages)
+
+# 🏷️ LAST UPDATED: August 6, 2025
+# 🧪 TESTED WITH: Python 3.13, Windows 11
+# ✅ STATUS: Verified working with TalentSol integration
