@@ -1,0 +1,23 @@
+# TalentSol Decision Tree Model Requirements
+# Based on your GitHub repository dependencies
+
+# Core ML libraries
+joblib>=1.3.0
+scikit-learn>=1.3.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# XGBoost (if your model uses it)
+xgboost>=1.7.0
+
+# Text processing (for resume/job description analysis)
+nltk>=3.8
+scikit-learn>=1.3.0
+
+# Additional utilities
+scipy>=1.10.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# JSON handling
+json5>=0.9.0
