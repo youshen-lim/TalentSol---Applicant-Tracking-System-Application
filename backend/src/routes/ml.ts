@@ -5,6 +5,9 @@ import { mlDataService, mlAnalyticsService } from '../services/mlDataService.js'
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { z } from 'zod';
+// Import new ML services for model integration
+import { mlModelService } from '../services/mlModelService.js';
+import { mlDataPipelineService } from '../services/mlDataPipelineService.js';
 
 const router = express.Router();
 const mlService = MLService.getInstance();
@@ -854,6 +857,257 @@ router.post('/cache/refresh/:jobId?', asyncHandler(async (req: AuthenticatedRequ
   } catch (error) {
     console.error('Error refreshing cache:', error);
     throw new AppError('Failed to refresh cache', 500);
+  }
+}));
+
+// New endpoints for integrated ML models
+
+// Predict using Logistic Regression model
+router.post('/predict/logistic-regression', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { candidateId, jobId } = req.body;
+
+  if (!candidateId || !jobId) {
+    throw new AppError('candidateId and jobId are required', 400);
+  }
+
+  try {
+    // Extract candidate and job data
+    const candidateData = await mlDataPipelineService.extractCandidateData(candidateId);
+    const jobData = await mlDataPipelineService.extractJobData(jobId);
+
+    // Prepare ML input
+    const mlInput = {
+      candidateId,
+      jobId,
+      candidateData: {
+        resume: candidateData.documents?.resume || 'Resume not available',
+        experience: candidateData.professionalInfo.experience,
+        skills: candidateData.professionalInfo.skills,
+        location: candidateData.personalInfo.location,
+        education: candidateData.professionalInfo.education,
+        currentPosition: candidateData.professionalInfo.currentPosition,
+        expectedSalary: candidateData.preferences.expectedSalaryMin
+      },
+      jobData: {
+        title: jobData.basicInfo.title,
+        description: jobData.basicInfo.description,
+        requirements: jobData.basicInfo.requirements,
+        location: `${jobData.location.city}, ${jobData.location.state}`,
+        salaryRange: {
+          min: jobData.compensation.salaryMin,
+          max: jobData.compensation.salaryMax
+        },
+        experienceLevel: jobData.requirements.experienceLevel,
+        skills: jobData.requirements.skills
+      }
+    };
+
+    // Get prediction from logistic regression model
+    const prediction = await mlModelService.predictLogisticRegression(mlInput);
+
+    res.json({
+      success: true,
+      model: 'logistic_regression',
+      prediction,
+      metadata: {
+        candidateId,
+        jobId,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Logistic regression prediction error:', error);
+    throw new AppError('Failed to get logistic regression prediction', 500);
+  }
+}));
+
+// Predict using Decision Tree model
+router.post('/predict/decision-tree', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { candidateId, jobId } = req.body;
+
+  if (!candidateId || !jobId) {
+    throw new AppError('candidateId and jobId are required', 400);
+  }
+
+  try {
+    // Extract candidate and job data
+    const candidateData = await mlDataPipelineService.extractCandidateData(candidateId);
+    const jobData = await mlDataPipelineService.extractJobData(jobId);
+
+    // Prepare ML input
+    const mlInput = {
+      candidateId,
+      jobId,
+      candidateData: {
+        resume: candidateData.documents?.resume || 'Resume not available',
+        experience: candidateData.professionalInfo.experience,
+        skills: candidateData.professionalInfo.skills,
+        location: candidateData.personalInfo.location,
+        education: candidateData.professionalInfo.education,
+        currentPosition: candidateData.professionalInfo.currentPosition,
+        expectedSalary: candidateData.preferences.expectedSalaryMin
+      },
+      jobData: {
+        title: jobData.basicInfo.title,
+        description: jobData.basicInfo.description,
+        requirements: jobData.basicInfo.requirements,
+        location: `${jobData.location.city}, ${jobData.location.state}`,
+        salaryRange: {
+          min: jobData.compensation.salaryMin,
+          max: jobData.compensation.salaryMax
+        },
+        experienceLevel: jobData.requirements.experienceLevel,
+        skills: jobData.requirements.skills
+      }
+    };
+
+    // Get prediction from decision tree model
+    const prediction = await mlModelService.predictDecisionTree(mlInput);
+
+    res.json({
+      success: true,
+      model: 'decision_tree',
+      prediction,
+      metadata: {
+        candidateId,
+        jobId,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Decision tree prediction error:', error);
+    throw new AppError('Failed to get decision tree prediction', 500);
+  }
+}));
+
+// Predict using Ensemble model (both models combined)
+router.post('/predict/ensemble', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { candidateId, jobId } = req.body;
+
+  if (!candidateId || !jobId) {
+    throw new AppError('candidateId and jobId are required', 400);
+  }
+
+  try {
+    // Extract candidate and job data
+    const candidateData = await mlDataPipelineService.extractCandidateData(candidateId);
+    const jobData = await mlDataPipelineService.extractJobData(jobId);
+
+    // Prepare ML input
+    const mlInput = {
+      candidateId,
+      jobId,
+      candidateData: {
+        resume: candidateData.documents?.resume || 'Resume not available',
+        experience: candidateData.professionalInfo.experience,
+        skills: candidateData.professionalInfo.skills,
+        location: candidateData.personalInfo.location,
+        education: candidateData.professionalInfo.education,
+        currentPosition: candidateData.professionalInfo.currentPosition,
+        expectedSalary: candidateData.preferences.expectedSalaryMin
+      },
+      jobData: {
+        title: jobData.basicInfo.title,
+        description: jobData.basicInfo.description,
+        requirements: jobData.basicInfo.requirements,
+        location: `${jobData.location.city}, ${jobData.location.state}`,
+        salaryRange: {
+          min: jobData.compensation.salaryMin,
+          max: jobData.compensation.salaryMax
+        },
+        experienceLevel: jobData.requirements.experienceLevel,
+        skills: jobData.requirements.skills
+      }
+    };
+
+    // Get ensemble prediction
+    const prediction = await mlModelService.predictEnsemble(mlInput);
+
+    res.json({
+      success: true,
+      model: 'ensemble',
+      prediction,
+      metadata: {
+        candidateId,
+        jobId,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Ensemble prediction error:', error);
+    throw new AppError('Failed to get ensemble prediction', 500);
+  }
+}));
+
+// Process application through ML pipeline
+router.post('/process-application', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { applicationId } = req.body;
+
+  if (!applicationId) {
+    throw new AppError('applicationId is required', 400);
+  }
+
+  try {
+    // Queue application for ML processing
+    await mlDataPipelineService.queueForProcessing(applicationId);
+
+    res.json({
+      success: true,
+      message: 'Application queued for ML processing',
+      applicationId,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Application processing error:', error);
+    throw new AppError('Failed to process application', 500);
+  }
+}));
+
+// Generate training data for model retraining
+router.post('/generate-training-data', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { startDate, endDate } = req.body;
+
+  try {
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    const trainingData = await mlDataPipelineService.generateTrainingData(start, end);
+
+    res.json({
+      success: true,
+      trainingData,
+      count: trainingData.length,
+      dateRange: {
+        start: start?.toISOString(),
+        end: end?.toISOString()
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Training data generation error:', error);
+    throw new AppError('Failed to generate training data', 500);
+  }
+}));
+
+// Initialize ML models
+router.post('/initialize-models', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  try {
+    await mlModelService.initializeModels();
+
+    res.json({
+      success: true,
+      message: 'ML models initialized successfully',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Model initialization error:', error);
+    throw new AppError('Failed to initialize ML models', 500);
   }
 }));
 
