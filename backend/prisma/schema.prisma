@@ -102,6 +102,14 @@ model Job {
   marketData              JobMarketData[]
   candidateMatches        CandidateJobMatch[]
 
+  // Performance indexes for job queries and ML matching
+  @@index([status, postedDate], name: "idx_status_posted")
+  @@index([companyId, status], name: "idx_company_status")
+  @@index([experienceLevel], name: "idx_experience_level")
+  @@index([locationCity, locationState], name: "idx_location")
+  @@index([workType], name: "idx_work_type")
+  @@index([salaryMin, salaryMax], name: "idx_salary_range")
+  @@index([createdAt], name: "idx_created_at")
   @@map("jobs")
 }
 
@@ -153,6 +161,14 @@ model Candidate {
   candidateProfiles CandidateProfile[]
   jobMatches        CandidateJobMatch[]
 
+  // Performance indexes for candidate queries and ML matching
+  @@index([email], name: "idx_email")
+  @@index([locationCity, locationState], name: "idx_candidate_location")
+  @@index([experienceYears], name: "idx_experience_years")
+  @@index([currentPosition], name: "idx_current_position")
+  @@index([availabilityStatus], name: "idx_availability_status")
+  @@index([expectedSalaryMin, expectedSalaryMax], name: "idx_expected_salary")
+  @@index([createdAt], name: "idx_candidate_created_at")
   @@map("candidates")
 }
 
@@ -190,6 +206,14 @@ model Application {
   mlPredictions        MLPrediction[]
   skillExtractions     SkillExtraction[]
 
+  // Performance indexes for ML and analytics queries
+  @@index([candidateId, jobId], name: "idx_candidate_job")
+  @@index([jobId, status], name: "idx_job_status")
+  @@index([status, submittedAt], name: "idx_status_submitted")
+  @@index([score], name: "idx_score")
+  @@index([submittedAt], name: "idx_submitted_at")
+  @@index([candidateId, status], name: "idx_candidate_status")
+  @@index([hiredAt], name: "idx_hired_at")
   @@map("applications")
 }
 
