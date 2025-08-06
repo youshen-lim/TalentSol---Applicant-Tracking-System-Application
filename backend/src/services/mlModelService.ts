@@ -48,13 +48,17 @@ export class MLModelService {
   private modelsInitialized: boolean = false;
 
   constructor() {
-    this.modelsPath = path.join(process.cwd(), 'ml-models');
+    this.modelsPath = path.join(process.cwd(), 'backend', 'ml-models');
     this.pythonEnvPath = path.join(this.modelsPath, 'shared', 'ml-env', 'bin', 'python');
-    this.pythonPath = process.env.PYTHON_PATH || this.pythonEnvPath;
+    this.pythonPath = process.env.PYTHON_PATH || 'python'; // Use system Python for now
     this.logisticRegressionPath = path.join(this.modelsPath, 'logistic-regression');
     this.decisionTreePath = path.join(this.modelsPath, 'decision-tree');
     this.logisticModelFile = path.join(this.logisticRegressionPath, 'optimized_tfidf_logistic_regression_pipeline.joblib');
     this.decisionTreeModelFile = path.join(this.decisionTreePath, 'best_performing_model_pipeline.joblib');
+
+    console.log('🤖 ML Model Service initialized');
+    console.log('📁 Models path:', this.modelsPath);
+    console.log('🌳 Decision tree model:', this.decisionTreeModelFile);
   }
 
   /**
@@ -382,7 +386,7 @@ def main():
         model_path = "${modelFile.replace(/\\/g, '/')}"
         pipeline = joblib.load(model_path)
 
-        # Prepare data for prediction
+        # Prepare data for prediction - exact format for your Decision Tree model
         df_data = {
             'Job Description': input_data.get('job_description', ''),
             'Resume': input_data.get('resume', ''),
@@ -390,15 +394,31 @@ def main():
             'Ethnicity': input_data.get('ethnicity', 'Not Specified'),
         }
 
+        print(f"📊 Input data prepared for model:")
+        print(f"   Job Description length: {len(df_data['Job Description'])}")
+        print(f"   Resume length: {len(df_data['Resume'])}")
+        print(f"   Job Role: {df_data['Job Roles']}")
+        print(f"   Ethnicity: {df_data['Ethnicity']}")
+
         df = pd.DataFrame([df_data])
 
-        # Make prediction
+        # Make prediction with your Decision Tree model
         probabilities = pipeline.predict_proba(df)
-        best_match_prob = float(probabilities[0][1])  # Probability of "Best Match"
+        print(f"📈 Raw probabilities: {probabilities[0]}")
 
-        # Apply optimized threshold from your research
-        optimized_threshold = 0.5027
+        # Get probability of "Best Match" (assuming class 1 is positive)
+        if probabilities.shape[1] >= 2:
+            best_match_prob = float(probabilities[0][1])
+        else:
+            best_match_prob = float(probabilities[0][0])
+
+        print(f"🎯 Best Match Probability: {best_match_prob}")
+
+        # Apply threshold (adjust based on your model's optimal performance)
+        optimized_threshold = 0.5  # You can adjust this based on your model's performance
         prediction = 1 if best_match_prob >= optimized_threshold else 0
+
+        print(f"🎯 Final Prediction: {prediction} (threshold: {optimized_threshold})")
 
         # Calculate confidence
         confidence = min(best_match_prob * 1.5, 1.0)

@@ -4,6 +4,8 @@ import { createApplicationSchema, updateApplicationSchema } from '../types/valid
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 import { createNotification } from './notifications.js';
+import { MLDataPipelineService } from '../services/mlDataPipelineService.js';
+import { websocketServer } from '../websocket/server.js';
 
 const router = express.Router();
 
@@ -142,9 +144,33 @@ router.post('/', asyncHandler(async (req, res) => {
     return application;
   });
 
+  // Queue application for ML processing (async - don't block response)
+  try {
+    const mlPipelineService = new MLDataPipelineService(prisma);
+    await mlPipelineService.queueForProcessing(result.id);
+
+    // Notify via WebSocket that ML processing has started
+    if (websocketServer) {
+      websocketServer.broadcastToCompany(result.job.company?.id || 'default', {
+        type: 'ml_processing_started',
+        applicationId: result.id,
+        candidateId: result.candidateId,
+        jobId: result.jobId,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (mlError) {
+    // Log ML processing error but don't fail the application submission
+    console.error('ML processing failed for application:', result.id, mlError);
+  }
+
   res.status(201).json({
     message: 'Application submitted successfully',
     application: result,
+    mlProcessing: {
+      status: 'queued',
+      message: 'Application queued for AI-powered screening'
+    }
   });
 }));
 

@@ -8,11 +8,20 @@ import { logger } from '../utils/logger';
  */
 
 export interface YourMLModelInput {
-  // Based on your research model requirements
+  // Based on your Decision Tree model requirements
+  // These field names must match exactly what your model expects
   job_description: string;
   resume: string;
   job_role: string;
-  ethnicity?: string; // Optional field from your model
+  ethnicity?: string; // Optional field from your model, defaults to "Not Specified"
+}
+
+export interface YourMLModelDataFrame {
+  // The format your joblib pipeline expects (DataFrame columns)
+  'Job Description': string;
+  'Resume': string;
+  'Job Roles': string;
+  'Ethnicity': string;
 }
 
 export interface TalentSolMLInput {

@@ -338,6 +338,24 @@ export class WebSocketServer {
     }
   }
 
+  public broadcastToCompany(companyId: string, data: any) {
+    this.io.to(`company:${companyId}`).emit('company:update', {
+      ...data,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  public sendMLProcessingUpdate(userId: string, update: any) {
+    const socketId = this.connectedUsers.get(userId);
+    if (socketId) {
+      this.io.to(socketId).emit('ml:processing_update', {
+        type: 'ml_processing_update',
+        ...update,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
   public start(port: number = 9000) {
     this.server.listen(port, () => {
       console.log(`🔌 WebSocket server running on port ${port}`);
