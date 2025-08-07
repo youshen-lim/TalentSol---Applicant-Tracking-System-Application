@@ -16,7 +16,8 @@ const Analytics = () => {
   const [activeTab, setActiveTab] = useState("core");
 
   return (
-    <div className="space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
       <PageHeader
         title="Analytics"
         subtitle="View and create reports to analyze your recruitment data"
@@ -65,6 +66,7 @@ const Analytics = () => {
           <MLReports />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

@@ -693,8 +693,8 @@ const Candidates = () => {
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 -m-6 p-6">
-      <div className="max-w-full space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
         <PageHeader
           title="Candidates"
           subtitle="Manage and track candidates through your recruitment process"
