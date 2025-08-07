@@ -938,7 +938,8 @@ const Jobs = () => {
   };
 
   return (
-    <div className="space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen -m-6 p-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
       <PageHeader
         title="Job Management"
         subtitle={`Manage your open positions • ${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''} found`}
@@ -1690,6 +1691,7 @@ const Jobs = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

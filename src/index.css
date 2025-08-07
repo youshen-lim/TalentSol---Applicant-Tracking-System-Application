@@ -1,20 +1,22 @@
 /* Enhanced scrolling styles for better horizontal scroll experience */
 @import './styles/enhanced-scroll.css';
 
+/* TalentSol Design System - Global spacing and layout components */
+@import './styles/talentsol-design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @layer base {
   :root {
+    /* === CORE LAYOUT COLORS === */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
+    /* === BRAND COLORS === */
     /* Blue as primary color scheme (based on ats-blue: #3B82F6) */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
@@ -22,6 +24,13 @@
     /* Purple as secondary color scheme (based on ats-purple: #8A70D6) */
     --secondary: 256 57% 64%;
     --secondary-foreground: 0 0% 100%;
+
+    /* === COMPONENT COLORS === */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -32,10 +41,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
-
+    /* === SIDEBAR THEME === */
     /* Enhanced sidebar colors with purple theme (based on 253 68% values) */
     --sidebar-background: 253 68% 20%;
     --sidebar-foreground: 0 0% 100%;
@@ -46,19 +52,19 @@
     --sidebar-border: 253 68% 25%;
     --sidebar-ring: 253 68% 60%;
 
+    /* === DESIGN TOKENS === */
     --radius: 0.5rem;
   }
 
   .dark {
+    /* === CORE LAYOUT COLORS (DARK MODE) === */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217 91% 60%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
+    /* === BRAND COLORS (DARK MODE) === */
     /* Blue as primary color scheme (dark mode) */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
@@ -66,6 +72,13 @@
     /* Purple as secondary color scheme (dark mode) */
     --secondary: 256 57% 64%;
     --secondary-foreground: 0 0% 100%;
+
+    /* === COMPONENT COLORS (DARK MODE) === */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
@@ -76,10 +89,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217 91% 60%;
-
+    /* === SIDEBAR THEME (DARK MODE) === */
     /* Enhanced sidebar colors with purple theme (dark mode) */
     --sidebar-background: 253 68% 20%;
     --sidebar-foreground: 0 0% 100%;
@@ -97,26 +107,29 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    @apply bg-background text-foreground font-sans font-inter-system;
   }
 
   /* Ensure consistent font rendering across all elements */
   h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, label {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    @apply font-inter-system;
   }
 }
 
 @layer utilities {
-  /* TalentSol font consistency utilities */
-  .font-inter {
+  /* TalentSol consolidated font system utilities */
+  .font-inter-system {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Legacy support - will be deprecated */
+  .font-inter {
+    @apply font-inter-system;
   }
 
   .ats-font-consistent {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply font-inter-system;
   }
 }
 

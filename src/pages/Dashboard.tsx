@@ -60,8 +60,8 @@ const Dashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 -m-6 p-6">
-      <div className="space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
         <PageHeader
           title="Dashboard"
           subtitle="Overview of your recruitment operations"

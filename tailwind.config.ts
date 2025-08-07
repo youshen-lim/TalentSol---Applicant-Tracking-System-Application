@@ -88,6 +88,38 @@ const config = {
       spacing: {
         '18': '4.5rem',
         '88': '22rem',
+
+        // === TALENTSOL DESIGN SYSTEM SPACING === //
+        // Component-specific spacing tokens
+        'card-inner': '2rem',           // 32px - internal card padding (enhanced from 24px)
+        'card-inner-sm': '1.5rem',      // 24px - smaller card padding
+        'card-gap': '2rem',             // 32px - between cards (enhanced from 20px)
+        'card-gap-sm': '1.5rem',        // 24px - smaller card gaps
+
+        // Section spacing tokens
+        'section': '2.5rem',            // 40px - between major sections
+        'section-lg': '3rem',           // 48px - between page sections
+        'section-xl': '4rem',           // 64px - between major page blocks
+
+        // Header and navigation spacing
+        'header-bottom': '2rem',        // 32px - below page headers (enhanced from 24px)
+        'nav-padding': '1.25rem',       // 20px - navigation element padding
+        'tab-padding': '1.5rem',        // 24px - tab navigation padding
+
+        // Layout spacing tokens
+        'page-x': '1.5rem',             // 24px - horizontal page margins
+        'page-y': '2rem',               // 32px - vertical page margins
+        'container-padding': '2rem',    // 32px - main container padding
+
+        // Metric and data display spacing
+        'metric-gap': '1.5rem',         // 24px - between metric elements
+        'data-spacing': '0.75rem',      // 12px - between data points
+        'chart-padding': '2rem',        // 32px - chart container padding
+
+        // Interactive element spacing
+        'button-gap': '0.75rem',        // 12px - between buttons
+        'form-gap': '1.5rem',           // 24px - between form elements
+        'input-padding': '0.75rem',     // 12px - input internal padding
       },
       // TalentSol standardized typography scale
       fontSize: {
@@ -139,7 +171,181 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), function({ addUtilities }) { addUtilities({ ".scrollbar-thin": { "scrollbar-width": "thin" }, ".scrollbar-thin::-webkit-scrollbar": { width: "8px", height: "8px" }, ".scrollbar-track-transparent::-webkit-scrollbar-track": { background: "transparent" }, ".scrollbar-thumb-gray-300::-webkit-scrollbar-thumb": { background: "#d1d5db", "border-radius": "4px" }, ".scrollbar-thumb-gray-400::-webkit-scrollbar-thumb": { background: "#9ca3af", "border-radius": "4px" }, ".scrollbar-thumb-ats-light-blue\\/60::-webkit-scrollbar-thumb": { background: "rgba(147, 197, 253, 0.6)", "border-radius": "4px" }, ".scrollbar-thumb-ats-blue::-webkit-scrollbar-thumb": { background: "#3b82f6", "border-radius": "4px" } }); }],
+  plugins: [
+    require("tailwindcss-animate"),
+    function({ addUtilities, addComponents }) {
+      // === TALENTSOL DESIGN SYSTEM COMPONENTS === //
+      addComponents({
+        // Page layout components
+        '.page-container': {
+          '@apply min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 -m-6 p-6': {},
+        },
+        '.page-content': {
+          '@apply max-w-7xl mx-auto space-y-section-lg px-page-x py-page-y': {},
+        },
+        '.page-content-narrow': {
+          '@apply max-w-4xl mx-auto space-y-section-lg px-page-x py-page-y': {},
+        },
+
+        // Card components
+        '.metric-card': {
+          '@apply bg-white rounded-lg border border-gray-200 p-card-inner hover:border-blue-300 transition-colors duration-200': {},
+        },
+        '.metric-card-sm': {
+          '@apply bg-white rounded-lg border border-gray-200 p-card-inner-sm hover:border-blue-300 transition-colors duration-200': {},
+        },
+        '.chart-container': {
+          '@apply bg-white rounded-lg border border-gray-200 p-chart-padding': {},
+        },
+
+        // Grid layouts
+        '.metric-cards-grid': {
+          '@apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-card-gap': {},
+        },
+        '.content-grid': {
+          '@apply grid grid-cols-1 lg:grid-cols-2 gap-card-gap': {},
+        },
+
+        // Section spacing
+        '.page-section': {
+          '@apply mb-section-lg': {},
+        },
+        '.content-section': {
+          '@apply space-y-section': {},
+        },
+
+        // Navigation components
+        '.tab-navigation': {
+          '@apply border-b border-gray-200 mb-section mt-header-bottom': {},
+        },
+        '.tab-nav-container': {
+          '@apply flex space-x-8 px-2': {},
+        },
+        '.tab-button': {
+          '@apply py-5 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200': {},
+        },
+
+        // Header components
+        '.section-header': {
+          '@apply flex items-center justify-between py-4': {},
+        },
+        '.section-title': {
+          '@apply text-lg font-semibold text-gray-900': {},
+        },
+        '.section-subtitle': {
+          '@apply text-sm text-gray-500 mt-2': {},
+        },
+      });
+
+      addUtilities({
+        // Enhanced scrollbar system - consolidated from enhanced-scroll.css
+        ".enhanced-scrollbar": {
+          "scrollbar-width": "thin",
+          "scrollbar-color": "#d1d5db transparent"
+        },
+        ".enhanced-scrollbar::-webkit-scrollbar": {
+          width: "8px",
+          height: "8px"
+        },
+        ".enhanced-scrollbar::-webkit-scrollbar-track": {
+          background: "transparent",
+          "border-radius": "4px"
+        },
+        ".enhanced-scrollbar::-webkit-scrollbar-thumb": {
+          background: "#d1d5db",
+          "border-radius": "4px",
+          border: "1px solid transparent",
+          "background-clip": "content-box"
+        },
+        ".enhanced-scrollbar::-webkit-scrollbar-thumb:hover": {
+          background: "#9ca3af",
+          "background-clip": "content-box"
+        },
+        ".enhanced-scrollbar::-webkit-scrollbar-thumb:active": {
+          background: "#6b7280",
+          "background-clip": "content-box"
+        },
+        // Blue themed scrollbar
+        ".enhanced-scrollbar-blue": {
+          "scrollbar-width": "thin",
+          "scrollbar-color": "#93c5fd transparent"
+        },
+        ".enhanced-scrollbar-blue::-webkit-scrollbar": {
+          width: "8px",
+          height: "8px"
+        },
+        ".enhanced-scrollbar-blue::-webkit-scrollbar-track": {
+          background: "transparent",
+          "border-radius": "4px"
+        },
+        ".enhanced-scrollbar-blue::-webkit-scrollbar-thumb": {
+          background: "#93c5fd",
+          "border-radius": "4px",
+          border: "1px solid transparent",
+          "background-clip": "content-box"
+        },
+        ".enhanced-scrollbar-blue::-webkit-scrollbar-thumb:hover": {
+          background: "#60a5fa",
+          "background-clip": "content-box"
+        },
+        ".enhanced-scrollbar-blue::-webkit-scrollbar-thumb:active": {
+          background: "#3b82f6",
+          "background-clip": "content-box"
+        },
+        // Auto-hide scrollbar
+        ".scrollbar-auto-hide": {
+          "scrollbar-width": "none",
+          "-ms-overflow-style": "none"
+        },
+        ".scrollbar-auto-hide::-webkit-scrollbar": {
+          display: "none"
+        },
+        ".scrollbar-auto-hide:hover": {
+          "scrollbar-width": "thin",
+          "scrollbar-color": "#d1d5db transparent"
+        },
+        ".scrollbar-auto-hide:hover::-webkit-scrollbar": {
+          display: "block",
+          width: "6px",
+          height: "6px"
+        },
+        ".scrollbar-auto-hide:hover::-webkit-scrollbar-track": {
+          background: "transparent"
+        },
+        ".scrollbar-auto-hide:hover::-webkit-scrollbar-thumb": {
+          background: "#d1d5db",
+          "border-radius": "3px"
+        },
+        // Legacy utilities (maintained for compatibility)
+        ".scrollbar-thin": {
+          "scrollbar-width": "thin"
+        },
+        ".scrollbar-thin::-webkit-scrollbar": {
+          width: "8px",
+          height: "8px"
+        },
+        ".scrollbar-track-transparent::-webkit-scrollbar-track": {
+          background: "transparent"
+        },
+        ".scrollbar-thumb-gray-300::-webkit-scrollbar-thumb": {
+          background: "#d1d5db",
+          "border-radius": "4px"
+        },
+        ".scrollbar-thumb-gray-400::-webkit-scrollbar-thumb": {
+          background: "#9ca3af",
+          "border-radius": "4px"
+        },
+        ".scrollbar-thumb-ats-light-blue\\/60::-webkit-scrollbar-thumb": {
+          background: "rgba(147, 197, 253, 0.6)",
+          "border-radius": "4px"
+        },
+        ".scrollbar-thumb-ats-blue::-webkit-scrollbar-thumb": {
+          background: "#3b82f6",
+          "border-radius": "4px"
+        }
+      });
+    }
+  ],
 } satisfies Config;
 
 export default config;

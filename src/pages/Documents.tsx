@@ -125,7 +125,8 @@ const Documents = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
       <PageHeader
         title="Documents"
         subtitle="Manage document workflows with candidates and employees"
@@ -279,6 +280,7 @@ const Documents = () => {
           />
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

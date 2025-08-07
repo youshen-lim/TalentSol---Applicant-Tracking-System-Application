@@ -192,7 +192,8 @@ const Settings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
       <PageHeader
         title="Settings"
         subtitle="Manage your account settings and preferences"
@@ -770,6 +771,7 @@ const Settings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

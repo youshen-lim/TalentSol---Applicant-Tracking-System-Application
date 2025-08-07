@@ -172,7 +172,8 @@ const Interviews = () => {
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
   return (
-    <div className="space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
       <PageHeader
         title="Interviews"
         subtitle="Schedule and manage candidate interviews"
@@ -631,6 +632,7 @@ const Interviews = () => {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

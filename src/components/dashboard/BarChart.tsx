@@ -231,22 +231,58 @@ export const BarChart: React.FC<BarChartProps> = ({
 
   // Enhanced bar rendering with gradient colors and data labels
   const getBars = () => {
-    // Custom label component for displaying values on bars
+    // Enhanced custom label component with dynamic positioning and consistent spacing
     const CustomLabel = (props: any) => {
-      const { x, y, width, height, value } = props;
-      const labelX = vertical ? x + width + 5 : x + width / 2;
-      const labelY = vertical ? y + height / 2 : y - 5;
+      const { x, y, width, height, value, payload } = props;
+
+      // Calculate dynamic positioning based on bar length and chart dimensions
+      const chartWidth = 400; // Approximate chart width for calculations
+      const minBarWidthForInternalLabel = 60; // Minimum bar width to place label inside
+      const labelPadding = 8; // Consistent padding for all labels
+
+      let labelX: number;
+      let labelY: number;
+      let textAnchor: string;
+      let fill: string;
+
+      if (vertical) {
+        // For horizontal bars (vertical layout)
+        const barIsLong = width > minBarWidthForInternalLabel;
+
+        if (barIsLong) {
+          // Place label inside the bar, near the end
+          labelX = x + width - labelPadding;
+          textAnchor = "end";
+          fill = "#ffffff"; // White text for contrast against colored bars
+        } else {
+          // Place label outside the bar with consistent spacing
+          labelX = x + width + labelPadding;
+          textAnchor = "start";
+          fill = "#374151"; // Dark text for contrast against white background
+        }
+
+        labelY = y + height / 2;
+      } else {
+        // For vertical bars (horizontal layout)
+        labelX = x + width / 2;
+        labelY = y - labelPadding;
+        textAnchor = "middle";
+        fill = "#374151";
+      }
 
       return (
         <text
           x={labelX}
           y={labelY}
-          fill="#374151"
-          textAnchor={vertical ? "start" : "middle"}
+          fill={fill}
+          textAnchor={textAnchor}
           dominantBaseline={vertical ? "middle" : "auto"}
           fontSize={config.fontSize}
-          fontWeight="400"
+          fontWeight="500"
           fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+          style={{
+            textShadow: fill === "#ffffff" ? "0 1px 2px rgba(0,0,0,0.1)" : "none"
+          }}
         >
           {valueFormatter(value)}
         </text>
@@ -263,8 +299,8 @@ export const BarChart: React.FC<BarChartProps> = ({
           dataKey={bar.dataKey}
           name={bar.name}
           fill={bar.fill}
-          radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-          barSize={vertical ? 24 : 40}
+          radius={vertical ? [0, 6, 6, 0] : [6, 6, 0, 0]} // Slightly more rounded corners
+          barSize={vertical ? 28 : 32} // Optimized bar sizes for better label spacing
           label={<CustomLabel />}
         />
       ));
@@ -279,8 +315,8 @@ export const BarChart: React.FC<BarChartProps> = ({
         dataKey={category}
         name={category}
         fill={colors[index % colors.length]}
-        radius={vertical ? [0, 4, 4, 0] : [4, 4, 0, 0]}
-        barSize={vertical ? 24 : 40}
+        radius={vertical ? [0, 6, 6, 0] : [6, 6, 0, 0]} // Consistent rounded corners
+        barSize={vertical ? 28 : 32} // Consistent bar sizes
         label={<CustomLabel />}
       />
     ));
@@ -301,12 +337,12 @@ export const BarChart: React.FC<BarChartProps> = ({
               data={data}
               layout={vertical ? "vertical" : "horizontal"}
               margin={{
-                top: vertical ? 5 : 10,
-                right: vertical ? 10 : 15,
-                left: vertical ? config.leftMargin - 35 : 15,
-                bottom: vertical ? 5 : 15,
+                top: vertical ? 8 : 15,
+                right: vertical ? 80 : 20, // Increased right margin for horizontal bars to accommodate labels
+                left: vertical ? config.leftMargin - 20 : 20,
+                bottom: vertical ? 8 : 20,
               }}
-              barCategoryGap={vertical ? "10%" : "12%"}
+              barCategoryGap={vertical ? "15%" : "12%"} // Increased gap for better visual separation
             >
               {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={!vertical} />}
 

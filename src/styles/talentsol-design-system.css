@@ -1,0 +1,245 @@
+/**
+ * TalentSol Design System - Global CSS Components
+ * Comprehensive spacing and layout system for consistent UI across all pages
+ */
+
+@layer components {
+  /* === PAGE LAYOUT PATTERNS === */
+  
+  /* Standard page layout used by Jobs, Candidates, Dashboard */
+  .ats-page-layout {
+    @apply min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 -m-6 p-6;
+  }
+  
+  /* Main content container with consistent max-width and spacing */
+  .ats-content-container {
+    @apply max-w-7xl mx-auto space-y-section-lg px-page-x pb-container-padding;
+  }
+  
+  /* Narrow content container for focused pages */
+  .ats-content-container-narrow {
+    @apply max-w-4xl mx-auto space-y-section-lg px-page-x pb-container-padding;
+  }
+  
+  /* === NAVIGATION COMPONENTS === */
+  
+  /* Tab navigation with consistent spacing */
+  .ats-tab-navigation {
+    @apply border-b border-gray-200 mb-section mt-header-bottom;
+  }
+  
+  .ats-tab-nav-container {
+    @apply flex space-x-8 px-2;
+  }
+  
+  .ats-tab-button {
+    @apply py-5 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200;
+  }
+  
+  .ats-tab-button-active {
+    @apply border-blue-500 text-blue-600;
+  }
+  
+  .ats-tab-button-inactive {
+    @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+  }
+  
+  /* === CARD COMPONENTS === */
+  
+  /* Standard metric cards with enhanced padding */
+  .ats-metric-card {
+    @apply bg-white rounded-lg border border-gray-200 p-card-inner hover:border-blue-300 transition-colors duration-200;
+  }
+  
+  /* Smaller metric cards for compact layouts */
+  .ats-metric-card-sm {
+    @apply bg-white rounded-lg border border-gray-200 p-card-inner-sm hover:border-blue-300 transition-colors duration-200;
+  }
+  
+  /* Chart containers with consistent padding */
+  .ats-chart-container {
+    @apply bg-white rounded-lg border border-gray-200 p-chart-padding;
+  }
+  
+  /* Enhanced chart containers with increased height */
+  .ats-chart-container-enhanced {
+    @apply bg-white rounded-lg border border-gray-200 p-chart-padding h-[360px];
+  }
+  
+  /* === GRID LAYOUTS === */
+  
+  /* Standard metric cards grid */
+  .ats-metric-cards-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-card-gap;
+  }
+  
+  /* Content grid for two-column layouts */
+  .ats-content-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-card-gap;
+  }
+  
+  /* Forms grid for structured form layouts */
+  .ats-forms-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-card-gap;
+  }
+  
+  /* === SECTION SPACING === */
+  
+  /* Major page sections */
+  .ats-page-section {
+    @apply mb-section-lg;
+  }
+  
+  /* Content sections within pages */
+  .ats-content-section {
+    @apply space-y-section;
+  }
+  
+  /* Enhanced content sections with extra spacing */
+  .ats-content-section-enhanced {
+    @apply space-y-section-lg;
+  }
+  
+  /* === HEADER COMPONENTS === */
+  
+  /* Section headers with consistent spacing */
+  .ats-section-header {
+    @apply flex items-center justify-between py-4;
+  }
+  
+  /* Section titles */
+  .ats-section-title {
+    @apply text-lg font-semibold text-gray-900;
+  }
+  
+  /* Section subtitles */
+  .ats-section-subtitle {
+    @apply text-sm text-gray-500 mt-2;
+  }
+  
+  /* === METRIC DISPLAY COMPONENTS === */
+  
+  /* Metric card headers */
+  .ats-metric-header {
+    @apply flex items-center justify-between mb-6;
+  }
+  
+  /* Metric card content */
+  .ats-metric-content {
+    @apply space-y-3;
+  }
+  
+  /* Metric values */
+  .ats-metric-value {
+    @apply text-3xl font-bold text-gray-900 leading-none;
+  }
+  
+  /* Metric labels */
+  .ats-metric-label {
+    @apply text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+  
+  /* === FORM COMPONENTS === */
+  
+  /* Form sections with consistent spacing */
+  .ats-form-section {
+    @apply space-y-form-gap;
+  }
+  
+  /* Form groups */
+  .ats-form-group {
+    @apply space-y-2;
+  }
+  
+  /* Button groups */
+  .ats-button-group {
+    @apply flex items-center gap-button-gap;
+  }
+  
+  /* === INTERACTIVE ELEMENTS === */
+  
+  /* Primary buttons with consistent styling */
+  .ats-button-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all duration-200;
+  }
+  
+  /* Secondary buttons with consistent styling */
+  .ats-button-secondary {
+    @apply border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600 transition-all duration-200;
+  }
+  
+  /* === LOADING AND EMPTY STATES === */
+  
+  /* Loading containers */
+  .ats-loading-container {
+    @apply bg-white rounded-lg border border-gray-200 p-chart-padding flex items-center justify-center;
+  }
+  
+  /* Empty state containers */
+  .ats-empty-state {
+    @apply bg-white rounded-lg border border-gray-200 p-chart-padding flex items-center justify-center text-center;
+  }
+  
+  /* === RESPONSIVE UTILITIES === */
+  
+  /* Mobile-first responsive spacing */
+  .ats-responsive-padding {
+    @apply px-4 md:px-6 lg:px-8;
+  }
+  
+  /* Responsive margins */
+  .ats-responsive-margin {
+    @apply mx-4 md:mx-6 lg:mx-8;
+  }
+  
+  /* === ACCESSIBILITY ENHANCEMENTS === */
+  
+  /* Focus states for interactive elements */
+  .ats-focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+  
+  /* Touch-friendly targets */
+  .ats-touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+@layer utilities {
+  /* === SPACING UTILITIES === */
+  
+  /* Quick spacing utilities for common patterns */
+  .space-card-gap > * + * {
+    margin-top: theme('spacing.card-gap');
+  }
+  
+  .space-section > * + * {
+    margin-top: theme('spacing.section');
+  }
+  
+  .space-section-lg > * + * {
+    margin-top: theme('spacing.section-lg');
+  }
+  
+  /* === LAYOUT UTILITIES === */
+  
+  /* Container utilities */
+  .container-7xl {
+    @apply max-w-7xl mx-auto;
+  }
+  
+  .container-4xl {
+    @apply max-w-4xl mx-auto;
+  }
+  
+  /* === TYPOGRAPHY UTILITIES === */
+  
+  /* Consistent text spacing */
+  .text-spacing-relaxed {
+    @apply leading-relaxed;
+  }
+  
+  .text-spacing-loose {
+    @apply leading-loose;
+  }
+}

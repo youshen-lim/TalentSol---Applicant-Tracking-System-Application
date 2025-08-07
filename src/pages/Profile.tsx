@@ -274,7 +274,8 @@ const Profile = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="ats-page-layout">
+      <div className="ats-content-container">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -555,6 +556,7 @@ const Profile = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

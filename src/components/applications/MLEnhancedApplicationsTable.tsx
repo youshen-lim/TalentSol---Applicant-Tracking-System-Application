@@ -35,7 +35,10 @@ import {
   MessageSquare,
   Zap,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  CheckCircle,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MLStatusIndicator } from '@/components/ml/MLProcessingStatus';
@@ -152,19 +155,238 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      applied: { label: 'Applied', color: 'bg-blue-100 text-blue-700' },
-      screening: { label: 'Screening', color: 'bg-yellow-100 text-yellow-700' },
-      interview: { label: 'Interview', color: 'bg-purple-100 text-purple-700' },
-      offer: { label: 'Offer', color: 'bg-green-100 text-green-700' },
-      rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700' },
-      hired: { label: 'Hired', color: 'bg-emerald-100 text-emerald-700' }
+      applied: { variant: 'status-applied' as const, label: 'Applied' },
+      screening: { variant: 'status-screening' as const, label: 'Screening' },
+      interview: { variant: 'status-interview' as const, label: 'Interview' },
+      assessment: { variant: 'status-assessment' as const, label: 'Assessment' },
+      offer: { variant: 'status-offer' as const, label: 'Offer' },
+      hired: { variant: 'status-hired' as const, label: 'Hired' },
+      rejected: { variant: 'status-rejected' as const, label: 'Rejected' }
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.applied;
+    const config = statusConfig[status as keyof typeof statusConfig] ||
+                   { variant: 'outline' as const, label: status };
+
     return (
-      <Badge className={cn('text-xs font-medium', config.color)}>
+      <Badge variant={config.variant} className="font-medium">
         {config.label}
       </Badge>
+    );
+  };
+
+  // Enhanced ML Score Component with Comprehensive Tooltips
+  const MLScoreWithTooltip = ({ application }: { application: ApplicationWithML }) => {
+    const score = application.score || 0;
+    const mlProcessing = application.mlProcessing;
+    const confidence = mlProcessing?.confidence || 0;
+
+    const getScoreColor = (score: number) => {
+      if (score >= 80) return 'text-green-600';
+      if (score >= 70) return 'text-blue-600';
+      if (score >= 60) return 'text-yellow-600';
+      return 'text-red-600';
+    };
+
+    const getConfidenceIcon = (confidence: number) => {
+      if (confidence >= 0.9) return <CheckCircle className="h-3 w-3 text-green-500" />;
+      if (confidence >= 0.7) return <AlertCircle className="h-3 w-3 text-yellow-500" />;
+      return <Clock className="h-3 w-3 text-red-500" />;
+    };
+
+    const getRecommendationColor = (score: number) => {
+      if (score >= 80) return 'text-green-600 bg-green-50 border-green-200';
+      if (score >= 70) return 'text-blue-600 bg-blue-50 border-blue-200';
+      if (score >= 60) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      return 'text-red-600 bg-red-50 border-red-200';
+    };
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2 cursor-help hover:bg-blue-50 rounded-md px-2 py-1 transition-colors">
+              <Brain className="h-4 w-4 text-blue-600" />
+              <span className={cn('text-sm font-medium', getScoreColor(score))}>
+                {score > 0 ? `${score}/100` : 'N/A'}
+              </span>
+              {getScoreTrend(score)}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-sm p-0 bg-white border border-slate-200 shadow-lg" side="top">
+            <div className="p-4 space-y-4">
+              {/* Header */}
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                <Brain className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-section-header text-slate-900">Decision Tree Analysis</p>
+                  <p className="text-xs text-slate-500">AI-powered candidate evaluation</p>
+                </div>
+              </div>
+
+              {/* Score and Confidence */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center">
+                  <div className={cn('text-2xl font-bold', getScoreColor(score))}>
+                    {score > 0 ? score : 'N/A'}
+                  </div>
+                  <div className="text-xs text-slate-500">AI Score</div>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    {getConfidenceIcon(confidence)}
+                    <span className="text-lg font-semibold text-slate-700">
+                      {Math.round(confidence * 100)}%
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-500">Confidence</div>
+                </div>
+              </div>
+
+              {/* Key Factors */}
+              {mlProcessing?.reasoning && mlProcessing.reasoning.length > 0 && (
+                <div>
+                  <p className="font-medium text-slate-900 text-sm mb-2">Key Factors:</p>
+                  <ul className="space-y-1">
+                    {mlProcessing.reasoning.slice(0, 3).map((reason, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-slate-600">
+                        <span className="text-blue-500 mt-1">•</span>
+                        <span>{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Skills Extracted */}
+              {mlProcessing?.skillsExtracted && mlProcessing.skillsExtracted.length > 0 && (
+                <div>
+                  <p className="font-medium text-slate-900 text-sm mb-2">Skills Identified:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {mlProcessing.skillsExtracted.slice(0, 4).map((skill, idx) => (
+                      <Badge key={idx} variant="ats-blue-subtle" className="text-xs">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommended Actions */}
+              {mlProcessing?.recommendedActions && mlProcessing.recommendedActions.length > 0 && (
+                <div className={cn('p-3 rounded-lg border', getRecommendationColor(score))}>
+                  <p className="font-medium text-sm mb-1">Recommended Action:</p>
+                  <p className="text-xs">
+                    {mlProcessing.recommendedActions[0]}
+                  </p>
+                </div>
+              )}
+
+              {/* Processing Info */}
+              <div className="pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>Model: Decision Tree</span>
+                  <span>Processed: {mlProcessing?.processingTime || 0}ms</span>
+                </div>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
+  // Enhanced ML Confidence Component with Detailed Tooltips
+  const MLConfidenceWithTooltip = ({ application }: { application: ApplicationWithML }) => {
+    const confidence = application.mlProcessing?.confidence || 0;
+    const status = application.mlProcessing?.status || 'not_started';
+
+    const getConfidenceColor = (confidence: number) => {
+      if (confidence >= 0.9) return 'text-green-600';
+      if (confidence >= 0.7) return 'text-blue-600';
+      if (confidence >= 0.5) return 'text-yellow-600';
+      return 'text-red-600';
+    };
+
+    const getConfidenceLabel = (confidence: number) => {
+      if (confidence >= 0.9) return 'Very High';
+      if (confidence >= 0.7) return 'High';
+      if (confidence >= 0.5) return 'Medium';
+      return 'Low';
+    };
+
+    if (status === 'not_started' || status === 'processing') {
+      return (
+        <div className="flex items-center gap-1">
+          <MLStatusIndicator status={status} className="text-xs" />
+        </div>
+      );
+    }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1 cursor-help hover:bg-purple-50 rounded-md px-2 py-1 transition-colors">
+              <Zap className="h-3 w-3 text-purple-600" />
+              <span className={cn('text-sm font-medium', getConfidenceColor(confidence))}>
+                {Math.round(confidence * 100)}%
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs p-0 bg-white border border-slate-200 shadow-lg" side="top">
+            <div className="p-3 space-y-3">
+              {/* Header */}
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                <Zap className="h-4 w-4 text-purple-600" />
+                <div>
+                  <p className="font-semibold text-slate-900 text-sm">ML Confidence</p>
+                  <p className="text-xs text-slate-500">Model prediction reliability</p>
+                </div>
+              </div>
+
+              {/* Confidence Details */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Confidence Level:</span>
+                  <span className={cn('font-medium text-sm', getConfidenceColor(confidence))}>
+                    {getConfidenceLabel(confidence)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Numerical Score:</span>
+                  <span className="font-medium text-sm text-slate-900">
+                    {Math.round(confidence * 100)}%
+                  </span>
+                </div>
+
+                {/* Confidence Bar */}
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div
+                    className={cn(
+                      'h-2 rounded-full transition-all duration-300',
+                      confidence >= 0.9 ? 'bg-green-500' :
+                      confidence >= 0.7 ? 'bg-blue-500' :
+                      confidence >= 0.5 ? 'bg-yellow-500' : 'bg-red-500'
+                    )}
+                    style={{ width: `${confidence * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Interpretation */}
+              <div className="pt-2 border-t border-slate-100">
+                <p className="text-xs text-slate-600">
+                  {confidence >= 0.9 ? 'Very reliable prediction - high confidence in recommendation' :
+                   confidence >= 0.7 ? 'Reliable prediction - good confidence in recommendation' :
+                   confidence >= 0.5 ? 'Moderate prediction - review additional factors' :
+                   'Low confidence - manual review recommended'}
+                </p>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
 
@@ -187,7 +409,7 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 p-0 font-medium text-slate-700 hover:text-slate-900"
+                className="h-8 p-0 text-section-header text-slate-700 hover:text-slate-900"
                 onClick={() => handleSort('name')}
               >
                 Candidate
@@ -198,7 +420,7 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 p-0 font-medium text-slate-700 hover:text-slate-900"
+                className="h-8 p-0 text-section-header text-slate-700 hover:text-slate-900"
                 onClick={() => handleSort('job')}
               >
                 Position
@@ -209,7 +431,7 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 p-0 font-medium text-slate-700 hover:text-slate-900"
+                className="h-8 p-0 text-section-header text-slate-700 hover:text-slate-900"
                 onClick={() => handleSort('status')}
               >
                 Status
@@ -220,10 +442,10 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 p-0 font-medium text-slate-700 hover:text-slate-900 flex items-center gap-1"
+                className="h-8 p-0 text-section-header text-slate-700 hover:text-slate-900 flex items-center gap-1"
                 onClick={() => handleSort('score')}
               >
-                <Brain className="h-3 w-3 text-blue-600" />
+                <Brain className="h-4 w-4 text-blue-600" />
                 AI Score
                 {getSortIcon('score')}
               </Button>
@@ -232,10 +454,10 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 p-0 font-medium text-slate-700 hover:text-slate-900"
+                className="h-8 p-0 text-section-header text-slate-700 hover:text-slate-900 flex items-center gap-1"
                 onClick={() => handleSort('mlConfidence')}
               >
-                <Zap className="h-3 w-3 text-purple-600" />
+                <Zap className="h-4 w-4 text-purple-600" />
                 Confidence
                 {getSortIcon('mlConfidence')}
               </Button>
@@ -244,14 +466,16 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 p-0 font-medium text-slate-700 hover:text-slate-900"
+                className="h-8 p-0 text-section-header text-slate-700 hover:text-slate-900"
                 onClick={() => handleSort('submitted')}
               >
                 Submitted
                 {getSortIcon('submitted')}
               </Button>
             </TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-right">
+              <span className="text-section-header text-slate-700">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -297,34 +521,10 @@ export const MLEnhancedApplicationsTable: React.FC<MLEnhancedApplicationsTablePr
                   <TableCell className="text-sm text-slate-900">{application.jobTitle}</TableCell>
                   <TableCell>{getStatusBadge(application.status)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className={cn('text-sm font-medium', getScoreColor(application.score))}>
-                        {application.score ? `${application.score}/100` : 'N/A'}
-                      </span>
-                      {getScoreTrend(application.score)}
-                      <MLStatusIndicator 
-                        status={application.mlProcessing?.status || 'not_started'}
-                        className="ml-1"
-                      />
-                    </div>
+                    <MLScoreWithTooltip application={application} />
                   </TableCell>
                   <TableCell>
-                    {application.mlProcessing?.confidence ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <span className="text-sm text-purple-600 font-medium">
-                              {Math.round(application.mlProcessing.confidence * 100)}%
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Model prediction confidence</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ) : (
-                      <span className="text-sm text-gray-400">N/A</span>
-                    )}
+                    <MLConfidenceWithTooltip application={application} />
                   </TableCell>
                   <TableCell className="text-sm text-slate-500">
                     {new Date(application.submittedAt).toLocaleDateString()}
