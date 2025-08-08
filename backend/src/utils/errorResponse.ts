@@ -78,7 +78,7 @@ export class ErrorResponseUtil {
     const validationErrors = zodError.errors.map(err => ({
       field: err.path.join('.'),
       message: err.message,
-      value: err.code === 'invalid_type' ? undefined : err.input,
+      value: err.code === 'invalid_type' ? undefined : (err as any).input,
     }));
 
     this.sendValidationError(res, validationErrors);

@@ -5,7 +5,9 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 import { notificationService } from '../services/notificationService.js';
 import { webSocketServer } from '../websocket/server.js';
 import { schedulerService } from '../services/schedulerService.js';
+import { realTimeDashboardService } from '../services/realTimeDashboardService.js';
 import { createInterviewSchema, updateInterviewSchema } from '../types/validation.js';
+import { transformInterviewData, handleDatabaseError } from '../utils/prismaHelpers.js';
 
 export class InterviewController {
   // Get all interviews for company
@@ -175,9 +177,12 @@ export class InterviewController {
         throw new AppError('Application not found or access denied', 404);
       }
 
+      // Transform and validate interview data
+      const interviewData = transformInterviewData(validatedData);
+
       const interview = await prisma.interview.create({
         data: {
-          ...validatedData,
+          ...interviewData,
           createdById: req.user!.id,
         },
         include: {
@@ -210,21 +215,22 @@ export class InterviewController {
       await prisma.application.update({
         where: { id: validatedData.applicationId },
         data: {
-          activity: {
-            push: {
+          activity: JSON.stringify([
+            {
               type: 'interview_scheduled',
               timestamp: new Date().toISOString(),
               description: `Interview "${validatedData.title}" scheduled`,
               userId: req.user!.id,
-            },
-          },
+            }
+          ]),
         },
       });
 
-      // Send notifications asynchronously
+      // Send notifications and trigger dashboard update asynchronously
       setImmediate(async () => {
         try {
           await InterviewController.sendInterviewNotifications(interview, 'created');
+          await realTimeDashboardService.handleInterviewScheduled(interview.id);
         } catch (notificationError) {
           console.error('Error sending interview notifications:', notificationError);
         }
@@ -262,9 +268,12 @@ export class InterviewController {
         throw new AppError('Interview not found', 404);
       }
 
+      // Transform and validate interview data
+      const interviewData = transformInterviewData(validatedData);
+
       const interview = await prisma.interview.update({
         where: { id },
-        data: validatedData,
+        data: interviewData,
         include: {
           application: {
             include: {
@@ -295,7 +304,7 @@ export class InterviewController {
       // Handle notifications for interview updates
       setImmediate(async () => {
         try {
-          if (validatedData.scheduledDate && existingInterview.scheduledDate !== validatedData.scheduledDate) {
+          if (validatedData.scheduledDate && existingInterview.scheduledDate?.toISOString() !== new Date(validatedData.scheduledDate).toISOString()) {
             await InterviewController.handleRescheduleNotifications(interview, existingInterview);
           }
           await InterviewController.broadcastUpdate(req.user!.companyId, 'interview_updated', interview);
@@ -452,7 +461,7 @@ export class InterviewController {
     await notificationService.sendInterviewCancellation(interviewData, 'Interview has been cancelled');
   }
 
-  private static async broadcastUpdate(companyId: string, type: string, interview: any) {
+  private static async broadcastUpdate(companyId: string, type: 'interview_reminder' | 'interview_created' | 'interview_updated' | 'interview_cancelled', interview: any) {
     webSocketServer.broadcastInterviewUpdate(companyId, {
       type,
       interview,

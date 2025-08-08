@@ -172,22 +172,22 @@ async function enhanceSyntheticData() {
             status: status as any,
             submittedAt: submittedDate,
             hiredAt,
-            candidateInfo: {
+            candidateInfo: JSON.stringify({
               firstName: profile.firstName,
               lastName: profile.lastName,
               email: profile.email,
               phone: profile.phone,
               location: profile.location,
-            },
-            professionalInfo: {
+            }),
+            professionalInfo: JSON.stringify({
               currentTitle: profile.currentTitle,
               currentCompany: profile.currentCompany,
               experience: profile.experience,
               expectedSalary: profile.expectedSalary,
               noticePeriod: profile.noticePeriod,
               remoteWork: profile.remoteWork,
-            },
-            metadata: {
+            }),
+            metadata: JSON.stringify({
               source: source as any,
               ipAddress: `192.168.1.${100 + Math.floor(Math.random() * 50)}`,
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -195,8 +195,8 @@ async function enhanceSyntheticData() {
               completionTime: 300 + Math.random() * 900,
               gdprConsent: true,
               marketingConsent: Math.random() > 0.5,
-            },
-            scoring: {
+            }),
+            scoring: JSON.stringify({
               automaticScore: 60 + Math.random() * 40,
               skillMatches: profile.skills.slice(0, Math.floor(Math.random() * profile.skills.length) + 1),
               qualificationsMet: Math.random() > 0.3,
@@ -204,8 +204,8 @@ async function enhanceSyntheticData() {
               salaryMatch: 80 + Math.random() * 20,
               locationMatch: 90 + Math.random() * 10,
               flags: [],
-            },
-            activity: [
+            }),
+            activity: JSON.stringify([
               {
                 type: 'application_submitted',
                 timestamp: submittedDate.toISOString(),
@@ -216,7 +216,7 @@ async function enhanceSyntheticData() {
                 timestamp: new Date(submittedDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
                 description: `Status changed to ${status}`,
               }] : []),
-            ],
+            ]),
           },
         });
 
@@ -230,13 +230,12 @@ async function enhanceSyntheticData() {
             data: {
               applicationId: application.id,
               type: Math.random() > 0.5 ? 'technical' : 'behavioral',
-              scheduledAt: interviewDate,
-              duration: 60,
+              scheduledDate: interviewDate,
               location: Math.random() > 0.5 ? 'Video Call' : 'Office',
               status: 'scheduled',
               notes: `Interview scheduled for ${candidate.firstName} ${candidate.lastName}`,
               createdById: (await prisma.user.findFirst({ where: { companyId: company.id } }))!.id,
-            },
+            } as any,
           });
 
           console.log(`  🎯 Created interview for ${candidate.firstName} ${candidate.lastName}`);

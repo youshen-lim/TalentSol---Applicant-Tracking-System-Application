@@ -172,15 +172,15 @@ class SyntheticDataGenerator {
       const jobsToCreate = JOB_TITLES.map(title => ({
         title,
         department: this.getDepartmentForTitle(title),
-        location: LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)],
+        location: JSON.stringify(LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)]),
         employmentType: Math.random() > 0.8 ? 'contract' : 'full_time',
         experienceLevel: this.getRandomExperienceLevel(),
-        salary: this.generateSalaryRange(title),
+        salary: JSON.stringify(this.generateSalaryRange(title)),
         description: `We are seeking a talented ${title} to join our growing team. This role offers exciting opportunities to work on cutting-edge projects.`,
-        responsibilities: this.generateResponsibilities(title),
-        requiredQualifications: this.generateQualifications(title, true),
-        preferredQualifications: this.generateQualifications(title, false),
-        skills: this.getSkillsForTitle(title),
+        responsibilities: JSON.stringify(this.generateResponsibilities(title)),
+        requiredQualifications: JSON.stringify(this.generateQualifications(title, true)),
+        preferredQualifications: JSON.stringify(this.generateQualifications(title, false)),
+        skills: JSON.stringify(this.getSkillsForTitle(title)),
         status: Math.random() > 0.1 ? 'open' : 'closed',
         companyId: company.id,
         createdById: Math.random() > 0.5 ? adminUser.id : recruiterUser.id,
@@ -207,7 +207,7 @@ class SyntheticDataGenerator {
       timeRangeMonths: 6,
     };
 
-    const candidates = [];
+    const candidates: any[] = [];
     
     for (let i = 0; i < batchConfig.candidatesPerBatch; i++) {
       const candidateData = this.generateCandidateProfile(batchNumber, i);
@@ -248,7 +248,7 @@ class SyntheticDataGenerator {
       lastName,
       email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${batchNumber}.${index}@email.com`,
       phone: `+1-555-${String(batchNumber).padStart(2, '0')}${String(index).padStart(2, '0')}`,
-      location,
+      location: JSON.stringify(location),
       linkedinUrl: `https://linkedin.com/in/${firstName.toLowerCase()}${lastName.toLowerCase()}${batchNumber}`,
       portfolioUrl: Math.random() > 0.7 ? `https://${firstName.toLowerCase()}${lastName.toLowerCase()}.dev` : null,
       willingToRelocate: Math.random() > 0.4,
@@ -272,15 +272,15 @@ class SyntheticDataGenerator {
         status: status as any,
         submittedAt: submittedDate,
         hiredAt: statusDates.hiredAt,
-        candidateInfo: {
+        candidateInfo: JSON.stringify({
           firstName: candidate.firstName,
           lastName: candidate.lastName,
           email: candidate.email,
           phone: candidate.phone,
           location: candidate.location,
-        },
-        professionalInfo: this.generateProfessionalInfo(job.title),
-        metadata: {
+        }),
+        professionalInfo: JSON.stringify(this.generateProfessionalInfo(job.title)),
+        metadata: JSON.stringify({
           source: source as any,
           ipAddress: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
           userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -288,9 +288,9 @@ class SyntheticDataGenerator {
           completionTime: 300 + Math.random() * 1200,
           gdprConsent: true,
           marketingConsent: Math.random() > 0.3,
-        },
-        scoring: this.generateScoringData(job.skills),
-        activity: this.generateActivityTimeline(submittedDate, status, candidate),
+        }),
+        scoring: JSON.stringify(this.generateScoringData(job.skills)),
+        activity: JSON.stringify(this.generateActivityTimeline(submittedDate, status, candidate)),
       },
     });
 
@@ -315,14 +315,13 @@ class SyntheticDataGenerator {
         data: {
           applicationId: application.id,
           type: interviewTypes[i],
-          scheduledAt: interviewDate,
-          duration: [30, 45, 60, 90][Math.floor(Math.random() * 4)],
+          scheduledDate: interviewDate,
           location: Math.random() > 0.6 ? 'Video Call' : 'Office',
           status: this.getInterviewStatus(application.status),
           notes: `${interviewTypes[i]} interview with ${application.candidateInfo.firstName} ${application.candidateInfo.lastName}`,
           feedback: this.generateInterviewFeedback(),
           createdById: (await prisma.user.findFirst())!.id,
-        },
+        } as any,
       });
     }
   }
@@ -382,7 +381,7 @@ class SyntheticDataGenerator {
     const statusOrder = ['applied', 'screening', 'interview', 'assessment', 'offer', 'hired'];
     const finalIndex = statusOrder.indexOf(finalStatus);
     
-    let hiredAt = null;
+    let hiredAt: Date | null = null;
     if (finalStatus === 'hired') {
       // 1-45 days from application to hire
       hiredAt = new Date(submittedDate.getTime() + (Math.random() * 45 + 1) * 24 * 60 * 60 * 1000);
@@ -637,13 +636,13 @@ class SyntheticDataGenerator {
           type: 'application_received',
           title: 'New Application Received',
           message: `${app.candidate.firstName} ${app.candidate.lastName} applied for ${app.job.title}`,
-          data: {
+          metadata: JSON.stringify({
             applicationId: app.id,
             candidateId: app.candidateId,
             jobId: app.jobId,
-          },
-          read: Math.random() > 0.3,
-          createdAt: app.submittedAt,
+          }),
+          isRead: Math.random() > 0.3,
+          createdAt: app.submittedAt || new Date(),
         },
       });
     }
@@ -701,21 +700,21 @@ class SyntheticDataGenerator {
           modelId: mlModel.id,
           applicationId: app.id,
           predictionType: 'priority_score',
-          inputFeatures: {
+          inputFeatures: JSON.stringify({
             experience_years: Math.floor(Math.random() * 10) + 1,
             skills_match: Math.random(),
             education_level: Math.floor(Math.random() * 4) + 1,
             location_match: Math.random(),
-          },
-          prediction: {
+          }),
+          prediction: JSON.stringify({
             score: Math.random() * 100,
             priority: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
-          },
+          }),
           confidence: 0.7 + Math.random() * 0.3,
-          explanation: {
+          explanation: JSON.stringify({
             top_features: ['experience_match', 'skills_alignment', 'education_level'],
             feature_importance: [0.4, 0.35, 0.25],
-          },
+          }),
         },
       });
     }

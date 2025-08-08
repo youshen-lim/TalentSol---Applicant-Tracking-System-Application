@@ -1,7 +1,19 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 import { prisma } from '../index.js';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendError,
+  sendNotFound,
+  handleAsyncError
+} from '../utils/responseHelpers.js';
+import {
+  StandardResponse,
+  PaginatedResponse,
+  InterviewResponse
+} from '../types/api-responses.js';
 
 const router = express.Router();
 
@@ -30,7 +42,7 @@ const devAuthBypass = async (req: AuthenticatedRequest, res: any, next: any) => 
 router.use(devAuthBypass);
 
 // Get upcoming interviews (next 7 days) - MUST BE BEFORE /:id route
-router.get('/upcoming', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/upcoming', asyncHandler(async (req: AuthenticatedRequest, res: Response<StandardResponse<InterviewResponse['data'][]>>) => {
   const companyId = req.user!.companyId;
   const now = new Date();
   const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -96,10 +108,7 @@ router.get('/upcoming', asyncHandler(async (req: AuthenticatedRequest, res) => {
     updatedAt: interview.updatedAt.toISOString(),
   }));
 
-  res.json({
-    data: transformedInterviews,
-    total: transformedInterviews.length,
-  });
+  return sendSuccess(res, transformedInterviews, 'Upcoming interviews retrieved successfully');
 }));
 
 export default router;

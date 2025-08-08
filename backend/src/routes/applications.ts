@@ -5,12 +5,37 @@ import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 import { createNotification } from './notifications.js';
 import { MLDataPipelineService } from '../services/mlDataPipelineService.js';
-import { websocketServer } from '../websocket/server.js';
+import { webSocketServer } from '../websocket/server.js';
+import { realTimeDashboardService } from '../services/realTimeDashboardService.js';
+import { analyticsCacheInvalidation } from '../middleware/analyticsCache.js';
+import {
+  paginationMiddleware,
+  mobilePaginationMiddleware,
+  progressiveLoadingMiddleware,
+  infiniteScrollMiddleware,
+  sendPaginatedResponse,
+  sendProgressiveResponse
+} from '../middleware/pagination.js';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendError,
+  sendCreated,
+  sendNotFound,
+  handleAsyncError
+} from '../utils/responseHelpers.js';
+import {
+  StandardResponse,
+  PaginatedResponse,
+  ApplicationResponse
+} from '../types/api-responses.js';
 
 const router = express.Router();
 
-// Submit application (public endpoint)
-router.post('/', asyncHandler(async (req, res) => {
+// Submit application (public endpoint) with cache invalidation
+router.post('/',
+  analyticsCacheInvalidation(['application_created', 'application_status_changed']),
+  asyncHandler(async (req, res: Response<ApplicationResponse>) => {
   const validatedData = createApplicationSchema.parse(req.body);
 
   // Check if job exists and is open for applications
@@ -68,7 +93,9 @@ router.post('/', asyncHandler(async (req, res) => {
         firstName: validatedData.candidateInfo.firstName,
         lastName: validatedData.candidateInfo.lastName,
         phone: validatedData.candidateInfo.phone,
-        location: validatedData.candidateInfo.location,
+        location: typeof validatedData.candidateInfo.location === 'string'
+          ? validatedData.candidateInfo.location
+          : JSON.stringify(validatedData.candidateInfo.location),
         willingToRelocate: validatedData.candidateInfo.willingToRelocate,
         workAuthorization: validatedData.candidateInfo.workAuthorization,
         linkedinUrl: validatedData.candidateInfo.linkedinUrl,
@@ -80,7 +107,9 @@ router.post('/', asyncHandler(async (req, res) => {
         lastName: validatedData.candidateInfo.lastName,
         email: validatedData.candidateInfo.email,
         phone: validatedData.candidateInfo.phone,
-        location: validatedData.candidateInfo.location,
+        location: typeof validatedData.candidateInfo.location === 'string'
+          ? validatedData.candidateInfo.location
+          : JSON.stringify(validatedData.candidateInfo.location),
         willingToRelocate: validatedData.candidateInfo.willingToRelocate,
         workAuthorization: validatedData.candidateInfo.workAuthorization,
         linkedinUrl: validatedData.candidateInfo.linkedinUrl,
@@ -96,17 +125,17 @@ router.post('/', asyncHandler(async (req, res) => {
         candidateId: candidate.id,
         status: 'applied',
         submittedAt: new Date(),
-        candidateInfo: validatedData.candidateInfo,
-        professionalInfo: validatedData.professionalInfo,
-        customAnswers: validatedData.customAnswers,
-        metadata: validatedData.metadata,
-        activity: [
+        candidateInfo: JSON.stringify(validatedData.candidateInfo),
+        professionalInfo: JSON.stringify(validatedData.professionalInfo),
+        customAnswers: JSON.stringify(validatedData.customAnswers),
+        metadata: JSON.stringify(validatedData.metadata),
+        activity: JSON.stringify([
           {
             type: 'application_submitted',
             timestamp: new Date().toISOString(),
             description: 'Application submitted',
           },
-        ],
+        ]),
       },
       include: {
         job: {
@@ -149,9 +178,18 @@ router.post('/', asyncHandler(async (req, res) => {
     const mlPipelineService = new MLDataPipelineService(prisma);
     await mlPipelineService.queueForProcessing(result.id);
 
+    // Trigger real-time dashboard update for new application
+    await realTimeDashboardService.handleNewApplication(result.id);
+
+    // Get company ID from job
+    const job = await prisma.job.findUnique({
+      where: { id: result.jobId },
+      select: { companyId: true }
+    });
+
     // Notify via WebSocket that ML processing has started
-    if (websocketServer) {
-      websocketServer.broadcastToCompany(result.job.company?.id || 'default', {
+    if (webSocketServer && job) {
+      webSocketServer.broadcastToCompany(job.companyId, {
         type: 'ml_processing_started',
         applicationId: result.id,
         candidateId: result.candidateId,
@@ -164,14 +202,13 @@ router.post('/', asyncHandler(async (req, res) => {
     console.error('ML processing failed for application:', result.id, mlError);
   }
 
-  res.status(201).json({
-    message: 'Application submitted successfully',
+  return sendCreated(res, {
     application: result,
     mlProcessing: {
       status: 'queued',
       message: 'Application queued for AI-powered screening'
     }
-  });
+  }, 'Application submitted successfully');
 }));
 
 // Development authentication bypass middleware
@@ -833,9 +870,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
       userId: req.user!.id,
     };
 
-    updateData.activity = {
-      push: newActivity,
-    };
+    updateData.activity = JSON.stringify([newActivity]);
   }
 
   const application = await prisma.application.update({
@@ -847,6 +882,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
           id: true,
           title: true,
           department: true,
+          companyId: true,
         },
       },
       candidate: {
@@ -866,6 +902,19 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
       },
     },
   });
+
+  // Trigger real-time updates if status changed
+  if (validatedData.status && validatedData.status !== existingApplication.status) {
+    await realTimeDashboardService.handleApplicationStatusChange(
+      id,
+      existingApplication.status,
+      validatedData.status,
+      {
+        id: req.user!.id,
+        name: req.user!.email || 'Unknown User'
+      }
+    );
+  }
 
   res.json({
     message: 'Application updated successfully',
@@ -925,4 +974,120 @@ router.put('/bulk', asyncHandler(async (req: AuthenticatedRequest, res) => {
   });
 }));
 
+// GET /api/applications/paginated - Paginated applications with mobile optimization
+router.get('/paginated',
+  mobilePaginationMiddleware({
+    model: 'application',
+    defaultLimit: 20,
+    maxLimit: 100,
+    mobileLimit: 10,
+    strategy: 'auto',
+    allowedFilters: ['status', 'jobId', 'candidateId'],
+    allowedSortFields: ['createdAt', 'updatedAt', 'submittedAt', 'score'],
+    defaultSort: { field: 'submittedAt', direction: 'desc' },
+    mobileFields: ['id', 'candidateId', 'jobId', 'status', 'submittedAt', 'score'],
+    include: {
+      candidate: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          location: true
+        }
+      },
+      job: {
+        select: {
+          id: true,
+          title: true,
+          department: true,
+          location: true,
+          status: true
+        }
+      }
+    }
+  }),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    try {
+      const paginationResult = (req as any).paginationResult;
+
+      if (!paginationResult) {
+        return res.status(500).json({
+          success: false,
+          error: 'Pagination middleware failed',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Transform data for mobile optimization
+      const transformedData = paginationResult.data.map((app: any) => ({
+        id: app.id,
+        candidateName: `${app.candidate.firstName} ${app.candidate.lastName}`,
+        candidateEmail: app.candidate.email,
+        jobTitle: app.job.title,
+        department: app.job.department,
+        status: app.status,
+        score: app.score,
+        submittedAt: app.submittedAt,
+        location: app.candidate.location || app.job.location,
+        // Add mobile-specific fields
+        displayScore: app.score ? `${app.score}%` : 'Pending',
+        statusColor: getStatusColor(app.status),
+        timeAgo: getTimeAgo(app.submittedAt)
+      }));
+
+      return sendPaginatedResponse(
+        res,
+        transformedData,
+        paginationResult.pagination,
+        {
+          ...paginationResult.metadata,
+          mobileOptimized: true,
+          fieldsReduced: true
+        },
+        'Applications retrieved successfully'
+      );
+
+    } catch (error) {
+      console.error('❌ Paginated applications error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve paginated applications',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  })
+);
+
 export default router;
+
+// Helper functions
+function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    'pending': '#f59e0b',
+    'reviewing': '#3b82f6',
+    'interview': '#8b5cf6',
+    'offer': '#10b981',
+    'hired': '#059669',
+    'rejected': '#ef4444',
+    'withdrawn': '#6b7280'
+  };
+  return colors[status] || '#6b7280';
+}
+
+function getTimeAgo(date: Date | string): string {
+  const now = new Date();
+  const past = new Date(date);
+  const diffInHours = Math.floor((now.getTime() - past.getTime()) / (1000 * 60 * 60));
+
+  if (diffInHours < 1) return 'Just now';
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  return `${diffInWeeks}w ago`;
+}

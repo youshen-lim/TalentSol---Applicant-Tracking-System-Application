@@ -568,7 +568,7 @@ async function main() {
   ];
 
   // Create jobs in database
-  const jobs = [];
+  const jobs: any[] = [];
   for (const jobData of jobsData) {
     const job = await prisma.job.create({
       data: {
@@ -577,7 +577,7 @@ async function main() {
         currentApplicants: 0,
         companyId: company.id,
         createdById: jobData.createdBy,
-      },
+      } as any,
     });
     jobs.push(job);
   }
@@ -735,7 +735,7 @@ async function main() {
     const professionalInfo = professionalProfiles[i % professionalProfiles.length];
 
     const candidate = await prisma.candidate.create({
-      data: candidateData,
+      data: candidateData as any,
     });
 
     const submittedDate = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000); // Random date within last 30 days
@@ -747,9 +747,9 @@ async function main() {
         candidateId: candidate.id,
         status: status as any,
         submittedAt: submittedDate,
-        candidateInfo: candidateData,
-        professionalInfo,
-        metadata: {
+        candidateInfo: JSON.stringify(candidateData),
+        professionalInfo: JSON.stringify(professionalInfo),
+        metadata: JSON.stringify({
           source: sources[i % sources.length] as any,
           ipAddress: `192.168.1.${100 + (i % 50)}`,
           userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -757,17 +757,17 @@ async function main() {
           completionTime: 300 + Math.random() * 900, // 5-20 minutes
           gdprConsent: true,
           marketingConsent: Math.random() > 0.5,
-        },
-        scoring: {
+        }),
+        scoring: JSON.stringify({
           automaticScore: 60 + Math.random() * 40, // Score between 60-100
-          skillMatches: job.skills.slice(0, Math.floor(Math.random() * job.skills.length) + 1),
+          skillMatches: [],
           qualificationsMet: Math.random() > 0.3,
           experienceMatch: 70 + Math.random() * 30,
           salaryMatch: 80 + Math.random() * 20,
           locationMatch: 90 + Math.random() * 10,
           flags: [],
-        },
-        activity: [
+        }),
+        activity: JSON.stringify([
           {
             type: 'application_submitted',
             timestamp: submittedDate.toISOString(),
@@ -778,8 +778,8 @@ async function main() {
             timestamp: new Date(submittedDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
             description: `Status changed to ${status}`,
           }] : []),
-        ],
-        tags: job.skills.slice(0, Math.floor(Math.random() * 3) + 1), // Random tags from job skills
+        ]),
+        tags: JSON.stringify([]), // Random tags from job skills
       },
     });
 
@@ -829,7 +829,7 @@ async function main() {
         startTime: `${9 + Math.floor(Math.random() * 8)}:00`, // 9 AM to 4 PM
         endTime: `${10 + Math.floor(Math.random() * 8)}:00`,
         location: i % 2 === 0 ? 'Video Call - Zoom' : 'Office Conference Room A',
-        interviewers: [adminUser.id, recruiterUser.id].slice(0, Math.floor(Math.random() * 2) + 1),
+        interviewers: JSON.stringify([adminUser.id, recruiterUser.id].slice(0, Math.floor(Math.random() * 2) + 1)),
         notes: `Interview scheduled for ${application.candidate.firstName} ${application.candidate.lastName} - ${application.job.title} position`,
         status: 'scheduled',
         createdById: Math.random() > 0.5 ? adminUser.id : recruiterUser.id,
@@ -935,7 +935,7 @@ The {{companyName}} Team`,
 
   for (const template of emailTemplates) {
     await prisma.emailTemplate.create({
-      data: template,
+      data: template as any,
     });
   }
 
@@ -948,23 +948,23 @@ The {{companyName}} Team`,
       description: '2400+ labeled resumes for candidate classification and skills extraction',
       source: 'kaggle',
       datasetPath: './ml_models/data/resume_dataset.csv',
-      features: [
+      features: JSON.stringify([
         'resume_text',
         'category',
         'years_experience',
         'education_level',
         'skills_extracted',
         'industry_experience'
-      ],
+      ]),
       targetVariable: 'priority_score',
       recordCount: 2400,
       version: '1.0',
-      metadata: {
+      metadata: JSON.stringify({
         kaggle_url: 'https://www.kaggle.com/datasets/spidy20/resume-dataset',
         license: 'Public Domain',
         categories: 25,
         description: 'Resume dataset with job categories for ML training'
-      },
+      }),
     },
   });
 
@@ -979,7 +979,7 @@ The {{companyName}} Team`,
       precision: 0.823,
       recall: 0.789,
       f1Score: 0.805,
-      trainingData: {
+      trainingData: JSON.stringify({
         datasetName: 'Kaggle Resume Dataset',
         recordCount: 2400,
         features: [
@@ -997,8 +997,8 @@ The {{companyName}} Team`,
           max_depth: 10,
           random_state: 42
         }
-      },
-      features: [
+      }),
+      features: JSON.stringify([
         'years_experience',
         'education_level',
         'technical_skills_count',
@@ -1013,7 +1013,7 @@ The {{companyName}} Team`,
         'location_match',
         'salary_expectation_match',
         'availability_match'
-      ],
+      ]),
       isActive: false, // Not active by default - requires manual activation
       trainedAt: new Date(),
     },

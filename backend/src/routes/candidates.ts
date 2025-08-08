@@ -437,9 +437,17 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw new AppError('Candidate not found', 404);
   }
 
+  // Prepare update data with proper type conversion
+  const updateData: any = { ...validatedData };
+
+  // Convert location object to string if needed
+  if (updateData.location && typeof updateData.location === 'object') {
+    updateData.location = JSON.stringify(updateData.location);
+  }
+
   const candidate = await prisma.candidate.update({
     where: { id },
-    data: validatedData,
+    data: updateData,
     include: {
       applications: {
         where: {

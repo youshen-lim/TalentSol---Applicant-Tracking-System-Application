@@ -312,12 +312,21 @@ export class BulkInterviewController {
   // Broadcast bulk update
   private static broadcastBulkUpdate(companyId: string, operation: string, interviewIds: string[], data: any) {
     try {
+      // Map operation to proper interview type
+      const typeMapping: Record<string, 'interview_updated' | 'interview_cancelled'> = {
+        'update': 'interview_updated',
+        'cancel': 'interview_cancelled',
+        'reschedule': 'interview_updated'
+      };
+
       webSocketServer.broadcastInterviewUpdate(companyId, {
-        type: `bulk_${operation}`,
-        interviewIds,
-        companyId,
-        operation,
-        data
+        type: typeMapping[operation] || 'interview_updated',
+        interview: {
+          ids: interviewIds,
+          operation,
+          data
+        },
+        companyId
       });
     } catch (error) {
       console.error('Error broadcasting bulk operation:', error);

@@ -7,10 +7,10 @@ dotenv.config();
 export interface CacheConfig {
   host: string;
   port: number;
-  password?: string;
+  password: string;
   db: number;
   clusterEnabled: boolean;
-  clusterNodes?: string[];
+  clusterNodes: string[];
   defaultTTL: number;
   queryTTL: number;
   sessionTTL: number;
@@ -28,10 +28,10 @@ export class RedisClient {
     this.config = {
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
-      password: process.env.REDIS_PASSWORD || undefined,
+      password: process.env.REDIS_PASSWORD || '',
       db: parseInt(process.env.REDIS_DB || '0'),
       clusterEnabled: process.env.REDIS_CLUSTER_ENABLED === 'true',
-      clusterNodes: process.env.REDIS_CLUSTER_NODES?.split(',') || [],
+      clusterNodes: process.env.REDIS_CLUSTER_NODES?.split(',') || ['localhost:6379'],
       defaultTTL: parseInt(process.env.CACHE_TTL_DEFAULT || '1800'),
       queryTTL: parseInt(process.env.CACHE_TTL_QUERY || '1800'),
       sessionTTL: parseInt(process.env.CACHE_TTL_SESSION || '86400'),
@@ -66,21 +66,19 @@ export class RedisClient {
 
         this.redis = new Redis.Cluster(clusterNodes, {
           redisOptions: {
-            password: this.config.password,
+            password: this.config.password || undefined,
             db: this.config.db,
           },
           enableOfflineQueue: false,
           retryDelayOnFailover: 100,
-          maxRetriesPerRequest: 3,
-        });
+        }) as any;
       } else {
         // Initialize single Redis instance
         this.redis = new Redis({
           host: this.config.host,
           port: this.config.port,
-          password: this.config.password,
+          password: this.config.password || undefined,
           db: this.config.db,
-          retryDelayOnFailover: 100,
           maxRetriesPerRequest: 3,
           enableOfflineQueue: false,
           lazyConnect: true,
@@ -88,24 +86,26 @@ export class RedisClient {
       }
 
       // Set up event listeners
-      this.redis.on('connect', () => {
-        console.log('✅ Redis connected successfully');
+      if (this.redis) {
+        this.redis.on('connect', () => {
+          console.log('✅ Redis connected successfully');
+          this.isConnected = true;
+        });
+
+        this.redis.on('error', (error) => {
+          console.warn('⚠️ Redis connection error, falling back to in-memory cache:', error.message);
+          this.isConnected = false;
+        });
+
+        this.redis.on('close', () => {
+          console.warn('⚠️ Redis connection closed, using in-memory cache');
+          this.isConnected = false;
+        });
+
+        // Test connection
+        await this.redis.ping();
         this.isConnected = true;
-      });
-
-      this.redis.on('error', (error) => {
-        console.warn('⚠️ Redis connection error, falling back to in-memory cache:', error.message);
-        this.isConnected = false;
-      });
-
-      this.redis.on('close', () => {
-        console.warn('⚠️ Redis connection closed, using in-memory cache');
-        this.isConnected = false;
-      });
-
-      // Test connection
-      await this.redis.ping();
-      this.isConnected = true;
+      }
     } catch (error) {
       console.warn('⚠️ Failed to initialize Redis, using in-memory cache:', (error as Error).message);
       this.isConnected = false;
@@ -227,6 +227,13 @@ export class RedisClient {
     return this.isConnected;
   }
 
+  public getPipeline(): any | null {
+    if (this.isConnected && this.redis) {
+      return this.redis.pipeline();
+    }
+    return null;
+  }
+
   public async disconnect(): Promise<void> {
     if (this.redis) {
       await this.redis.quit();
@@ -238,8 +245,8 @@ export class RedisClient {
   public async healthCheck(): Promise<{ redis: boolean; fallback: boolean; stats: any }> {
     const redisHealth = this.isConnected;
     const fallbackHealth = true; // In-memory cache is always available
-    
-    let stats = {
+
+    let stats: any = {
       redis_connected: redisHealth,
       fallback_keys: this.fallbackCache.keys().length,
       fallback_stats: this.fallbackCache.getStats(),
@@ -248,7 +255,7 @@ export class RedisClient {
     if (redisHealth && this.redis) {
       try {
         const info = await this.redis.info('memory');
-        stats = { ...stats, redis_info: info };
+        stats.redis_info = info;
       } catch (error) {
         console.warn('Failed to get Redis info:', error);
       }

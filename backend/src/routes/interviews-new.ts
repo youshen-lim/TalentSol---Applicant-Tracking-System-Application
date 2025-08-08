@@ -69,7 +69,7 @@ router.use((error: any, req: any, res: any, next: any) => {
     const dbError = handleDatabaseError(error);
     return res.status(dbError.statusCode).json({
       error: dbError.message,
-      code: dbError.code
+      statusCode: dbError.statusCode
     });
   }
   next(error);

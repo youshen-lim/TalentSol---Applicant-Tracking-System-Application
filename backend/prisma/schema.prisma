@@ -345,15 +345,21 @@ model MLModel {
   id           String         @id @default(cuid())
   name         String
   type         String
+  modelType    String?        @map("model_type")  // Added for ML service compatibility
   version      String
   modelPath    String         @map("model_path")
+  filePath     String?        @map("file_path")   // Added for file system path
+  checksum     String?                            // Added for model integrity
+  status       String?        @default("active") // Added for deployment status
   accuracy     Float?
   precision    Float?
   recall       Float?
   f1Score      Float?         @map("f1_score")
   trainingData String         @map("training_data")
   features     String
+  metadata     String?                            // Added for additional model metadata
   isActive     Boolean        @default(false) @map("is_active")
+  deployedAt   DateTime?      @map("deployed_at") // Added for deployment tracking
   trainedAt    DateTime       @map("trained_at")
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
@@ -367,6 +373,7 @@ model MLModel {
 model MLPrediction {
   id             String      @id @default(cuid())
   modelId        String      @map("model_id")
+  modelName      String?     @map("model_name")     // Added for model identification
   applicationId  String      @map("application_id")
   predictionType String      @map("prediction_type")
   inputFeatures  String      @map("input_features")

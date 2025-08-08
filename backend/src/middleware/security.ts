@@ -115,7 +115,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
       value: error.type === 'field' ? error.value : undefined
     }));
     
-    throw new AppError('Validation failed', 400, errorMessages);
+    throw new AppError(`Validation failed: ${JSON.stringify(errorMessages)}`, 400);
   }
   next();
 };
@@ -246,7 +246,11 @@ export const validateWebSocketAuth = (token: string): boolean => {
       return false;
     }
 
-    // Validate base64 encoding of header and payload
+    // Validate base64 encoding of header and payload with null checks
+    if (!parts[0] || !parts[1] || !parts[2]) {
+      return false;
+    }
+
     const header = JSON.parse(Buffer.from(parts[0], 'base64').toString());
     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
 

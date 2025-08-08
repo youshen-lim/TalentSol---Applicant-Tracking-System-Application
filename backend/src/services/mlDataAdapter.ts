@@ -90,8 +90,8 @@ export class MLDataAdapter {
 
       // Extract resume text from documents
       const application = candidate.applications[0];
-      const resumeDoc = application?.documents?.find(doc => doc.type === 'resume');
-      const resumeText = resumeDoc?.content || this.generateResumeFromProfile(candidate);
+      const resumeDoc = application?.documents?.find(doc => doc.documentType === 'resume');
+      const resumeText = resumeDoc?.filename || this.generateResumeFromProfile(candidate);
 
       // Format data exactly as your ML models expect
       const mlInput: YourMLModelInput = {
@@ -161,7 +161,7 @@ export class MLDataAdapter {
    * Generate resume text from candidate profile when document not available
    */
   private generateResumeFromProfile(candidate: any): string {
-    const sections = [];
+    const sections: string[] = [];
 
     // Personal info
     sections.push(`${candidate.firstName} ${candidate.lastName}`);
@@ -323,41 +323,18 @@ export class MLDataAdapter {
               some: {
                 documents: {
                   some: {
-                    type: 'resume'
+                    documentType: 'resume'
                   }
                 }
               }
             }
           }
         }),
-        this.prisma.candidate.count({
-          where: {
-            AND: [
-              { firstName: { not: null } },
-              { lastName: { not: null } },
-              { email: { not: null } },
-              { experienceYears: { not: null } }
-            ]
-          }
-        }),
+        this.prisma.candidate.count(),
         this.prisma.job.count(),
-        this.prisma.job.count({
-          where: {
-            AND: [
-              { description: { not: null } },
-              { title: { not: null } }
-            ]
-          }
-        }),
+        this.prisma.job.count(),
         this.prisma.application.count(),
-        this.prisma.application.count({
-          where: {
-            AND: [
-              { candidate: { firstName: { not: null } } },
-              { job: { description: { not: null } } }
-            ]
-          }
-        })
+        this.prisma.application.count()
       ]);
 
       // Calculate data quality score (0-100)
