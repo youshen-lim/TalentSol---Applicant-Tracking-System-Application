@@ -1,14 +1,14 @@
 # TalentSol - AI-Powered Applicant Tracking System
 
-I have built TalentSol as a comprehensive applicant tracking system that integrates my trained XGBoost Decision Tree model for automated candidate screening. I developed this system using React with TypeScript for the frontend, Node.js with Express for the backend, and PostgreSQL for data storage. I implemented real-time machine learning predictions with WebSocket updates and comprehensive error handling.
+Built TalentSol as a comprehensive applicant tracking system that integrates a trained XGBoost Decision Tree model for automated candidate screening. Developed this system using React with TypeScript for the frontend, Node.js with Express for the backend, and PostgreSQL for data storage. Implemented real-time machine learning predictions with WebSocket updates and comprehensive error handling.
 
 ## About This Project
 
-I created this project as a machine learning integration platform that demonstrates production-ready AI implementation in recruitment technology. I developed TalentSol to serve as a functional interface for testing and validating machine learning models in candidate screening scenarios. I built this system using modern web development practices with full TypeScript implementation and comprehensive testing infrastructure.
+Created this project as a machine learning integration platform that demonstrates production-ready AI implementation in recruitment technology. Developed TalentSol to serve as a functional interface for testing and validating machine learning models in candidate screening scenarios. Built this system using modern web development practices with full TypeScript implementation and comprehensive testing infrastructure.
 
-I designed this system for machine learning practitioners who need a complete application to test their trained models. I implemented the entire stack to support real machine learning workflows rather than mock data or placeholder functionality.
+Designed this system for machine learning practitioners who need a complete application to test their trained models. Implemented the entire stack to support real machine learning workflows rather than mock data or placeholder functionality.
 
-**Technical Achievement**: I successfully integrated my trained XGBoost model that achieves 70% recall and 57% precision performance. I resolved all TypeScript compilation errors and implemented a complete development environment with local Python virtual environment support.
+**Technical Achievement**: Successfully integrated a trained XGBoost model that achieves 70% recall and 57% precision performance. Resolved all TypeScript compilation errors and implemented a complete development environment with local Python virtual environment support.
 
 ## 🎯 Latest Major Updates (August 2025)
 
