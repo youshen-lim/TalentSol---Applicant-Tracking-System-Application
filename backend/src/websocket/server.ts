@@ -62,6 +62,24 @@ interface MLProcessingEvent {
   timestamp: string;
 }
 
+interface XGBoostPredictionEvent {
+  type: 'xgboost_prediction_completed' | 'xgboost_prediction_failed';
+  applicationId: string;
+  candidateId: string;
+  jobId: string;
+  prediction?: {
+    probability: number;
+    binary_prediction: 0 | 1;
+    confidence: number;
+    threshold_used: number;
+    model_version: string;
+  };
+  processing_time_ms?: number;
+  error?: string;
+  companyId: string;
+  timestamp: string;
+}
+
 // WebSocket Server Class
 export class WebSocketServer {
   private io: Server;
@@ -210,6 +228,12 @@ export class WebSocketServer {
       socket.on('subscribe:ml_processing', () => {
         socket.join(`ml_processing:${user.companyId}`);
         console.log(`User ${user.id} subscribed to ML processing updates`);
+      });
+
+      // Handle XGBoost prediction subscription
+      socket.on('subscribe:xgboost_predictions', () => {
+        socket.join(`xgboost_predictions:${user.companyId}`);
+        console.log(`User ${user.id} subscribed to XGBoost prediction updates`);
       });
 
       // Handle interview updates
@@ -457,6 +481,33 @@ export class WebSocketServer {
         type: 'ml_score_available',
         applicationId: event.applicationId,
         score: event.score,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  public broadcastXGBoostPredictionEvent(companyId: string, event: XGBoostPredictionEvent) {
+    // Broadcast to XGBoost subscribers
+    this.io.to(`xgboost_predictions:${companyId}`).emit('xgboost:prediction_event', {
+      ...event,
+      timestamp: new Date().toISOString()
+    });
+
+    // Also broadcast to ML processing subscribers for compatibility
+    this.io.to(`ml_processing:${companyId}`).emit('ml:xgboost_prediction', {
+      ...event,
+      timestamp: new Date().toISOString()
+    });
+
+    // Send company-wide notification for completed predictions
+    if (event.type === 'xgboost_prediction_completed' && event.prediction) {
+      this.io.to(`company:${companyId}`).emit('company:xgboost_update', {
+        type: 'xgboost_prediction_available',
+        applicationId: event.applicationId,
+        candidateId: event.candidateId,
+        jobId: event.jobId,
+        prediction: event.prediction,
+        processing_time_ms: event.processing_time_ms,
         timestamp: new Date().toISOString()
       });
     }

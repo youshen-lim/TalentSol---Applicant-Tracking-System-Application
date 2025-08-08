@@ -4,6 +4,11 @@
   "description": "Backend API for TalentSol ATS",
   "main": "dist/index.js",
   "type": "module",
+  "packageManager": "yarn@4.0.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": ">=4.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -14,7 +19,7 @@
     "db:reset": "prisma migrate reset",
     "db:seed": "tsx src/seed.ts",
     "db:enhance": "tsx src/scripts/enhanceSyntheticData.ts",
-    "db:seed-enhanced": "npm run db:seed && npm run db:enhance",
+    "db:seed-enhanced": "yarn db:seed && yarn db:enhance",
     "db:check": "tsx src/scripts/checkDatabase.ts",
     "setup-unified-data": "tsx src/scripts/setupUnifiedData.ts",
     "generate-synthetic": "tsx src/scripts/syntheticDataGenerator.ts",
@@ -22,8 +27,8 @@
     "generate-minimal": "tsx src/scripts/generateMinimalData.ts",
     "import-csv": "tsx src/scripts/importFromCSV.ts",
     "validate-data": "tsx src/scripts/validateSyntheticData.ts",
-    "data-minimal": "npm run db:check && npm run generate-minimal && npm run validate-data",
-    "data-full": "npm run db:check && npm run generate-batch && npm run validate-data",
+    "data-minimal": "yarn db:check && yarn generate-minimal && yarn validate-data",
+    "data-full": "yarn db:check && yarn generate-batch && yarn validate-data",
     "db:studio": "prisma studio",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
@@ -34,7 +39,14 @@
     "test:watch": "vitest",
     "test:controllers": "vitest run src/__tests__/controllers",
     "test:performance": "vitest run src/__tests__/performance",
-    "test:integration": "vitest run src/__tests__/integration"
+    "test:integration": "vitest run src/__tests__/integration",
+    "xgboost:setup": "tsx src/scripts/setupXGBoostEnvironment.ts",
+    "xgboost:test-model": "tsx src/scripts/testXGBoostModel.ts",
+    "xgboost:init": "tsx src/scripts/initializeXGBoost.ts",
+    "xgboost:migrate": "psql -d $DATABASE_URL -f database/migrations/add_xgboost_support.sql",
+    "xgboost:process-pending": "tsx src/scripts/processXGBoostPending.ts",
+    "python:setup": "python -m venv ml-models/shared/venv && source ml-models/shared/venv/bin/activate && pip install -r ml-models/decision-tree/requirements.txt",
+    "python:activate": "source ml-models/shared/venv/bin/activate"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
