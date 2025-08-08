@@ -22,8 +22,9 @@ import interviewTemplateRoutes from './routes/interviewTemplates.js';
 import documentRoutes from './routes/documents.js';
 import analyticsRoutes from './routes/analytics.js';
 import mlRoutes from './routes/ml.js';
+import mobileRoutes from './routes/mobile.js';
 import notificationRoutes from './routes/notifications.js';
-import reportsRoutes from './routes/reports';
+import reportsRoutes from './routes/reports.js';
 import formRoutes from './routes/forms.js';
 import { webSocketServer } from './websocket/server.js';
 import { schedulerService } from './services/schedulerService.js';
@@ -111,6 +112,7 @@ app.use('/api/interview-templates', authenticateToken, interviewTemplateRoutes);
 app.use('/api/documents', authenticateToken, documentRoutes);
 app.use('/api/analytics', analyticsRoutes); // Temporarily removed auth for testing
 app.use('/api/ml', authenticateToken, mlRoutes);
+app.use('/api/mobile', mobileRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
 app.use('/api/reports', authenticateToken, reportsRoutes);
 app.use('/api/forms', formRoutes);

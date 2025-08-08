@@ -187,17 +187,31 @@ router.post('/upload/:applicationId', upload.single('document'), asyncHandler(as
   });
 
   // Update application activity
+  const applicationForActivity = await prisma.application.findUnique({
+    where: { id: applicationId },
+    select: { activity: true },
+  });
+
+  let activities: any[] = [];
+  if (applicationForActivity?.activity) {
+    try {
+      activities = JSON.parse(applicationForActivity.activity);
+    } catch (error) {
+      console.warn('Failed to parse existing activity:', error);
+    }
+  }
+
+  activities.push({
+    type: 'document_uploaded',
+    timestamp: new Date().toISOString(),
+    description: `Document "${req.file.originalname}" uploaded`,
+    userId: req.user!.id,
+  });
+
   await prisma.application.update({
     where: { id: applicationId },
     data: {
-      activity: {
-        push: {
-          type: 'document_uploaded',
-          timestamp: new Date().toISOString(),
-          description: `Document "${req.file.originalname}" uploaded`,
-          userId: req.user!.id,
-        },
-      },
+      activity: JSON.stringify(activities),
     },
   });
 

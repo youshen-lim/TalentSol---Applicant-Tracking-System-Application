@@ -71,14 +71,17 @@ export class MLVersioningService {
       const modelVersion = await this.prisma.mLModel.create({
         data: {
           name: modelName,
+          type: modelType,
+          modelType: modelType,
           version,
-          modelType,
+          modelPath: versionedPath,
           filePath: versionedPath,
           checksum,
-          performance: JSON.stringify(performance),
-          metadata: JSON.stringify(metadata),
           status: 'testing',
-          createdAt: new Date()
+          metadata: JSON.stringify(metadata),
+          trainingData: JSON.stringify(performance),
+          features: JSON.stringify(metadata),
+          trainedAt: new Date()
         }
       });
 
@@ -86,12 +89,12 @@ export class MLVersioningService {
         id: modelVersion.id,
         name: modelVersion.name,
         version: modelVersion.version,
-        modelType: modelVersion.modelType as any,
-        filePath: modelVersion.filePath,
-        checksum: modelVersion.checksum,
+        modelType: (modelVersion.modelType || modelVersion.type) as 'logistic_regression' | 'decision_tree' | 'ensemble',
+        filePath: modelVersion.filePath || modelVersion.modelPath,
+        checksum: modelVersion.checksum || '',
         performance,
         metadata,
-        status: modelVersion.status as any,
+        status: (modelVersion.status || 'active') as 'active' | 'deprecated' | 'testing',
         createdAt: modelVersion.createdAt.toISOString()
       };
 
@@ -230,12 +233,12 @@ export class MLVersioningService {
         id: modelVersion.id,
         name: modelVersion.name,
         version: modelVersion.version,
-        modelType: modelVersion.modelType as any,
-        filePath: modelVersion.filePath,
-        checksum: modelVersion.checksum,
-        performance: JSON.parse(modelVersion.performance || '{}'),
-        metadata: JSON.parse(modelVersion.metadata || '{}'),
-        status: modelVersion.status as any,
+        modelType: (modelVersion.modelType || modelVersion.type) as 'logistic_regression' | 'decision_tree' | 'ensemble',
+        filePath: modelVersion.filePath || modelVersion.modelPath,
+        checksum: modelVersion.checksum || '',
+        performance: JSON.parse(modelVersion.trainingData || '{}'),
+        metadata: JSON.parse(modelVersion.metadata || modelVersion.features || '{}'),
+        status: (modelVersion.status || 'active') as 'active' | 'deprecated' | 'testing',
         createdAt: modelVersion.createdAt.toISOString(),
         deployedAt: modelVersion.deployedAt?.toISOString()
       };
@@ -265,15 +268,15 @@ export class MLVersioningService {
         id: mv.id,
         name: mv.name,
         version: mv.version,
-        modelType: mv.modelType as any,
-        filePath: mv.filePath,
-        checksum: mv.checksum,
-        performance: JSON.parse(mv.performance || '{}'),
-        metadata: JSON.parse(mv.metadata || '{}'),
-        status: mv.status as any,
+        modelType: mv.modelType || mv.type,
+        filePath: mv.filePath || mv.modelPath,
+        checksum: mv.checksum || '',
+        performance: JSON.parse(mv.trainingData || '{}'),
+        metadata: JSON.parse(mv.metadata || mv.features || '{}'),
+        status: mv.status || 'active',
         createdAt: mv.createdAt.toISOString(),
         deployedAt: mv.deployedAt?.toISOString()
-      }));
+      })) as any[];
 
     } catch (error) {
       logger.error('Error listing model versions:', error);
@@ -295,6 +298,11 @@ export class MLVersioningService {
       }
 
       // Check if file exists
+      if (!modelVersion.filePath) {
+        logger.error('Model file path is null');
+        return false;
+      }
+
       try {
         await fs.access(modelVersion.filePath);
       } catch {

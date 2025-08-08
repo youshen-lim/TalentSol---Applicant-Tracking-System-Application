@@ -131,7 +131,14 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const validatedData = createNotificationSchema.parse(req.body);
 
   const notification = await prisma.notification.create({
-    data: validatedData,
+    data: {
+      userId: validatedData.userId,
+      type: validatedData.type,
+      title: validatedData.title,
+      message: validatedData.message,
+      metadata: validatedData.metadata ? JSON.stringify(validatedData.metadata) : null,
+      isRead: false,
+    },
   });
 
   res.status(201).json({

@@ -155,7 +155,7 @@ async function getCandidatePipelineData(companyId: string, filters?: any) {
       id: c.id,
       name: `${c.firstName} ${c.lastName}`,
       email: c.email,
-      stage: c.applications[0]?.stage || 'applied',
+      stage: c.applications[0]?.status || 'applied',
       jobTitle: c.applications[0]?.job.title,
       department: c.applications[0]?.job.department,
       appliedAt: c.applications[0]?.submittedAt

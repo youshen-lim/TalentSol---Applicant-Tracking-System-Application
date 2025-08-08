@@ -162,23 +162,24 @@ async function setupUnifiedData() {
     });
 
     if (jobs.length === 0) {
-      const jobPromises = jobTitles.map(title => 
+      const createdById = adminExists?.id || (await prisma.user.findFirst({ where: { companyId: company.id } }))!.id;
+      const jobPromises = jobTitles.map(title =>
         prisma.job.create({
           data: {
             title,
             department: getDepartmentForTitle(title),
-            location: { city: 'San Francisco', state: 'CA', remote: true },
+            location: JSON.stringify({ city: 'San Francisco', state: 'CA', remote: true }),
             employmentType: 'full_time',
             experienceLevel: 'mid',
-            salary: { min: 80000, max: 120000, currency: 'USD' },
+            salary: JSON.stringify({ min: 80000, max: 120000, currency: 'USD' }),
             description: `We are looking for a talented ${title} to join our team.`,
-            responsibilities: [`Lead ${title.toLowerCase()} initiatives`, 'Collaborate with team'],
-            requiredQualifications: ['Bachelor\'s degree', '3+ years experience'],
-            preferredQualifications: ['Master\'s degree', '5+ years experience'],
-            skills: getSkillsForTitle(title),
+            responsibilities: JSON.stringify([`Lead ${title.toLowerCase()} initiatives`, 'Collaborate with team']),
+            requiredQualifications: JSON.stringify(['Bachelor\'s degree', '3+ years experience']),
+            preferredQualifications: JSON.stringify(['Master\'s degree', '5+ years experience']),
+            skills: JSON.stringify(getSkillsForTitle(title)),
             status: 'open',
             companyId: company.id,
-            createdById: adminExists?.id || (await prisma.user.findFirst({ where: { companyId: company.id } }))!.id,
+            createdById,
           },
         })
       );
@@ -209,7 +210,7 @@ async function setupUnifiedData() {
           lastName: profile.lastName,
           email: profile.email,
           phone: `+1-555-010${i + 1}`,
-          location: profile.location,
+          location: JSON.stringify(profile.location),
           linkedinUrl: `https://linkedin.com/in/${profile.firstName.toLowerCase()}${profile.lastName.toLowerCase()}`,
           portfolioUrl: profile.skills.includes('Design') ? `https://${profile.firstName.toLowerCase()}designs.com` : undefined,
           willingToRelocate: profile.remoteWork,
@@ -236,22 +237,22 @@ async function setupUnifiedData() {
             status: status as any,
             submittedAt: submittedDate,
             hiredAt,
-            candidateInfo: {
+            candidateInfo: JSON.stringify({
               firstName: profile.firstName,
               lastName: profile.lastName,
               email: profile.email,
               phone: `+1-555-010${i + 1}`,
               location: profile.location,
-            },
-            professionalInfo: {
+            }),
+            professionalInfo: JSON.stringify({
               currentTitle: profile.currentTitle,
               currentCompany: profile.currentCompany,
               experience: profile.experience,
               expectedSalary: { min: 90000, max: 130000, currency: 'USD', negotiable: true },
               noticePeriod: '2-4 weeks',
               remoteWork: profile.remoteWork,
-            },
-            metadata: {
+            }),
+            metadata: JSON.stringify({
               source: source as any,
               ipAddress: `192.168.1.${100 + i}`,
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -259,8 +260,8 @@ async function setupUnifiedData() {
               completionTime: 300 + Math.random() * 600,
               gdprConsent: true,
               marketingConsent: Math.random() > 0.5,
-            },
-            scoring: {
+            }),
+            scoring: JSON.stringify({
               automaticScore: 60 + Math.random() * 40,
               skillMatches: profile.skills.slice(0, Math.floor(Math.random() * profile.skills.length) + 1),
               qualificationsMet: Math.random() > 0.3,
@@ -268,14 +269,14 @@ async function setupUnifiedData() {
               salaryMatch: 80 + Math.random() * 20,
               locationMatch: 90 + Math.random() * 10,
               flags: [],
-            },
-            activity: [
+            }),
+            activity: JSON.stringify([
               {
                 type: 'application_submitted',
                 timestamp: submittedDate.toISOString(),
                 description: `${candidate.firstName} ${candidate.lastName} submitted application`,
               },
-            ],
+            ]),
           },
         });
 
@@ -289,13 +290,12 @@ async function setupUnifiedData() {
             data: {
               applicationId: application.id,
               type: Math.random() > 0.5 ? 'technical' : 'behavioral',
-              scheduledAt: interviewDate,
-              duration: 60,
+              scheduledDate: interviewDate,
               location: Math.random() > 0.5 ? 'Video Call' : 'Office',
               status: 'scheduled',
               notes: `Interview with ${candidate.firstName} ${candidate.lastName} for ${job.title}`,
               createdById: adminExists?.id || (await prisma.user.findFirst({ where: { companyId: company.id } }))!.id,
-            },
+            } as any,
           });
 
           console.log(`    🎯 Interview scheduled for ${candidate.firstName} ${candidate.lastName}`);

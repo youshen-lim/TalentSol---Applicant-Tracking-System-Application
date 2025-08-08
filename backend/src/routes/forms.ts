@@ -218,7 +218,12 @@ router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedReques
 
   const form = await prisma.applicationFormSchema.create({
     data: {
-      ...validatedData,
+      jobId: validatedData.jobId,
+      title: validatedData.title,
+      description: validatedData.description,
+      sections: JSON.stringify(validatedData.sections),
+      settings: JSON.stringify(validatedData.settings),
+      emailSettings: JSON.stringify(validatedData.emailSettings),
       createdById: req.user!.id,
     },
     include: {
@@ -235,8 +240,8 @@ router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedReques
   const formWithStats = {
     ...form,
     applicationCount: 0,
-    status: form.job.status === 'open' ? 'live' : 'draft',
-    publicUrl: `${process.env.FRONTEND_URL || 'http://localhost:8081'}/apply/${form.job.title.toLowerCase().replace(/\s+/g, '-')}-${req.user!.companyId}-${form.id}`,
+    status: (form as any).job.status === 'open' ? 'live' : 'draft',
+    publicUrl: `${process.env.FRONTEND_URL || 'http://localhost:8081'}/apply/${(form as any).job.title.toLowerCase().replace(/\s+/g, '-')}-${req.user!.companyId}-${form.id}`,
   };
 
   res.status(201).json({
@@ -264,12 +269,21 @@ router.put('/:id', authenticateToken, asyncHandler(async (req: AuthenticatedRequ
     throw new AppError('Form not found', 404);
   }
 
+  // Prepare update data with proper JSON serialization
+  const updateData: any = {
+    version: existingForm.version + 1,
+  };
+
+  // Only include fields that are being updated
+  if (validatedData.title !== undefined) updateData.title = validatedData.title;
+  if (validatedData.description !== undefined) updateData.description = validatedData.description;
+  if (validatedData.sections !== undefined) updateData.sections = JSON.stringify(validatedData.sections);
+  if (validatedData.settings !== undefined) updateData.settings = JSON.stringify(validatedData.settings);
+  if (validatedData.emailSettings !== undefined) updateData.emailSettings = JSON.stringify(validatedData.emailSettings);
+
   const form = await prisma.applicationFormSchema.update({
     where: { id },
-    data: {
-      ...validatedData,
-      version: existingForm.version + 1,
-    },
+    data: updateData,
     include: {
       job: {
         select: {
@@ -288,8 +302,8 @@ router.put('/:id', authenticateToken, asyncHandler(async (req: AuthenticatedRequ
   const formWithStats = {
     ...form,
     applicationCount,
-    status: form.job.status === 'open' ? 'live' : 'draft',
-    publicUrl: `${process.env.FRONTEND_URL || 'http://localhost:8081'}/apply/${form.job.title.toLowerCase().replace(/\s+/g, '-')}-${req.user!.companyId}-${form.id}`,
+    status: (form as any).job.status === 'open' ? 'live' : 'draft',
+    publicUrl: `${process.env.FRONTEND_URL || 'http://localhost:8081'}/apply/${(form as any).job.title.toLowerCase().replace(/\s+/g, '-')}-${req.user!.companyId}-${form.id}`,
   };
 
   res.json({
@@ -602,7 +616,7 @@ router.post('/init-sample-data', devAuthBypass, asyncHandler(async (req: Authent
       return res.status(400).json({ error: 'No valid user found for the company' });
     }
 
-    const sampleForms = [];
+    const sampleForms: any[] = [];
 
     for (const job of jobs) {
       // Check if form already exists for this job

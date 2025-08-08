@@ -1,8 +1,22 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { prisma } from '../index.js';
 import { createJobSchema, updateJobSchema } from '../types/validation.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
+import {
+  sendSuccess,
+  sendPaginatedSuccess,
+  sendError,
+  sendCreated,
+  sendNotFound,
+  sendNoContent,
+  handleAsyncError
+} from '../utils/responseHelpers.js';
+import {
+  StandardResponse,
+  PaginatedResponse,
+  JobResponse
+} from '../types/api-responses.js';
 
 const router = express.Router();
 
@@ -33,7 +47,7 @@ function parseJobFields(job: any) {
 }
 
 // Get all jobs (public endpoint for job listings, enhanced with optional authentication)
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', asyncHandler(async (req, res: Response<PaginatedResponse<JobResponse['data']>>) => {
   const {
     page = '1',
     limit = '10',
@@ -51,7 +65,7 @@ router.get('/', asyncHandler(async (req, res) => {
 
   // Check if user is authenticated (optional authentication)
   const authHeader = req.headers.authorization;
-  let authenticatedUser = null;
+  let authenticatedUser: { companyId: string } | null = null;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     try {
@@ -126,18 +140,22 @@ router.get('/', asyncHandler(async (req, res) => {
   ]);
 
   res.json({
-    jobs: jobs.map(parseJobFields),
+    success: true,
+    data: jobs.map(parseJobFields),
     pagination: {
       page: pageNum,
       limit: limitNum,
       total,
-      pages: Math.ceil(total / limitNum),
+      totalPages: Math.ceil(total / limitNum),
+      hasNext: pageNum < Math.ceil(total / limitNum),
+      hasPrev: pageNum > 1,
     },
+    timestamp: new Date().toISOString()
   });
 }));
 
 // Get single job by ID (public)
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', asyncHandler(async (req, res: Response<JobResponse>) => {
   const { id } = req.params;
 
   const job = await prisma.job.findUnique({
@@ -173,7 +191,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 router.use(authenticateToken);
 
 // Get all jobs for authenticated user's company
-router.get('/company/all', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/company/all', asyncHandler(async (req: AuthenticatedRequest, res: Response<PaginatedResponse<JobResponse['data']>>) => {
   const {
     page = '1',
     limit = '10',
@@ -232,18 +250,22 @@ router.get('/company/all', asyncHandler(async (req: AuthenticatedRequest, res) =
   ]);
 
   res.json({
-    jobs: jobs.map(parseJobFields),
+    success: true,
+    data: jobs.map(parseJobFields),
     pagination: {
       page: pageNum,
       limit: limitNum,
       total,
-      pages: Math.ceil(total / limitNum),
+      totalPages: Math.ceil(total / limitNum),
+      hasNext: pageNum < Math.ceil(total / limitNum),
+      hasPrev: pageNum > 1,
     },
+    timestamp: new Date().toISOString()
   });
 }));
 
 // Create new job
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response<JobResponse>) => {
   const validatedData = createJobSchema.parse(req.body);
 
   // Serialize complex fields to JSON strings for database storage
@@ -280,13 +302,15 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
   });
 
   res.status(201).json({
+    success: true,
+    data: parseJobFields(job),
     message: 'Job created successfully',
-    job: parseJobFields(job),
+    timestamp: new Date().toISOString()
   });
 }));
 
 // Update job
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response<JobResponse>) => {
   const { id } = req.params;
   const validatedData = updateJobSchema.parse(req.body);
 
@@ -351,13 +375,15 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   });
 
   res.json({
+    success: true,
+    data: parseJobFields(job),
     message: 'Job updated successfully',
-    job: parseJobFields(job),
+    timestamp: new Date().toISOString()
   });
 }));
 
 // Delete job
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response<StandardResponse>) => {
   const { id } = req.params;
 
   // Check if job exists and belongs to user's company
@@ -377,7 +403,9 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   });
 
   res.json({
+    success: true,
     message: 'Job deleted successfully',
+    timestamp: new Date().toISOString()
   });
 }));
 

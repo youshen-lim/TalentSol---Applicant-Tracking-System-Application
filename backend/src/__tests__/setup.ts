@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach } from 'vitest';
 
 // Mock global objects for Node.js environment
 global.console = {

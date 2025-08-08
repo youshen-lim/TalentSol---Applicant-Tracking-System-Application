@@ -74,7 +74,7 @@ export class MLService {
 
     const candidateInfo = application.candidateInfo as any;
     const professionalInfo = application.professionalInfo as any;
-    const jobSkills = application.job.skills || [];
+    const jobSkills = Array.isArray(application.job.skills) ? application.job.skills : [];
 
     // Extract years of experience
     const experienceMapping: Record<string, number> = {

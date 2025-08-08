@@ -357,10 +357,25 @@ export class CacheManager {
    */
   public setStrategy(strategy: CacheStrategy): void {
     this.strategies.set(strategy.name, strategy);
-    
+
     // Create or update cache instance
     const cache = new QueryCache(strategy.name, strategy.ttl);
     this.caches.set(strategy.name, cache);
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  public getStats(): {
+    strategiesCount: number;
+    cachesCount: number;
+    redisConnected: boolean;
+  } {
+    return {
+      strategiesCount: this.strategies.size,
+      cachesCount: this.caches.size,
+      redisConnected: redisClient?.isRedisConnected() || false
+    };
   }
 }
 

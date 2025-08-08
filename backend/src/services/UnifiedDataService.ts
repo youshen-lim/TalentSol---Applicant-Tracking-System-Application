@@ -128,13 +128,13 @@ export class UnifiedDataService {
     const allApplications = candidatesWithApplications.flatMap(c => c.applications);
     const totalApplications = allApplications.length;
     const newApplicationsThisMonth = allApplications.filter(
-      a => a.submittedAt >= thirtyDaysAgo
+      a => a.submittedAt && a.submittedAt >= thirtyDaysAgo
     ).length;
 
     const allInterviews = allApplications.flatMap(a => a.interviews);
     const totalInterviews = allInterviews.length;
     const scheduledInterviews = allInterviews.filter(
-      i => i.status === 'scheduled' && i.scheduledAt >= now
+      i => i.status === 'scheduled' && i.scheduledDate && i.scheduledDate >= now
     ).length;
 
     const hiredApplications = allApplications.filter(a => a.status === 'hired');
@@ -146,7 +146,7 @@ export class UnifiedDataService {
     // Calculate average time to hire (candidate journey)
     const timeToHireData = hiredApplications
       .filter(a => a.hiredAt)
-      .map(a => Math.ceil((a.hiredAt!.getTime() - a.submittedAt.getTime()) / (1000 * 60 * 60 * 24)));
+      .map(a => Math.ceil((a.hiredAt!.getTime() - (a.submittedAt?.getTime() || a.createdAt.getTime())) / (1000 * 60 * 60 * 24)));
     
     const averageTimeToHire = timeToHireData.length > 0
       ? Math.round(timeToHireData.reduce((sum, days) => sum + days, 0) / timeToHireData.length)
@@ -212,7 +212,7 @@ export class UnifiedDataService {
           candidateName: `${candidate.firstName} ${candidate.lastName}`,
           action: `Applied for ${app.job.title}`,
           jobTitle: app.job.title,
-          timestamp: app.submittedAt,
+          timestamp: app.submittedAt || app.createdAt,
         };
       });
 
@@ -257,7 +257,7 @@ export class UnifiedDataService {
       .slice(0, 5);
 
     // Time series data (last 30 days)
-    const timeSeriesData = [];
+    const timeSeriesData: any[] = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = date.toISOString().split('T')[0];
@@ -270,10 +270,10 @@ export class UnifiedDataService {
           c => c.createdAt >= dayStart && c.createdAt <= dayEnd
         ).length,
         applications: allApplications.filter(
-          a => a.submittedAt >= dayStart && a.submittedAt <= dayEnd
+          a => a.submittedAt && a.submittedAt >= dayStart && a.submittedAt <= dayEnd
         ).length,
         interviews: allInterviews.filter(
-          i => i.scheduledAt >= dayStart && i.scheduledAt <= dayEnd
+          i => i.scheduledDate && i.scheduledDate >= dayStart && i.scheduledDate <= dayEnd
         ).length,
         hires: hiredApplications.filter(
           a => a.hiredAt && a.hiredAt >= dayStart && a.hiredAt <= dayEnd
@@ -335,7 +335,7 @@ export class UnifiedDataService {
       const hiredApplications = applications.filter(a => a.status === 'hired');
       
       const timeToHire = hiredApplications.length > 0
-        ? Math.ceil((hiredApplications[0].hiredAt!.getTime() - hiredApplications[0].submittedAt.getTime()) / (1000 * 60 * 60 * 24))
+        ? Math.ceil((hiredApplications[0].hiredAt!.getTime() - (hiredApplications[0].submittedAt?.getTime() || hiredApplications[0].createdAt.getTime())) / (1000 * 60 * 60 * 24))
         : undefined;
 
       const sources = [...new Set(applications.map(a => (a.metadata as any)?.source || 'unknown'))];

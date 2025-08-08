@@ -189,9 +189,11 @@ export class CachedAnalyticsService {
     }
 
     applications.forEach(app => {
-      const dateStr = app.submittedAt.toISOString().split('T')[0];
-      if (dateGroups.hasOwnProperty(dateStr)) {
-        dateGroups[dateStr]++;
+      if (app.submittedAt) {
+        const dateStr = app.submittedAt.toISOString().split('T')[0];
+        if (dateGroups.hasOwnProperty(dateStr)) {
+          dateGroups[dateStr]++;
+        }
       }
     });
 
@@ -268,7 +270,7 @@ export class CachedAnalyticsService {
       id: app.id,
       candidateName: `${app.candidate.firstName} ${app.candidate.lastName}`,
       jobTitle: app.job.title,
-      submittedAt: app.submittedAt.toISOString(),
+      submittedAt: app.submittedAt?.toISOString() || new Date().toISOString(),
       status: app.status,
       score: app.score || 0,
     }));
@@ -293,6 +295,7 @@ export class CachedAnalyticsService {
         status: true,
         submittedAt: true,
         hiredAt: true,
+        createdAt: true,
       },
     });
 
@@ -322,7 +325,7 @@ export class CachedAnalyticsService {
     const hiredApplications = applications.filter(app => app.hiredAt);
     const averageTimeToHire = hiredApplications.length > 0
       ? hiredApplications.reduce((sum, app) => {
-          const days = Math.ceil((app.hiredAt!.getTime() - app.submittedAt.getTime()) / (1000 * 60 * 60 * 24));
+          const days = Math.ceil((app.hiredAt!.getTime() - (app.submittedAt?.getTime() || app.createdAt.getTime())) / (1000 * 60 * 60 * 24));
           return sum + days;
         }, 0) / hiredApplications.length
       : 0;
@@ -350,6 +353,7 @@ export class CachedAnalyticsService {
       select: {
         submittedAt: true,
         hiredAt: true,
+        createdAt: true,
         job: {
           select: {
             department: true,
@@ -369,7 +373,7 @@ export class CachedAnalyticsService {
 
     // Calculate days to hire for each application
     const daysToHire = hiredApplications.map(app => {
-      const days = Math.ceil((app.hiredAt!.getTime() - app.submittedAt.getTime()) / (1000 * 60 * 60 * 24));
+      const days = Math.ceil((app.hiredAt!.getTime() - (app.submittedAt?.getTime() || app.createdAt.getTime())) / (1000 * 60 * 60 * 24));
       return {
         days,
         department: app.job.department || 'Unknown',
@@ -474,7 +478,7 @@ export class CachedAnalyticsService {
       }),
       prisma.interview.count({
         where: {
-          scheduledAt: { gte: startDate, lte: endDate },
+          scheduledDate: { gte: startDate, lte: endDate },
           application: {
             job: { companyId },
           },

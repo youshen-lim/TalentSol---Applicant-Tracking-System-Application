@@ -121,7 +121,7 @@ router.get('/models/:id/metrics', asyncHandler(async (req: AuthenticatedRequest,
 router.post('/predict', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const validatedData = predictSchema.parse(req.body);
 
-  const results = [];
+  const results: any[] = [];
 
   for (const applicationId of validatedData.applicationIds) {
     // Verify application belongs to user's company
@@ -250,7 +250,7 @@ router.post('/predict/job/:jobId', asyncHandler(async (req: AuthenticatedRequest
   }
 
   // Use the existing predict endpoint logic
-  const results = [];
+  const results: any[] = [];
 
   for (const applicationId of applicationIds) {
     try {
@@ -351,14 +351,14 @@ router.post('/train', asyncHandler(async (req: AuthenticatedRequest, res) => {
       precision: 0.82 + Math.random() * 0.1,
       recall: 0.78 + Math.random() * 0.1,
       f1Score: 0.80 + Math.random() * 0.1,
-      trainingData: {
+      trainingData: JSON.stringify({
         datasetId: dataset.id,
         datasetName: dataset.name,
         recordCount: dataset.recordCount,
         features: validatedData.features,
         hyperparameters: validatedData.hyperparameters,
-      },
-      features: validatedData.features,
+      }),
+      features: JSON.stringify(validatedData.features),
       isActive: false, // Requires manual activation
       trainedAt: new Date(),
     },
@@ -449,7 +449,7 @@ router.post('/recommendations', asyncHandler(async (req: AuthenticatedRequest, r
     });
 
     // Extract features and calculate scores for each candidate
-    const candidateScores = [];
+    const candidateScores: any[] = [];
 
     for (const candidate of candidates) {
       try {
@@ -1195,7 +1195,7 @@ function generateReasoning(features: any) {
 }
 
 function generateTags(features: any, score: number) {
-  const tags = [];
+  const tags: any[] = [];
 
   if (features.skillsMatchScore > 80) {
     tags.push({
@@ -1237,7 +1237,7 @@ function generateTags(features: any, score: number) {
 }
 
 function generateActionItems(features: any): string[] {
-  const actions = [];
+  const actions: string[] = [];
 
   if (features.skillsMatchScore > 80) {
     actions.push('Schedule technical interview');

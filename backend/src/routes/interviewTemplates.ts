@@ -176,9 +176,9 @@ router.post('/:id/duplicate', authenticateToken, asyncHandler(async (req: Authen
       duration: existingTemplate.duration,
       location: existingTemplate.location,
       meetingLink: existingTemplate.meetingLink,
-      interviewers: existingTemplate.interviewers,
-      questions: existingTemplate.questions,
-      evaluationCriteria: existingTemplate.evaluationCriteria,
+      interviewers: existingTemplate.interviewers as any,
+      questions: existingTemplate.questions as any,
+      evaluationCriteria: existingTemplate.evaluationCriteria as any,
       instructions: existingTemplate.instructions,
       isDefault: false, // Copies are never default
       companyId: req.user!.companyId,
@@ -257,7 +257,7 @@ router.post('/bulk-operations', authenticateToken, asyncHandler(async (req: Auth
       break;
 
     case 'duplicate':
-      const duplicatedTemplates = [];
+      const duplicatedTemplates: any[] = [];
       for (const template of templates) {
         const duplicated = await prisma.interviewTemplate.create({
           data: {
@@ -267,9 +267,9 @@ router.post('/bulk-operations', authenticateToken, asyncHandler(async (req: Auth
             duration: template.duration,
             location: template.location,
             meetingLink: template.meetingLink,
-            interviewers: template.interviewers,
-            questions: template.questions,
-            evaluationCriteria: template.evaluationCriteria,
+            interviewers: template.interviewers as any,
+            questions: template.questions as any,
+            evaluationCriteria: template.evaluationCriteria as any,
             instructions: template.instructions,
             isDefault: false,
             companyId: req.user!.companyId,

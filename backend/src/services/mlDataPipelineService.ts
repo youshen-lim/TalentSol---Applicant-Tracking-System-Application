@@ -164,7 +164,7 @@ export class MLDataPipelineService extends EventEmitter {
         company: {
           name: job.company.name,
           size: job.companySizeCategory,
-          industry: job.company.industry
+          industry: job.company.domain || 'unknown'
         },
         applications: job.applications.map(app => ({
           applicationId: app.id,
@@ -213,8 +213,8 @@ export class MLDataPipelineService extends EventEmitter {
           skills: this.parseJsonField(application.candidate.skillsArray) || [],
           location: application.candidate.location || '',
           education: application.candidate.educationLevel || '',
-          currentPosition: application.candidate.currentPosition,
-          expectedSalary: application.candidate.expectedSalaryMin
+          currentPosition: application.candidate.currentPosition || '',
+          expectedSalary: application.candidate.expectedSalaryMin || 0
         },
         jobData: {
           title: application.job.title,
@@ -401,13 +401,10 @@ export class MLDataPipelineService extends EventEmitter {
         data: {
           applicationId,
           modelName: prediction.model,
-          modelVersion: this.getCurrentModelVersion(),
-          predictionScore: prediction.score,
+          prediction: prediction.score,
           confidence: prediction.confidence,
-          features: JSON.stringify(prediction.features),
-          reasoning: JSON.stringify(prediction.reasoning),
           createdAt: new Date()
-        }
+        } as any
       });
     }
   }
@@ -417,7 +414,7 @@ export class MLDataPipelineService extends EventEmitter {
    */
   private async cachePredictions(applicationId: string, prediction: any): Promise<void> {
     const cacheKey = `ml:prediction:${applicationId}`;
-    await redisClient.setex(cacheKey, 3600, JSON.stringify(prediction)); // Cache for 1 hour
+    await redisClient.set(cacheKey, JSON.stringify(prediction)); // Cache for 1 hour
   }
 
   /**

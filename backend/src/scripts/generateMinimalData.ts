@@ -155,22 +155,22 @@ async function setupBaseData() {
 }
 
 async function createJobs(companyId: string, createdById: string) {
-  const jobs = [];
+  const jobs: any[] = [];
   
   for (const jobData of JOB_DATA) {
     const job = await prisma.job.create({
       data: {
         title: jobData.title,
         department: jobData.department,
-        location: { city: 'San Francisco', state: 'CA', remote: true },
+        location: JSON.stringify({ city: 'San Francisco', state: 'CA', remote: true }),
         employmentType: 'full_time',
         experienceLevel: 'mid',
-        salary: { min: 80000, max: 120000, currency: 'USD' },
+        salary: JSON.stringify({ min: 80000, max: 120000, currency: 'USD' }),
         description: `We are looking for a talented ${jobData.title} to join our team.`,
-        responsibilities: [`Lead ${jobData.title.toLowerCase()} initiatives`, 'Collaborate with team'],
-        requiredQualifications: ['Bachelor\'s degree', '3+ years experience'],
-        preferredQualifications: ['Master\'s degree', '5+ years experience'],
-        skills: jobData.skills,
+        responsibilities: JSON.stringify([`Lead ${jobData.title.toLowerCase()} initiatives`, 'Collaborate with team']),
+        requiredQualifications: JSON.stringify(['Bachelor\'s degree', '3+ years experience']),
+        preferredQualifications: JSON.stringify(['Master\'s degree', '5+ years experience']),
+        skills: JSON.stringify(jobData.skills),
         status: 'open',
         companyId,
         createdById,
@@ -183,7 +183,7 @@ async function createJobs(companyId: string, createdById: string) {
 }
 
 async function createCandidates() {
-  const candidates = [];
+  const candidates: any[] = [];
   
   for (let i = 0; i < 50; i++) {
     const nameData = CANDIDATE_NAMES[i];
@@ -194,7 +194,7 @@ async function createCandidates() {
         lastName: nameData.lastName,
         email: `${nameData.firstName.toLowerCase()}.${nameData.lastName.toLowerCase()}@email.com`,
         phone: `+1-555-${String(i + 1).padStart(4, '0')}`,
-        location: { city: 'San Francisco', state: 'CA', country: 'USA', remote: true },
+        location: JSON.stringify({ city: 'San Francisco', state: 'CA', country: 'USA', remote: true }),
         linkedinUrl: `https://linkedin.com/in/${nameData.firstName.toLowerCase()}${nameData.lastName.toLowerCase()}`,
         willingToRelocate: Math.random() > 0.5,
         workAuthorization: 'authorized',
@@ -209,7 +209,7 @@ async function createCandidates() {
 }
 
 async function createApplications(candidates: any[], jobs: any[]) {
-  const applications = [];
+  const applications: any[] = [];
   
   for (let i = 0; i < 50; i++) {
     const candidate = candidates[i];
@@ -225,22 +225,22 @@ async function createApplications(candidates: any[], jobs: any[]) {
         status: status as any,
         submittedAt: submittedDate,
         hiredAt: status === 'hired' ? new Date(submittedDate.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : null,
-        candidateInfo: {
+        candidateInfo: JSON.stringify({
           firstName: candidate.firstName,
           lastName: candidate.lastName,
           email: candidate.email,
           phone: candidate.phone,
           location: candidate.location,
-        },
-        professionalInfo: {
+        }),
+        professionalInfo: JSON.stringify({
           currentTitle: job.title,
           currentCompany: 'Previous Company',
           experience: '3-5',
           expectedSalary: { min: 90000, max: 130000, currency: 'USD', negotiable: true },
           noticePeriod: '2 weeks',
           remoteWork: true,
-        },
-        metadata: {
+        }),
+        metadata: JSON.stringify({
           source: source as any,
           ipAddress: `192.168.1.${100 + i}`,
           userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -248,8 +248,8 @@ async function createApplications(candidates: any[], jobs: any[]) {
           completionTime: 300 + Math.random() * 600,
           gdprConsent: true,
           marketingConsent: Math.random() > 0.5,
-        },
-        scoring: {
+        }),
+        scoring: JSON.stringify({
           automaticScore: 60 + Math.random() * 40,
           skillMatches: job.skills.slice(0, Math.floor(Math.random() * job.skills.length) + 1),
           qualificationsMet: Math.random() > 0.3,
@@ -257,14 +257,14 @@ async function createApplications(candidates: any[], jobs: any[]) {
           salaryMatch: 80 + Math.random() * 20,
           locationMatch: 90 + Math.random() * 10,
           flags: [],
-        },
-        activity: [
+        }),
+        activity: JSON.stringify([
           {
             type: 'application_submitted',
             timestamp: submittedDate.toISOString(),
             description: `${candidate.firstName} ${candidate.lastName} submitted application`,
           },
-        ],
+        ]),
       },
     });
 
@@ -275,7 +275,7 @@ async function createApplications(candidates: any[], jobs: any[]) {
 }
 
 async function createInterviews(applications: any[], createdById: string) {
-  const interviews = [];
+  const interviews: any[] = [];
   
   // Create exactly 10 interviews from the first 10 applications
   for (let i = 0; i < 10; i++) {
@@ -286,13 +286,12 @@ async function createInterviews(applications: any[], createdById: string) {
       data: {
         applicationId: application.id,
         type: ['technical', 'behavioral', 'panel'][i % 3],
-        scheduledAt: interviewDate,
-        duration: 60,
+        scheduledDate: interviewDate,
         location: i % 2 === 0 ? 'Video Call' : 'Office',
         status: 'scheduled',
         notes: `Interview ${i + 1} scheduled`,
         createdById,
-      },
+      } as any,
     });
 
     interviews.push(interview);
@@ -324,11 +323,11 @@ async function createNotifications(applications: any[], userId: string) {
         type: 'application_received',
         title: 'New Application Received',
         message: `New application for ${app.candidateInfo.firstName} ${app.candidateInfo.lastName}`,
-        data: {
+        metadata: JSON.stringify({
           applicationId: app.id,
           candidateId: app.candidateId,
-        },
-        read: Math.random() > 0.5,
+        }),
+        isRead: Math.random() > 0.5,
         createdAt: app.submittedAt,
       },
     });

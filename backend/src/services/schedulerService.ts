@@ -3,7 +3,7 @@ import { prisma } from '../index.js';
 import { notificationService } from './notificationService.js';
 
 export class SchedulerService {
-  private jobs: Map<string, cron.ScheduledTask> = new Map();
+  private jobs: Map<string, any> = new Map();
 
   constructor() {
     this.initializeScheduledJobs();
@@ -14,14 +14,14 @@ export class SchedulerService {
     const reminderJob = cron.schedule('*/15 * * * *', async () => {
       await this.checkInterviewReminders();
     }, {
-      scheduled: false
+      timezone: 'UTC'
     });
 
     // Daily cleanup of old notifications (runs at 2 AM)
     const cleanupJob = cron.schedule('0 2 * * *', async () => {
       await this.cleanupOldNotifications();
     }, {
-      scheduled: false
+      timezone: 'UTC'
     });
 
     this.jobs.set('interview-reminders', reminderJob);
@@ -86,7 +86,7 @@ export class SchedulerService {
       });
 
       for (const interview of upcomingInterviews) {
-        const interviewDate = new Date(interview.scheduledDate);
+        const interviewDate = new Date(interview.scheduledDate || new Date());
         const candidate = interview.application.candidate;
         const job = interview.application.job;
 
@@ -98,7 +98,7 @@ export class SchedulerService {
           scheduledDate: interviewDate,
           location: interview.location || undefined,
           meetingLink: interview.meetingLink || undefined,
-          interviewers: interview.interviewers || [],
+          interviewers: Array.isArray(interview.interviewers) ? interview.interviewers : [],
           jobTitle: job.title,
           companyName: job.company.name
         };
@@ -245,10 +245,10 @@ export class SchedulerService {
         candidateEmail: candidate.email,
         candidateName: `${candidate.firstName} ${candidate.lastName}`,
         interviewTitle: interview.title,
-        scheduledDate: new Date(interview.scheduledDate),
+        scheduledDate: new Date(interview.scheduledDate || new Date()),
         location: interview.location || undefined,
         meetingLink: interview.meetingLink || undefined,
-        interviewers: interview.interviewers || [],
+        interviewers: Array.isArray(interview.interviewers) ? interview.interviewers : [],
         jobTitle: job.title,
         companyName: job.company.name
       };

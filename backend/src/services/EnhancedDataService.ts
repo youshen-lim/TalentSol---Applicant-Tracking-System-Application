@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Cached, InvalidateCache } from '../cache/decorators.js';
-import { cacheManager } from '../cache/CacheManager.js';
+import { analyticsCache } from '../cache/AnalyticsCache.js';
 
 const prisma = new PrismaClient();
 
@@ -248,11 +248,7 @@ export class EnhancedDataService {
     console.log(`🗑️ Invalidating cache for company ${companyId}...`);
     
     // Invalidate specific cache keys
-    await cacheManager.invalidateByTags([
-      `dashboard_${companyId}`,
-      `analytics_${companyId}`,
-      `candidate_metrics_${companyId}`
-    ]);
+    await analyticsCache.invalidate('data_change', companyId);
 
     // Refresh materialized views in background
     this.refreshMaterializedViews(companyId).catch(console.warn);
@@ -277,32 +273,29 @@ export class EnhancedDataService {
     const cacheKey = `${model.cacheKey}_${params.join('_')}`;
 
     // Try cache first
-    const cached = await cacheManager.get(cacheKey);
-    if (cached) {
+    const cached = await analyticsCache.get(cacheKey, 'semantic-layer');
+    if (cached && Array.isArray(cached)) {
       return cached;
     }
 
     // Execute query
     const result = await prisma.$queryRawUnsafe(model.query, ...params);
-    
-    // Cache result
-    await cacheManager.set(cacheKey, result, {
-      ttl: model.ttl,
-      tags: model.tags
-    });
 
-    return result as any[];
+    // Cache result
+    await analyticsCache.set(cacheKey, result, 'semantic-layer', model.ttl);
+
+    return Array.isArray(result) ? result : [result] as any[];
   }
 
   // Performance monitoring
   async getQueryPerformanceStats(): Promise<any> {
-    const stats = await cacheManager.getStats();
+    const summary = analyticsCache.getCachePerformanceSummary();
     return {
-      cacheHitRate: stats.hitRate,
-      totalQueries: stats.hits + stats.misses,
-      averageQueryTime: stats.averageQueryTime || 0,
-      cachedQueries: stats.hits,
-      uncachedQueries: stats.misses
+      cacheHitRate: summary.totalHitRate,
+      totalQueries: summary.totalRequests,
+      averageQueryTime: summary.averageResponseTime || 0,
+      cachedQueries: summary.totalRequests * (summary.totalHitRate / 100),
+      uncachedQueries: summary.totalRequests * ((100 - summary.totalHitRate) / 100)
     };
   }
 
@@ -328,7 +321,7 @@ export class EnhancedDataService {
     } catch (error) {
       return {
         status: 'unhealthy',
-        details: { error: error.message }
+        details: { error: error instanceof Error ? error.message : 'Unknown error' }
       };
     }
   }

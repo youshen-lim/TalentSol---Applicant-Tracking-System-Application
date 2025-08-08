@@ -77,7 +77,7 @@ async function seedCandidateSources() {
     // Step 1: Create candidate source records
     console.log('\n📊 Creating candidate source records...');
     
-    const createdSources = [];
+    const createdSources: any[] = [];
     for (const sourceData of CANDIDATE_SOURCES) {
       const source = await prisma.candidateSource.upsert({
         where: { name: sourceData.name },

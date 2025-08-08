@@ -19,6 +19,49 @@ interface NotificationEvent {
   userId: string;
 }
 
+// Enhanced event types for Phase 4
+interface ApplicationStatusUpdate {
+  type: 'application_status_changed';
+  applicationId: string;
+  candidateId: string;
+  jobId: string;
+  oldStatus: string;
+  newStatus: string;
+  updatedBy: {
+    id: string;
+    name: string;
+  };
+  companyId: string;
+  timestamp: string;
+}
+
+interface DashboardMetricsUpdate {
+  type: 'dashboard_metrics_updated';
+  metrics: {
+    totalApplications: number;
+    totalCandidates: number;
+    totalInterviews: number;
+    activeJobs: number;
+    conversionRate: number;
+    newApplicationsToday: number;
+  };
+  companyId: string;
+  timestamp: string;
+}
+
+interface MLProcessingEvent {
+  type: 'ml_processing_started' | 'ml_processing_completed' | 'ml_processing_failed';
+  applicationId: string;
+  candidateId: string;
+  jobId: string;
+  processingId?: string;
+  score?: number;
+  recommendations?: any;
+  error?: string;
+  companyId: string;
+  timestamp: string;
+}
+
 // WebSocket Server Class
 export class WebSocketServer {
   private io: Server;
@@ -69,13 +112,13 @@ export class WebSocketServer {
             firstName: true,
             lastName: true,
             email: true,
-            isActive: true,
-            lastLoginAt: true
+            createdAt: true,
+            updatedAt: true
           }
         });
 
-        if (!user || !user.isActive) {
-          return next(new Error('User not found or inactive'));
+        if (!user) {
+          return next(new Error('User not found'));
         }
 
         // Check token expiration
@@ -149,6 +192,24 @@ export class WebSocketServer {
       socket.on('subscribe:notifications', () => {
         socket.join(`notifications:${user.id}`);
         console.log(`User ${user.id} subscribed to notifications`);
+      });
+
+      // Handle dashboard metrics subscription
+      socket.on('subscribe:dashboard', () => {
+        socket.join(`dashboard:${user.companyId}`);
+        console.log(`User ${user.id} subscribed to dashboard metrics updates`);
+      });
+
+      // Handle application status subscription
+      socket.on('subscribe:applications', () => {
+        socket.join(`applications:${user.companyId}`);
+        console.log(`User ${user.id} subscribed to application status updates`);
+      });
+
+      // Handle ML processing subscription
+      socket.on('subscribe:ml_processing', () => {
+        socket.join(`ml_processing:${user.companyId}`);
+        console.log(`User ${user.id} subscribed to ML processing updates`);
       });
 
       // Handle interview updates
@@ -351,6 +412,51 @@ export class WebSocketServer {
       this.io.to(socketId).emit('ml:processing_update', {
         type: 'ml_processing_update',
         ...update,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  // Enhanced real-time methods for Phase 4
+  public broadcastApplicationStatusUpdate(companyId: string, update: ApplicationStatusUpdate) {
+    this.io.to(`applications:${companyId}`).emit('application:status_changed', {
+      ...update,
+      timestamp: new Date().toISOString()
+    });
+
+    // Also broadcast to company room for general updates
+    this.io.to(`company:${companyId}`).emit('company:application_update', {
+      ...update,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  public broadcastDashboardMetricsUpdate(companyId: string, metrics: DashboardMetricsUpdate['metrics']) {
+    const update: DashboardMetricsUpdate = {
+      type: 'dashboard_metrics_updated',
+      metrics,
+      companyId,
+      timestamp: new Date().toISOString()
+    };
+
+    this.io.to(`dashboard:${companyId}`).emit('dashboard:metrics_updated', update);
+
+    // Also broadcast to company room for general dashboard updates
+    this.io.to(`company:${companyId}`).emit('company:dashboard_update', update);
+  }
+
+  public broadcastMLProcessingEvent(companyId: string, event: MLProcessingEvent) {
+    this.io.to(`ml_processing:${companyId}`).emit('ml:processing_event', {
+      ...event,
+      timestamp: new Date().toISOString()
+    });
+
+    // Send specific user notification if processing completed
+    if (event.type === 'ml_processing_completed' && event.score) {
+      this.io.to(`company:${companyId}`).emit('company:ml_update', {
+        type: 'ml_score_available',
+        applicationId: event.applicationId,
+        score: event.score,
         timestamp: new Date().toISOString()
       });
     }

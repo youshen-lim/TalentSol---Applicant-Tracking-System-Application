@@ -263,23 +263,23 @@ async function importJobs(jobRows: CSVRow[], companyId: string, createdById: str
         id: row.job_id,
         title: jobTitle,
         department: row.department,
-        location: {
+        location: JSON.stringify({
           city: row.location_city || 'San Francisco',
           state: row.location_state || 'CA',
           remote: row.remote_work === 'True'
-        },
+        }),
         employmentType: 'full_time',
         experienceLevel: 'mid',
-        salary: {
+        salary: JSON.stringify({
           min: salaryMin,
           max: salaryMax,
           currency: 'USD'
-        },
+        }),
         description: `We are looking for a talented ${jobTitle} to join our ${row.department} team.`,
-        responsibilities: [`Lead ${jobTitle.toLowerCase()} initiatives`, 'Collaborate with cross-functional teams'],
-        requiredQualifications: ['Bachelor\'s degree', '3+ years experience'],
-        preferredQualifications: ['Master\'s degree', '5+ years experience'],
-        skills,
+        responsibilities: JSON.stringify([`Lead ${jobTitle.toLowerCase()} initiatives`, 'Collaborate with cross-functional teams']),
+        requiredQualifications: JSON.stringify(['Bachelor\'s degree', '3+ years experience']),
+        preferredQualifications: JSON.stringify(['Master\'s degree', '5+ years experience']),
+        skills: JSON.stringify(skills),
         status: 'open',
         companyId,
         createdById,
@@ -305,12 +305,12 @@ async function importCandidates(candidateRows: CSVRow[]) {
         lastName: row.last_name,
         email: email,
         phone: phone,
-        location: {
+        location: JSON.stringify({
           city: row.location_city || 'Unknown',
           state: row.location_state || 'CA',
           country: 'USA',
           remote: row.remote_work === 'True'
-        },
+        }),
         linkedinUrl: `https://linkedin.com/in/${row.first_name?.toLowerCase()}${row.last_name?.toLowerCase()}`,
         willingToRelocate: row.remote_work === 'True',
         workAuthorization: 'authorized',
@@ -350,7 +350,7 @@ async function importApplications(applicationRows: CSVRow[]) {
         status: row.application_status as any,
         submittedAt: submittedDate,
         hiredAt: hiredDate,
-        candidateInfo: {
+        candidateInfo: JSON.stringify({
           firstName: row.first_name,
           lastName: row.last_name,
           email: email,
@@ -360,8 +360,8 @@ async function importApplications(applicationRows: CSVRow[]) {
             state: row.location_state || 'CA',
             country: 'USA'
           },
-        },
-        professionalInfo: {
+        }),
+        professionalInfo: JSON.stringify({
           currentTitle: 'Software Engineer',
           currentCompany: 'Previous Company',
           experience: row.experience_level,
@@ -373,8 +373,8 @@ async function importApplications(applicationRows: CSVRow[]) {
           },
           noticePeriod: '2 weeks',
           remoteWork: row.remote_work === 'True',
-        },
-        metadata: {
+        }),
+        metadata: JSON.stringify({
           source: row.candidate_source || getRandomSource(),
           ipAddress: `192.168.1.${Math.floor(Math.random() * 254) + 1}`,
           userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -382,8 +382,8 @@ async function importApplications(applicationRows: CSVRow[]) {
           completionTime: 300 + Math.random() * 600,
           gdprConsent: true,
           marketingConsent: Math.random() > 0.5,
-        },
-        scoring: {
+        }),
+        scoring: JSON.stringify({
           automaticScore: score,
           skillMatches: skills,
           qualificationsMet: score > 80,
@@ -391,14 +391,14 @@ async function importApplications(applicationRows: CSVRow[]) {
           salaryMatch: 85,
           locationMatch: 90,
           flags: [],
-        },
-        activity: [
+        }),
+        activity: JSON.stringify([
           {
             type: 'application_submitted',
             timestamp: submittedDate.toISOString(),
             description: `${row.first_name} ${row.last_name} submitted application`,
           },
-        ],
+        ]),
       },
     });
   }
