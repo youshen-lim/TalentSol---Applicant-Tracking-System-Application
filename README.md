@@ -13,26 +13,26 @@ Designed this system for machine learning practitioners who need a complete appl
 ## 🎯 Latest Major Updates (August 2025)
 
 ### **🤖 XGBoost Model Integration Implementation (August 2025)**
-- I integrated my trained XGBoost Decision Tree model (`best_performing_model_pipeline.joblib`) with complete production-ready infrastructure
-- I maintained the model's optimized performance metrics: 70% recall and 57% precision using the 0.5027 threshold
-- I implemented local development environment using Yarn 4.0+ package management with isolated Python virtual environment
-- I achieved real-time predictions with inference time under 2 seconds and WebSocket updates for live candidate screening
-- I built automated processing pipeline with batch processing capabilities, retry logic, and comprehensive error handling
-- I implemented the complete feature engineering pipeline using HashingVectorizer and One-Hot Encoding to match the training preprocessing
-- I enhanced the database schema with XGBoost-specific tables for performance tracking and feature caching
-- I created complete REST API endpoints (`/api/xgboost/*`) for model management and predictions
-- I developed automated setup scripts (`local-dev-setup.sh` and `local-dev-setup.bat`) for cross-platform development
+- Integrated trained XGBoost Decision Tree model (`best_performing_model_pipeline.joblib`) with complete production-ready infrastructure
+- Maintained the model's optimized performance metrics: 70% recall and 57% precision using the 0.5027 threshold
+- Implemented local development environment using Yarn 4.0+ package management with isolated Python virtual environment
+- Achieved real-time predictions with inference time under 2 seconds and WebSocket updates for live candidate screening
+- Built automated processing pipeline with batch processing capabilities, retry logic, and comprehensive error handling
+- Implemented the complete feature engineering pipeline using HashingVectorizer and One-Hot Encoding to match the training preprocessing
+- Enhanced the database schema with XGBoost-specific tables for performance tracking and feature caching
+- Created complete REST API endpoints (`/api/xgboost/*`) for model management and predictions
+- Developed automated setup scripts (`local-dev-setup.sh` and `local-dev-setup.bat`) for cross-platform development
 
 ### **🔧 TypeScript Error Resolution Implementation (August 2025)**
-- I resolved all 274 TypeScript compilation errors to achieve zero-error compilation status
-- I implemented strict mode compliance so the codebase passes `npx tsc --noEmit --strict` without errors
-- I fixed all backend service initialization issues so ML services, cache, WebSocket server, and scheduler start successfully
-- I added proper type annotations for machine learning prediction endpoints and array operations
-- I corrected Prisma field mappings and null handling across all database models
-- I resolved property access and method call type mismatches in the service layer
-- I implemented complete type safety for JWT token generation and validation processes
-- I fixed Redis method calls and implemented proper fallback type handling for in-memory cache
-- I configured the build system so TypeScript compilation completes without errors in both development and production modes
+- Resolved all 274 TypeScript compilation errors to achieve zero-error compilation status
+- Implemented strict mode compliance so the codebase passes `npx tsc --noEmit --strict` without errors
+- Fixed all backend service initialization issues so ML services, cache, WebSocket server, and scheduler start successfully
+- Added proper type annotations for machine learning prediction endpoints and array operations
+- Corrected Prisma field mappings and null handling across all database models
+- Resolved property access and method call type mismatches in the service layer
+- Implemented complete type safety for JWT token generation and validation processes
+- Fixed Redis method calls and implemented proper fallback type handling for in-memory cache
+- Configured the build system so TypeScript compilation completes without errors in both development and production modes
 
 ### **🧠 ML Integration Transformation**
 - ✅ **Complete ML Pipeline Integration**: Transformed from hidden ML capabilities to transparent, AI-powered candidate screening
@@ -157,24 +157,24 @@ TalentSol is designed as a **hobbyist AI/ML demonstration project** for learning
 
 ## 🎯 Automated Candidate Screening Implementation
 
-I have implemented complete integration of my trained XGBoost Decision Tree model (`best_performing_model_pipeline.joblib`) for automated candidate screening in TalentSol. I maintained the model's performance metrics of 70% recall and 57% precision while building a production-ready API infrastructure for real-time predictions.
+Implemented complete integration of trained XGBoost Decision Tree model (`best_performing_model_pipeline.joblib`) for automated candidate screening in TalentSol. Maintained the model's performance metrics of 70% recall and 57% precision while building a production-ready API infrastructure for real-time predictions.
 
 ### **🏆 Implementation Achievements**
 
-- I integrated the `best_performing_model_pipeline.joblib` file with exact preprocessing pipeline matching the training environment
-- I maintained the model's performance metrics: 70% recall and 57% precision using the optimized threshold of 0.5027
-- I implemented real-time processing with inference time under 2 seconds and WebSocket updates for live results
-- I created local development environment using Yarn package management and isolated Python virtual environment
-- I built production-ready infrastructure with comprehensive error handling, monitoring, and batch processing capabilities
+- Integrated the `best_performing_model_pipeline.joblib` file with exact preprocessing pipeline matching the training environment
+- Maintained the model's performance metrics: 70% recall and 57% precision using the optimized threshold of 0.5027
+- Implemented real-time processing with inference time under 2 seconds and WebSocket updates for live results
+- Created local development environment using Yarn package management and isolated Python virtual environment
+- Built production-ready infrastructure with comprehensive error handling, monitoring, and batch processing capabilities
 
 ### **🔧 Technical Implementation Details**
 
-#### **Model Specifications I Implemented**
-- I integrated an XGBoost Decision Tree Ensemble model architecture
-- I implemented preprocessing using HashingVectorizer and One-Hot Encoding to match the training pipeline
-- I configured input format to accept Job Description, Resume, Job Roles, and Ethnicity fields
-- I implemented probability score output with optimized binary classification using the 0.5027 threshold
-- I enforced strict dependency versions: scikit-learn==1.6.1 and joblib==1.3.2 for model compatibility
+#### **Model Specifications Implemented**
+- Integrated an XGBoost Decision Tree Ensemble model architecture
+- Implemented preprocessing using HashingVectorizer and One-Hot Encoding to match the training pipeline
+- Configured input format to accept Job Description, Resume, Job Roles, and Ethnicity fields
+- Implemented probability score output with optimized binary classification using the 0.5027 threshold
+- Enforced strict dependency versions: scikit-learn==1.6.1 and joblib==1.3.2 for model compatibility
 
 #### **Integration Architecture**
 ```mermaid
@@ -238,21 +238,21 @@ yarn xgboost:test-model
 yarn dev
 ```
 
-### **📡 API Endpoints I Implemented**
+### **📡 API Endpoints Implemented**
 
-#### **XGBoost Management Endpoints I Created**
+#### **XGBoost Management Endpoints Created**
 ```http
-POST /api/xgboost/initialize          # I created this endpoint to initialize the XGBoost model
-GET  /api/xgboost/status             # I implemented this endpoint for model status and metrics
-GET  /api/xgboost/metrics            # I built this endpoint for performance analytics
+POST /api/xgboost/initialize          # Created this endpoint to initialize the XGBoost model
+GET  /api/xgboost/status             # Implemented this endpoint for model status and metrics
+GET  /api/xgboost/metrics            # Built this endpoint for performance analytics
 ```
 
-#### **Prediction Endpoints I Developed**
+#### **Prediction Endpoints Developed**
 ```http
-POST /api/xgboost/predict/:applicationId    # I created this endpoint for single application predictions
-POST /api/xgboost/predict-batch            # I implemented this endpoint for batch predictions
-POST /api/xgboost/process-pending          # I built this endpoint to auto-process pending applications
-GET  /api/xgboost/prediction/:applicationId # I created this endpoint to retrieve existing predictions
+POST /api/xgboost/predict/:applicationId    # Created this endpoint for single application predictions
+POST /api/xgboost/predict-batch            # Implemented this endpoint for batch predictions
+POST /api/xgboost/process-pending          # Built this endpoint to auto-process pending applications
+GET  /api/xgboost/prediction/:applicationId # Created this endpoint to retrieve existing predictions
 ```
 
 #### **Example API Usage**
@@ -272,11 +272,11 @@ curl -X POST http://localhost:3001/api/xgboost/predict-batch \
   -d '{"applicationIds": ["app_1", "app_2", "app_3"]}'
 ```
 
-### **🔄 WebSocket Real-Time Events I Implemented**
+### **🔄 WebSocket Real-Time Events Implemented**
 
-#### **Event Types I Created**
+#### **Event Types Created**
 ```javascript
-// I implemented this XGBoost prediction completed event
+// Implemented this XGBoost prediction completed event
 {
   type: 'xgboost_prediction_completed',
   applicationId: 'app_123',
@@ -294,15 +294,15 @@ curl -X POST http://localhost:3001/api/xgboost/predict-batch \
 }
 ```
 
-#### **Frontend Integration I Built**
+#### **Frontend Integration Built**
 ```javascript
-// I created this subscription mechanism for XGBoost predictions
+// Created this subscription mechanism for XGBoost predictions
 socket.emit('subscribe:xgboost_predictions');
 
-// I implemented this event handler for prediction events
+// Implemented this event handler for prediction events
 socket.on('xgboost:prediction_event', (data) => {
   console.log('XGBoost prediction:', data);
-  // I built this UI update functionality for prediction results
+  // Built this UI update functionality for prediction results
 });
 ```
 
@@ -506,35 +506,35 @@ cd frontend && npm run dev
 
 ## 🚀 Getting Started
 
-### Prerequisites I Have Configured
-- I require Node.js 18+ for the TypeScript backend and React frontend
-- I require Python 3.8+ for the XGBoost model integration and virtual environment
-- I have configured the system to use Yarn 4.0+ as the preferred package manager
-- I require PostgreSQL database server for data storage and XGBoost-specific tables
-- I have implemented Redis support with automatic fallback to in-memory cache when Redis is not available
+### Prerequisites Configured
+- Requires Node.js 18+ for the TypeScript backend and React frontend
+- Requires Python 3.8+ for the XGBoost model integration and virtual environment
+- Configured the system to use Yarn 4.0+ as the preferred package manager
+- Requires PostgreSQL database server for data storage and XGBoost-specific tables
+- Implemented Redis support with automatic fallback to in-memory cache when Redis is not available
 
 ### 🤖 XGBoost Integration Setup Implementation
 
-I have created a complete setup process for the XGBoost integration with automated candidate screening:
+Created a complete setup process for the XGBoost integration with automated candidate screening:
 
-#### **1. Automated Setup I Created**
+#### **1. Automated Setup Created**
 ```bash
 git clone https://github.com/youshen-lim/TalentSol---Applicant-Tracking-System-Application.git
 cd "TalentSol - Applicant Tracking System Application"
 
-# I created automated setup scripts that install all dependencies
+# Created automated setup scripts that install all dependencies
 cd backend
-./scripts/local-dev-setup.sh    # I created this script for Linux/macOS
+./scripts/local-dev-setup.sh    # Created this script for Linux/macOS
 # OR
-scripts\local-dev-setup.bat     # I created this script for Windows
+scripts\local-dev-setup.bat     # Created this script for Windows
 ```
 
 #### **2. XGBoost Model Placement**
 ```bash
-# I require the trained model from this repository:
+# Requires the trained model from this repository:
 # https://github.com/youshen-lim/TalentSol_Supervised-Classifier-for-Initial-Candidate-Screening-Decision-Trees
 
-# I configured the system to load the model from this location:
+# Configured the system to load the model from this location:
 cp best_performing_model_pipeline.joblib backend/ml-models/decision-tree/
 ```
 
