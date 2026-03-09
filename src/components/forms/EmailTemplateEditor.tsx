@@ -273,7 +273,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Email Templates</h3>
-          <Button onClick={handleCreateNew} size="sm" className="bg-ats-blue hover:bg-ats-dark-blue">
+          <Button onClick={handleCreateNew} size="sm" className="bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4 mr-2" />
             New
           </Button>
@@ -318,7 +318,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
                 <div
                   key={template.id}
                   className={`flex items-center justify-between p-2 border rounded-md cursor-pointer transition-colors ${
-                    selectedTemplate?.id === template.id ? 'bg-ats-blue/10 border-ats-blue' : 'hover:bg-gray-50'
+                    selectedTemplate?.id === template.id ? 'bg-primary/10 border-ats-blue' : 'hover:bg-gray-50'
                   }`}
                   onClick={() => handleEditTemplate(template)}
                 >
@@ -366,7 +366,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-ats-blue" />
+                  <Mail className="h-5 w-5 text-primary" />
                   {selectedTemplate ? 'Edit Template' : 'Create New Template'}
                 </CardTitle>
                 <div className="flex gap-2">
@@ -377,7 +377,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
                     <Eye className="h-4 w-4 mr-2" />
                     {previewMode ? 'Edit' : 'Preview'}
                   </Button>
-                  <Button onClick={handleSave} className="bg-ats-blue hover:bg-ats-dark-blue">
+                  <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
                     <Save className="h-4 w-4 mr-2" />
                     Save
                   </Button>
@@ -451,7 +451,7 @@ const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
               <p className="text-gray-500 mb-4">
                 Select a template from the list or create a new one to get started.
               </p>
-              <Button onClick={handleCreateNew} className="bg-ats-blue hover:bg-ats-dark-blue">
+              <Button onClick={handleCreateNew} className="bg-primary hover:bg-primary/90">
                 <Plus className="h-4 w-4 mr-2" />
                 Create New Template
               </Button>

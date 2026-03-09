@@ -24,12 +24,12 @@ const NotFound = () => {
     <div className="flex min-h-screen flex-col items-center justify-center text-center bg-gray-50 px-4">
       <div className="max-w-md">
         <div className="flex justify-center mb-6">
-          <div className="h-24 w-24 rounded-full bg-ats-blue/10 flex items-center justify-center">
-            <AlertTriangle className="h-12 w-12 text-ats-blue" />
+          <div className="h-24 w-24 rounded-full bg-indigo-50 flex items-center justify-center">
+            <AlertTriangle className="h-12 w-12 text-indigo-600" />
           </div>
         </div>
 
-        <h1 className="text-9xl font-bold text-ats-blue">404</h1>
+        <h1 className="text-9xl font-bold text-indigo-600">404</h1>
         <h2 className="mt-4 text-2xl font-semibold">Page Not Found</h2>
         <p className="mt-4 text-gray-600">
           The page you are looking for doesn't exist or has been moved.
@@ -47,7 +47,7 @@ const NotFound = () => {
           </Button>
           <Button
             onClick={() => navigate('/')}
-            className="bg-ats-blue hover:bg-ats-dark-blue w-full sm:w-auto"
+            className="bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
           >
             Go to Dashboard
           </Button>

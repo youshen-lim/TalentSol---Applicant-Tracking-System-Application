@@ -25,12 +25,12 @@ function Calendar({
     switch (variant) {
       case "ats-blue":
         return {
-          day_selected: "bg-ats-blue text-white hover:bg-ats-dark-blue hover:text-white focus:bg-ats-dark-blue focus:text-white",
+          day_selected: "bg-primary text-white hover:bg-ats-dark-blue hover:text-white focus:bg-ats-dark-blue focus:text-white",
           nav_button: cn(
             buttonVariants({ variant: "ats-outline-blue" }),
             "h-7 w-7 bg-transparent p-0 opacity-70 hover:opacity-100"
           ),
-          day_today: "bg-ats-blue/10 text-ats-blue font-medium border border-ats-blue/30"
+          day_today: "bg-primary/10 text-primary font-medium border border-ats-blue/30"
         }
       case "ats-purple":
         return {

@@ -68,11 +68,11 @@ const JobDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+      <div className="min-h-screen bg-[#F5F6FA] p-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
               <p className="text-gray-600 font-inter">Loading job details...</p>
             </div>
           </div>
@@ -83,7 +83,7 @@ const JobDetail = () => {
 
   if (error || !job) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+      <div className="min-h-screen bg-[#F5F6FA] p-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -102,7 +102,7 @@ const JobDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+    <div className="min-h-screen bg-[#F5F6FA] p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -124,7 +124,7 @@ const JobDetail = () => {
               <Edit className="h-4 w-4 mr-2" />
               Edit Job
             </Button>
-            <Button onClick={handleApply} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleApply} className="bg-indigo-600 hover:bg-indigo-700">
               Apply Now
             </Button>
           </div>
@@ -159,7 +159,7 @@ const JobDetail = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-blue-600" />
+                    <MapPin className="h-4 w-4 text-indigo-600" />
                     <span className="text-sm font-inter">{formatLocation(job.location)}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ const JobDetail = () => {
 
               <div className="text-right">
                 <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-4 w-4 text-blue-600" />
+                  <Users className="h-4 w-4 text-indigo-600" />
                   <span className="text-lg font-inter font-bold text-gray-900">
                     {job.currentApplicants}
                   </span>
@@ -240,7 +240,7 @@ const JobDetail = () => {
                   <ul className="space-y-2">
                     {job.requiredQualifications.map((qualification, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700 font-inter">{qualification}</span>
                       </li>
                     ))}
@@ -291,7 +291,7 @@ const JobDetail = () => {
                 <CardTitle className="font-inter">Apply for this Position</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button onClick={handleApply} className="w-full bg-blue-600 hover:bg-blue-700">
+                <Button onClick={handleApply} className="w-full bg-indigo-600 hover:bg-indigo-700">
                   Apply Now
                 </Button>
                 <Button variant="outline" className="w-full">

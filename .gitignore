@@ -13,8 +13,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -71,3 +69,28 @@ coverage
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Build output
+dist/
+dist-ssr/
+
+# Python virtual environments (ML)
+backend/ml-models/shared/venv/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# AI assistant session data (never commit)
+.augment/
+.claude/
+
+# Private design/planning docs (kept in separate folder outside repo)
+CLAUDE.md
+OVERHAUL_PROGRESS.md
+ATTRIBUTIONS.md
+"Figma Make UI Code"/
+
+# Loose dev/debug scripts
+check-companies.js
+test-api-auth.js
+start-talentsol.bat

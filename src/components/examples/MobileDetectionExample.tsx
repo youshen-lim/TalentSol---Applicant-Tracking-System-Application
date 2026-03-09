@@ -40,7 +40,7 @@ export function MobileDetectionExample() {
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className={isMobile ? "bg-ats-purple/10" : "bg-ats-blue/10"}>
+      <CardHeader className={isMobile ? "bg-ats-purple/10" : "bg-primary/10"}>
         <CardTitle className="flex items-center gap-2">
           {isMobile ? (
             <>
@@ -49,7 +49,7 @@ export function MobileDetectionExample() {
             </>
           ) : (
             <>
-              <Monitor className="h-5 w-5 text-ats-blue" />
+              <Monitor className="h-5 w-5 text-primary" />
               <span className="text-ats-dark-blue">Desktop Detection</span>
             </>
           )}
@@ -87,7 +87,7 @@ export function MobileDetectionExample() {
               </div>
             </div>
 
-            <div className={`p-4 rounded-lg border ${isTablet ? "bg-ats-blue/5 border-ats-blue/20" : "bg-gray-50 border-gray-200"}`}>
+            <div className={`p-4 rounded-lg border ${isTablet ? "bg-primary/5 border-primary/20" : "bg-gray-50 border-gray-200"}`}>
               <div className="font-medium mb-2">Tablet Breakpoint (1024px):</div>
               <div className="flex items-center gap-2">
                 <div className={`h-3 w-3 rounded-full ${isTablet ? "bg-ats-blue" : "bg-gray-300"}`}></div>

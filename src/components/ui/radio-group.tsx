@@ -30,7 +30,7 @@ const RadioGroupItem = React.forwardRef<
       className={cn(
         "aspect-square h-4 w-4 rounded-full border ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         variant === "default" && "border-primary text-primary focus-visible:ring-ring",
-        variant === "blue" && "border-ats-blue text-ats-blue focus-visible:ring-ats-blue",
+        variant === "blue" && "border-ats-blue text-primary focus-visible:ring-ats-blue",
         variant === "purple" && "border-ats-purple text-ats-purple focus-visible:ring-ats-purple",
         className
       )}
@@ -105,7 +105,7 @@ const RadioGroupCard = React.forwardRef<
         {icon && (
           <div className={cn(
             "mt-0.5 text-muted-foreground",
-            variant === "blue" && "data-[state=checked]:text-ats-blue",
+            variant === "blue" && "data-[state=checked]:text-primary",
             variant === "purple" && "data-[state=checked]:text-ats-purple",
             "peer-data-[state=checked]:text-foreground"
           )}>
@@ -130,7 +130,7 @@ const RadioGroupCard = React.forwardRef<
       <RadioGroupPrimitive.Indicator className={cn(
         "absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full",
         variant === "default" && "bg-primary text-primary-foreground",
-        variant === "blue" && "bg-ats-blue text-white",
+        variant === "blue" && "bg-primary text-white",
         variant === "purple" && "bg-ats-purple text-white"
       )}>
         <Circle className="h-2.5 w-2.5 fill-current" />

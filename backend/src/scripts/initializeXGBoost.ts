@@ -84,7 +84,7 @@ class XGBoostInitializer {
 
     // Check model file exists
     const modelPath = process.env.XGBOOST_MODEL_PATH || 
-      path.join(process.cwd(), 'backend', 'ml-models', 'decision-tree', 'best_performing_model_pipeline.joblib');
+      path.join(process.cwd(), 'ml-models', 'decision-tree', 'best_performing_model_pipeline.joblib');
     
     try {
       await fs.access(modelPath);
@@ -96,7 +96,7 @@ class XGBoostInitializer {
 
     // Check Python wrapper exists
     const wrapperPath = process.env.XGBOOST_PYTHON_WRAPPER || 
-      path.join(process.cwd(), 'backend', 'ml-models', 'integration', 'xgboost_predict_wrapper.py');
+      path.join(process.cwd(), 'ml-models', 'integration', 'xgboost_predict_wrapper.py');
     
     try {
       await fs.access(wrapperPath);

@@ -47,9 +47,9 @@ export class XGBoostModelService {
     // Use local development paths from environment or defaults
     const projectRoot = process.cwd();
     this.modelPath = process.env.XGBOOST_MODEL_PATH ||
-      path.join(projectRoot, 'backend', 'ml-models', 'decision-tree', 'best_performing_model_pipeline.joblib');
+      path.join(projectRoot, 'ml-models', 'decision-tree', 'best_performing_model_pipeline.joblib');
     this.pythonWrapperPath = process.env.XGBOOST_PYTHON_WRAPPER ||
-      path.join(projectRoot, 'backend', 'ml-models', 'integration', 'xgboost_predict_wrapper.py');
+      path.join(projectRoot, 'ml-models', 'integration', 'xgboost_predict_wrapper.py');
 
     console.log('🤖 XGBoost Model Service initialized (Local Development)');
     console.log('📁 Model path:', this.modelPath);
@@ -485,7 +485,7 @@ if __name__ == "__main__":
   private getLocalPythonPath(): string | null {
     const projectRoot = process.cwd();
     const venvPath = process.env.XGBOOST_VENV_PATH ||
-      path.join(projectRoot, 'backend', 'ml-models', 'shared', 'venv');
+      path.join(projectRoot, 'ml-models', 'shared', 'venv');
 
     const pythonPath = process.platform === 'win32'
       ? path.join(venvPath, 'Scripts', 'python.exe')

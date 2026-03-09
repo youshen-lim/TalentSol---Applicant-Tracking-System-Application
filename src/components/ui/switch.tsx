@@ -17,7 +17,7 @@ const switchVariants = cva(
         default: "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:ring-ring",
         "ats-blue": "data-[state=checked]:bg-ats-blue data-[state=unchecked]:bg-input focus-visible:ring-ats-blue",
         "ats-purple": "data-[state=checked]:bg-ats-purple data-[state=unchecked]:bg-input focus-visible:ring-ats-purple",
-        "ats-blue-subtle": "data-[state=checked]:bg-ats-blue/80 data-[state=unchecked]:bg-ats-blue/20 focus-visible:ring-ats-blue",
+        "ats-blue-subtle": "data-[state=checked]:bg-ats-blue/80 data-[state=unchecked]:bg-primary/20 focus-visible:ring-ats-blue",
         "ats-purple-subtle": "data-[state=checked]:bg-ats-purple/80 data-[state=unchecked]:bg-ats-purple/20 focus-visible:ring-ats-purple",
       },
       size: {

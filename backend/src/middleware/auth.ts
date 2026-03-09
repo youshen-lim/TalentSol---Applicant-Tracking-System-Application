@@ -27,9 +27,14 @@ export const authenticateToken = async (
 
     // Handle demo token for development/demo purposes
     if (token === 'demo-token-for-development') {
-      req.user = {
-        id: 'cmbgxm1ib00017yx9yjct7s2c',
-        email: 'demo@talentsol.com',
+      // Look up real seeded admin user so companyId matches the DB
+      const adminUser = await prisma.user.findFirst({
+        where: { role: 'admin' },
+        select: { id: true, email: true, role: true, companyId: true },
+      });
+      req.user = adminUser ?? {
+        id: 'dev-fallback',
+        email: 'admin@talentsol-demo.com',
         role: 'admin',
         companyId: 'comp_1',
       };

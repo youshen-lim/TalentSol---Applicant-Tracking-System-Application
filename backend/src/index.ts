@@ -27,6 +27,7 @@ import mobileRoutes from './routes/mobile.js';
 import notificationRoutes from './routes/notifications.js';
 import reportsRoutes from './routes/reports.js';
 import formRoutes from './routes/forms.js';
+import billingRoutes from './routes/billing.js';
 import { webSocketServer } from './websocket/server.js';
 import { schedulerService } from './services/schedulerService.js';
 import { xgboostIntegrationService } from './services/xgboostIntegrationService';
@@ -119,6 +120,7 @@ app.use('/api/mobile', mobileRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
 app.use('/api/reports', authenticateToken, reportsRoutes);
 app.use('/api/forms', formRoutes);
+app.use('/api/billing', billingRoutes);
 
 // Error handling middleware
 app.use(notFound);

@@ -33,7 +33,7 @@ export const useRealTimeInterviews = () => {
         return;
       }
 
-      const wsUrl = import.meta.env.VITE_WS_API_URL || 'ws://localhost:9000';
+      const wsUrl = import.meta.env.VITE_WS_API_URL || 'ws://localhost:9001';
       const newSocket = io(wsUrl, {
         auth: { token },
         transports: ['websocket', 'polling'],

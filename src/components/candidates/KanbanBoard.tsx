@@ -188,7 +188,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   // Standardized stage color mapping (test group)
   const getStandardizedStageColor = (stageId: string) => {
     const colorMap: Record<string, { bg: string; border: string; text: string }> = {
-      applied: { bg: 'bg-ats-blue/5', border: 'border-ats-blue/20', text: 'text-ats-blue' },
+      applied: { bg: 'bg-primary/5', border: 'border-primary/20', text: 'text-primary' },
       screening: { bg: 'bg-ats-purple/5', border: 'border-ats-purple/20', text: 'text-ats-purple' },
       interview: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
       assessment: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
@@ -212,7 +212,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         {onAddCandidate && (
           <Button
             onClick={onAddCandidate}
-            className="bg-ats-blue hover:bg-ats-dark-blue text-white w-full sm:w-auto"
+            className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto"
             size="sm"
           >
             <PlusIcon className="h-4 w-4 mr-2" />

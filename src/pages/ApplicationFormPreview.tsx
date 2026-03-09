@@ -147,7 +147,7 @@ const ApplicationFormPreview: React.FC = () => {
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div 
-          className="bg-ats-blue h-2 rounded-full transition-all duration-300" 
+          className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
           style={{ width: `${(currentStep / totalSteps) * 100}%` }}
         />
       </div>
@@ -169,7 +169,7 @@ const ApplicationFormPreview: React.FC = () => {
               <p className="text-sm text-gray-500">Preview how candidates will see your application form</p>
             </div>
           </div>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700">
+          <Badge variant="outline" className="bg-indigo-50 text-indigo-600">
             <Eye className="h-3 w-3 mr-1" />
             Preview Mode
           </Badge>
@@ -182,7 +182,7 @@ const ApplicationFormPreview: React.FC = () => {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-ats-blue rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
                 T
               </div>
               <div className="flex-1">
@@ -202,7 +202,7 @@ const ApplicationFormPreview: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-ats-blue" />
+                  <User className="h-5 w-5 text-indigo-600" />
                   Basic Information
                 </CardTitle>
               </CardHeader>
@@ -327,14 +327,14 @@ const ApplicationFormPreview: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-ats-blue" />
+                  <FileText className="h-5 w-5 text-indigo-600" />
                   Resume & Cover Letter
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label>Resume *</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-ats-blue transition-colors">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-300 transition-colors">
                     <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
                     <p className="text-sm text-gray-600 mb-2">
                       Choose file or drag it here
@@ -350,7 +350,7 @@ const ApplicationFormPreview: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label>Cover Letter</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-ats-blue transition-colors">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-300 transition-colors">
                     <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
                     <p className="text-sm text-gray-600 mb-2">
                       Choose file or drag it here
@@ -379,14 +379,14 @@ const ApplicationFormPreview: React.FC = () => {
             </Button>
             
             {currentStep < totalSteps ? (
-              <Button type="button" onClick={nextStep} className="bg-ats-blue hover:bg-ats-dark-blue">
+              <Button type="button" onClick={nextStep} className="bg-indigo-600 hover:bg-indigo-700">
                 Next Step
               </Button>
             ) : (
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-ats-blue hover:bg-ats-dark-blue"
+                className="bg-indigo-600 hover:bg-indigo-700"
               >
                 {isSubmitting ? (
                   <>

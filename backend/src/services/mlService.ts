@@ -46,7 +46,7 @@ export interface MLPredictionResult {
 
 export class MLService {
   private static instance: MLService;
-  private pythonScriptPath = path.join(process.cwd(), 'backend', 'ml-models', 'legacy');
+  private pythonScriptPath = path.join(process.cwd(), 'ml-models', 'legacy');
 
   public static getInstance(): MLService {
     if (!MLService.instance) {

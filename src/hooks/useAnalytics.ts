@@ -112,9 +112,7 @@ export const useDashboardStats = () => {
       setError(null);
       
       const response = await analyticsApi.getDashboardStats();
-      // Backend returns data directly, not wrapped in { data: ... }
-      console.log('🔍 Dashboard API Response:', response);
-      setStats(response);
+      setStats(response.data || response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch dashboard statistics');
       console.error('Error fetching dashboard stats:', err);
@@ -146,7 +144,18 @@ export const useRecruitmentData = (period?: string) => {
       setError(null);
       
       const response = await analyticsApi.getRecruitmentData(period);
-      setData(response);
+      const raw = response.data || response;
+      const adaptedData: RecruitmentData = {
+        period: raw.period || '30d',
+        data: (raw.trends || raw.data || []).map((t: any) => ({
+          date: t.date,
+          applications: t.applications || 0,
+          interviews: t.interviews || 0,
+          offers: t.offers || 0,
+        })),
+        totalApplications: raw.metrics?.totalApplications || raw.totalApplications || 0,
+      };
+      setData(adaptedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch recruitment data');
       console.error('Error fetching recruitment data:', err);
@@ -178,7 +187,12 @@ export const useSourceData = () => {
       setError(null);
       
       const response = await analyticsApi.getSourceData();
-      setData(response);
+      const raw = response.data || response;
+      const sources = raw.sourceEffectiveness?.sources || raw.sourceEffectiveness || [];
+      setData({
+        sourceEffectiveness: Array.isArray(sources) ? sources : [],
+        totalApplications: raw.sourceEffectiveness?.totalApplications || raw.metrics?.totalApplications || raw.totalApplications || 0,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch source data');
       console.error('Error fetching source data:', err);

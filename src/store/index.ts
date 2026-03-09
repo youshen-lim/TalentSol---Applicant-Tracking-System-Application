@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { useShallow } from 'zustand/react/shallow';
 import { authSlice, AuthSlice } from './slices/authSlice';
 import { uiSlice, UISlice } from './slices/uiSlice';
 import { filtersSlice, FiltersSlice } from './slices/filtersSlice';
@@ -41,7 +42,8 @@ export const useAppStore = create<AppStore>()(
 );
 
 // Selector hooks for better performance
-export const useAuth = () => useAppStore((state) => ({
+// useShallow prevents infinite re-renders in Zustand v5 when selectors return object literals
+export const useAuth = () => useAppStore(useShallow((state) => ({
   user: state.user,
   isAuthenticated: state.isAuthenticated,
   isLoading: state.isLoading,
@@ -50,9 +52,9 @@ export const useAuth = () => useAppStore((state) => ({
   logout: state.logout,
   updateProfile: state.updateProfile,
   clearError: state.clearError,
-}));
+})));
 
-export const useUI = () => useAppStore((state) => ({
+export const useUI = () => useAppStore(useShallow((state) => ({
   theme: state.theme,
   sidebarCollapsed: state.sidebarCollapsed,
   compactMode: state.compactMode,
@@ -64,9 +66,9 @@ export const useUI = () => useAppStore((state) => ({
   setCompactMode: state.setCompactMode,
   setLanguage: state.setLanguage,
   setTimezone: state.setTimezone,
-}));
+})));
 
-export const useFilters = () => useAppStore((state) => ({
+export const useFilters = () => useAppStore(useShallow((state) => ({
   candidateFilters: state.candidateFilters,
   jobFilters: state.jobFilters,
   applicationFilters: state.applicationFilters,
@@ -76,9 +78,9 @@ export const useFilters = () => useAppStore((state) => ({
   setApplicationFilters: state.setApplicationFilters,
   setInterviewFilters: state.setInterviewFilters,
   clearAllFilters: state.clearAllFilters,
-}));
+})));
 
-export const useNotifications = () => useAppStore((state) => ({
+export const useNotifications = () => useAppStore(useShallow((state) => ({
   notifications: state.notifications,
   unreadCount: state.unreadCount,
   addNotification: state.addNotification,
@@ -86,7 +88,7 @@ export const useNotifications = () => useAppStore((state) => ({
   markAllAsRead: state.markAllAsRead,
   removeNotification: state.removeNotification,
   clearNotifications: state.clearNotifications,
-}));
+})));
 
 // Export store for direct access if needed
 export default useAppStore;

@@ -130,7 +130,7 @@ export const CandidateRecommendationPanel: React.FC<CandidateRecommendationPanel
       <Card className={cn(shadows.card, className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-ats-blue" />
+            <Brain className="h-5 w-5 text-primary" />
             AI Candidate Recommendations
           </CardTitle>
         </CardHeader>
@@ -146,7 +146,7 @@ export const CandidateRecommendationPanel: React.FC<CandidateRecommendationPanel
       <Card className={cn(shadows.card, className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-ats-blue" />
+            <Brain className="h-5 w-5 text-primary" />
             AI Candidate Recommendations
           </CardTitle>
         </CardHeader>
@@ -172,7 +172,7 @@ export const CandidateRecommendationPanel: React.FC<CandidateRecommendationPanel
       <Card className={cn(shadows.card, className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-ats-blue" />
+            <Brain className="h-5 w-5 text-primary" />
             AI Candidate Recommendations
           </CardTitle>
         </CardHeader>
@@ -200,9 +200,9 @@ export const CandidateRecommendationPanel: React.FC<CandidateRecommendationPanel
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-ats-blue" />
+            <Brain className="h-5 w-5 text-primary" />
             AI Candidate Recommendations
-            <Badge variant="outline" className="ml-2 bg-ats-blue/10 text-ats-blue border-ats-blue/20">
+            <Badge variant="outline" className="ml-2 bg-primary/10 text-primary border-primary/20">
               {recommendations.modelInfo.version}
             </Badge>
           </CardTitle>
@@ -307,7 +307,7 @@ const CandidateRecommendationCard: React.FC<CandidateRecommendationCardProps> = 
               )}
             </div>
             <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-ats-blue text-white"
+              className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-primary text-white"
             >
               {rank}
             </Badge>
@@ -413,10 +413,10 @@ const MLInsightsPanel: React.FC<{ recommendations: RecommendationResponse }> = (
         
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Zap className="h-4 w-4 text-ats-blue" />
+            <Zap className="h-4 w-4 text-primary" />
             <span className="font-medium">Model Confidence</span>
           </div>
-          <div className="text-2xl font-bold text-ats-blue">
+          <div className="text-2xl font-bold text-primary">
             {Math.round(recommendations.recommendations[0]?.score.confidence * 100)}%
           </div>
           <p className="text-xs text-gray-600">Prediction accuracy</p>
@@ -441,7 +441,7 @@ const ModelPerformancePanel: React.FC<{ modelInfo: any }> = ({ modelInfo }) => {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-ats-blue">
+          <div className="text-2xl font-bold text-primary">
             {Math.round(modelInfo.accuracy * 100)}%
           </div>
           <p className="text-xs text-gray-600">Accuracy</p>

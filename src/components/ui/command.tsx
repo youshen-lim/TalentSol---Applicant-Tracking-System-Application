@@ -19,7 +19,7 @@ const commandVariants = cva(
     variants: {
       variant: {
         default: "bg-popover text-popover-foreground",
-        "ats-blue": "bg-ats-blue/5 text-foreground border border-ats-blue/20",
+        "ats-blue": "bg-primary/5 text-foreground border border-primary/20",
         "ats-purple": "bg-ats-purple/5 text-foreground border border-ats-purple/20",
       },
     },
@@ -97,7 +97,7 @@ const CommandInput = React.forwardRef<
 
     switch (variant) {
       case "ats-blue":
-        return "text-ats-blue opacity-70";
+        return "text-primary opacity-70";
       case "ats-purple":
         return "text-ats-purple opacity-70";
       default:
@@ -183,7 +183,7 @@ const commandItemVariants = cva(
     variants: {
       variant: {
         default: "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground",
-        "ats-blue": "data-[selected=true]:bg-ats-blue/10 data-[selected=true]:text-ats-blue aria-selected:bg-ats-blue/10 aria-selected:text-ats-blue",
+        "ats-blue": "data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary aria-selected:bg-primary/10 aria-selected:text-primary",
         "ats-purple": "data-[selected=true]:bg-ats-purple/10 data-[selected=true]:text-ats-purple aria-selected:bg-ats-purple/10 aria-selected:text-ats-purple",
       },
     },
@@ -217,7 +217,7 @@ const commandShortcutVariants = cva(
     variants: {
       variant: {
         default: "text-muted-foreground",
-        "ats-blue": "text-ats-blue/70",
+        "ats-blue": "text-primary/70",
         "ats-purple": "text-ats-purple/70",
       },
     },

@@ -267,7 +267,7 @@ const FileUploadWithProgress: React.FC<FileUploadWithProgressProps> = ({
           className={`
             border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer
             ${isDragOver 
-              ? 'border-ats-blue bg-ats-blue/5' 
+              ? 'border-ats-blue bg-primary/5' 
               : 'border-gray-300 hover:border-ats-blue hover:bg-gray-50'
             }
           `}

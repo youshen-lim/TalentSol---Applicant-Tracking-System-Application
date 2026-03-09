@@ -99,26 +99,25 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
 
   // Use legacy badge styling
 
-  // Legacy stage badge with gradient styling (control group)
   const getLegacyStageBadge = () => {
     const currentStage = stage || candidateStatus;
     switch (currentStage) {
       case 'applied':
-        return 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm';
+        return 'bg-blue-100 text-blue-700 hover:bg-blue-100 border-0';
       case 'screening':
-        return 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm';
+        return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0';
       case 'interview':
-        return 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-sm';
+        return 'bg-purple-100 text-purple-700 hover:bg-purple-100 border-0';
       case 'assessment':
-        return 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-sm';
+        return 'bg-orange-100 text-orange-700 hover:bg-orange-100 border-0';
       case 'offer':
-        return 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-sm';
+        return 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0';
       case 'hired':
-        return 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-sm';
+        return 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0';
       case 'rejected':
-        return 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-sm';
+        return 'bg-red-100 text-red-700 hover:bg-red-100 border-0';
       default:
-        return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-sm';
+        return 'bg-gray-100 text-gray-700 hover:bg-gray-100 border-0';
     }
   };
 
@@ -212,7 +211,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
             key={i}
             className={cn(
               "h-4 w-4",
-              i < rating ? "text-ats-blue fill-current" : "text-gray-300"
+              i < rating ? "text-primary fill-current" : "text-gray-300"
             )}
           />
         ))}
@@ -228,7 +227,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
               {imageSrc ? <AvatarImage src={imageSrc} alt={name} /> : null}
-              <AvatarFallback className="bg-ats-blue text-white text-xs sm:text-sm">{getInitials(name)}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-white text-xs sm:text-sm">{getInitials(name)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
               <CardTitle className="text-sm sm:text-lg truncate">{name}</CardTitle>
@@ -244,12 +243,12 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
         {/* Contact Information */}
         <div className="space-y-1 sm:space-y-2">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-            <MailIcon className="h-3 w-3 text-ats-blue flex-shrink-0" />
+            <MailIcon className="h-3 w-3 text-primary flex-shrink-0" />
             <span className="truncate">{email}</span>
           </div>
           {phone && (
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <PhoneIcon className="h-3 w-3 text-ats-blue flex-shrink-0" />
+              <PhoneIcon className="h-3 w-3 text-primary flex-shrink-0" />
               <span className="truncate">{phone}</span>
             </div>
           )}
@@ -293,7 +292,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
                 <Badge
                   key={index}
                   variant="secondary"
-                  className="text-xs px-1.5 sm:px-2 py-0.5 bg-ats-blue/10 text-ats-blue border-ats-blue/20"
+                  className="text-xs px-1.5 sm:px-2 py-0.5 bg-primary/10 text-primary border-primary/20"
                 >
                   {tag}
                 </Badge>
@@ -312,7 +311,7 @@ export const CandidateCard: React.FC<CandidateCardProps> = ({
           variant="ghost"
           size="sm"
           onClick={handleView}
-          className="w-full text-ats-blue hover:text-ats-dark-blue hover:bg-ats-blue/10 text-xs sm:text-sm"
+          className="w-full text-primary hover:text-ats-dark-blue hover:bg-primary/10 text-xs sm:text-sm"
         >
           <UserIcon className="h-3 w-3 mr-1 flex-shrink-0" />
           <span>View Profile</span>

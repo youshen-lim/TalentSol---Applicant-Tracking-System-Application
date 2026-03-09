@@ -19,7 +19,7 @@ const toggleVariants = cva(
           "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
         // ATS-specific variants
         "ats-blue":
-          "bg-transparent hover:bg-ats-blue/10 hover:text-ats-blue data-[state=on]:bg-ats-blue data-[state=on]:text-white",
+          "bg-transparent hover:bg-primary/10 hover:text-primary data-[state=on]:bg-ats-blue data-[state=on]:text-white",
         "ats-light-blue":
           "bg-transparent hover:bg-ats-light-blue/10 hover:text-ats-light-blue data-[state=on]:bg-ats-light-blue data-[state=on]:text-white",
         "ats-purple":
@@ -28,7 +28,7 @@ const toggleVariants = cva(
           "bg-transparent hover:bg-ats-light-purple/10 hover:text-ats-light-purple data-[state=on]:bg-ats-light-purple data-[state=on]:text-white",
         // Subtle variants
         "ats-blue-subtle":
-          "bg-transparent hover:bg-ats-blue/5 hover:text-ats-blue data-[state=on]:bg-ats-blue/10 data-[state=on]:text-ats-blue",
+          "bg-transparent hover:bg-primary/5 hover:text-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary",
         "ats-purple-subtle":
           "bg-transparent hover:bg-ats-purple/5 hover:text-ats-purple data-[state=on]:bg-ats-purple/10 data-[state=on]:text-ats-purple",
       },

@@ -3,6 +3,7 @@ import { prisma } from '../index.js';
 import { createJobSchema, updateJobSchema } from '../types/validation.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
+import { enforceJobLimit } from '../middleware/planEnforcement.js';
 import {
   sendSuccess,
   sendPaginatedSuccess,
@@ -264,8 +265,8 @@ router.get('/company/all', asyncHandler(async (req: AuthenticatedRequest, res: R
   });
 }));
 
-// Create new job
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response<JobResponse>) => {
+// Create new job (enforces per-plan job limit)
+router.post('/', enforceJobLimit, asyncHandler(async (req: AuthenticatedRequest, res: Response<JobResponse>) => {
   const validatedData = createJobSchema.parse(req.body);
 
   // Serialize complex fields to JSON strings for database storage
@@ -379,6 +380,39 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response<
     data: parseJobFields(job),
     message: 'Job updated successfully',
     timestamp: new Date().toISOString()
+  });
+}));
+
+// Get job statistics
+router.get('/:id/stats', asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+
+  const job = await prisma.job.findFirst({
+    where: { id, companyId: req.user!.companyId },
+    select: { id: true },
+  });
+
+  if (!job) {
+    throw new AppError('Job not found', 404);
+  }
+
+  const applications = await prisma.application.findMany({
+    where: { jobId: id },
+    select: { status: true },
+  });
+
+  const byStage: Record<string, number> = {};
+  for (const app of applications) {
+    byStage[app.status] = (byStage[app.status] || 0) + 1;
+  }
+
+  res.json({
+    success: true,
+    data: {
+      applications: applications.length,
+      byStage: Object.entries(byStage).map(([status, count]) => ({ status, count })),
+    },
+    timestamp: new Date().toISOString(),
   });
 }));
 

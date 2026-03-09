@@ -79,7 +79,7 @@ const ResponsivePageWrapper: React.FC<ResponsivePageWrapperProps> = ({
   // Background classes
   const backgroundClasses = noBackground 
     ? '' 
-    : 'min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50';
+    : 'min-h-screen bg-[#F5F6FA]';
 
   // Container classes
   const containerClasses = cn(
@@ -304,7 +304,7 @@ export const ResponsiveTabs: React.FC<ResponsiveTabsProps> = ({
                   'flex items-center space-x-2 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200',
                   isMobile ? 'whitespace-nowrap' : '',
                   isActive
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-primary text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 )}
               >

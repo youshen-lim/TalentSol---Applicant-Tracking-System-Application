@@ -117,11 +117,11 @@ const ApplicationProgress = ({
               className={cn(
                 "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
                 index + 1 < currentStage &&
-                  (variant === "blue" ? "bg-ats-blue text-white" :
+                  (variant === "blue" ? "bg-primary text-white" :
                    variant === "purple" ? "bg-ats-purple text-white" :
                    "bg-primary text-primary-foreground"),
                 index + 1 === currentStage &&
-                  (variant === "blue" ? "border-2 border-ats-blue text-ats-blue" :
+                  (variant === "blue" ? "border-2 border-ats-blue text-primary" :
                    variant === "purple" ? "border-2 border-ats-purple text-ats-purple" :
                    "border-2 border-primary text-primary"),
                 index + 1 > currentStage && "border border-input bg-background"

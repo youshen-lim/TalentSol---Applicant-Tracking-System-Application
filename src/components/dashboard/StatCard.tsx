@@ -40,7 +40,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   iconClassName,
   valueClassName,
   trendClassName,
-  iconColor = '#3B82F6', // Default to blue
+  iconColor = '#4F46E5', // Default to indigo
   onClick,
   tooltip,
   change,
@@ -71,17 +71,17 @@ export const StatCard: React.FC<StatCardProps> = ({
   // New layout
   if (useNewLayout) {
     return (
-      <Card className={cn("bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300", className)} onClick={onClick}>
+      <Card className={cn("bg-white border border-gray-100 rounded-xl hover:shadow-md transition-all duration-200", className)} onClick={onClick}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {Icon && typeof Icon !== 'function' && <div className="flex-shrink-0">{Icon}</div>}
               {Icon && typeof Icon === 'function' && (
                 <div className="flex-shrink-0">
-                  <Icon className="h-4 w-4 text-blue-600" />
+                  <Icon className="h-4 w-4 text-indigo-600" />
                 </div>
               )}
-              <CardTitle className="text-base font-semibold text-slate-700">
+              <CardTitle className="text-gray-700" style={{ fontSize: 13, fontWeight: 500 }}>
                 {title}
               </CardTitle>
               {tooltip && (
@@ -102,7 +102,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         <CardContent className="pt-0">
           <div className="flex justify-between items-end">
             <div className="min-w-0 flex-1">
-              <div className={cn("text-3xl font-bold text-slate-900 tracking-tight", valueClassName)}>{value}</div>
+              <div className={cn("text-gray-900 font-bold tracking-tight", valueClassName)} style={{ fontSize: 24 }}>{value}</div>
               {description && (
                 <p className="text-sm mt-1 text-slate-600">
                   {description}
@@ -114,8 +114,8 @@ export const StatCard: React.FC<StatCardProps> = ({
                 className={cn(
                   "text-sm font-semibold px-3 py-1.5 rounded-lg shadow-sm",
                   change.positive
-                    ? "text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
-                    : "text-red-700 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200"
+                    ? "text-green-700 bg-green-50 border border-green-200"
+                    : "text-red-700 bg-red-50 border border-red-200"
                 )}
               >
                 {change.positive ? "+" : ""}
@@ -126,8 +126,8 @@ export const StatCard: React.FC<StatCardProps> = ({
               <div
                 className={cn(
                   "flex items-center text-sm font-semibold px-3 py-1.5 rounded-lg shadow-sm",
-                  trend > 0 ? "text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200" :
-                  trend < 0 ? "text-red-700 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200" :
+                  trend > 0 ? "text-green-700 bg-green-50 border border-green-200" :
+                  trend < 0 ? "text-red-700 bg-red-50 border border-red-200" :
                   "text-gray-600 bg-gray-50 border border-gray-200",
                   trendClassName
                 )}
@@ -148,7 +148,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <Card
       className={cn(
-        "bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300",
+        "bg-white border border-gray-100 rounded-xl hover:shadow-md transition-all duration-200",
         onClick ? "cursor-pointer" : "",
         className
       )}
@@ -160,7 +160,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             {Icon && typeof Icon !== 'function' && <div className="flex-shrink-0">{Icon}</div>}
             {Icon && typeof Icon === 'function' && (
               <div className="flex-shrink-0">
-                <Icon className="h-4 w-4 text-blue-600" />
+                <Icon className="h-4 w-4 text-indigo-600" />
               </div>
             )}
             <p className="text-base font-semibold text-slate-700">{title}</p>

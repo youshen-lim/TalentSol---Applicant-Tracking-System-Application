@@ -1,136 +1,343 @@
-/* Enhanced scrolling styles for better horizontal scroll experience */
+@import "tailwindcss";
 @import './styles/enhanced-scroll.css';
-
-/* TalentSol Design System - Global spacing and layout components */
 @import './styles/talentsol-design-system.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Matches Figma Make: dark mode via .dark ancestor class */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   TALENTSOL DESIGN TOKENS — Tailwind CSS v4 @theme block
+   All tokens become CSS custom properties and generate utilities
+   ============================================================ */
+@theme {
+  /* === BRAND — Indigo primary (#4F46E5) replaces blue === */
+  --color-primary: #4F46E5;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: oklch(0.95 0.0058 264.53);
+  --color-secondary-foreground: #030213;
+  --color-accent: #EEF2FF;
+  --color-accent-foreground: #4F46E5;
+
+  /* === SURFACE === */
+  --color-background: #ffffff;
+  --color-foreground: oklch(0.145 0 0);
+  --color-card: #ffffff;
+  --color-card-foreground: oklch(0.145 0 0);
+  --color-popover: #ffffff;
+  --color-popover-foreground: oklch(0.145 0 0);
+  --color-muted: #ececf0;
+  --color-muted-foreground: #717182;
+  /* input: transparent border; input-background: filled #f3f3f5 — matches Figma Make */
+  --color-input: transparent;
+  --color-input-background: #f3f3f5;
+  --color-switch-background: #cbced4;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-ring: #4F46E5;
+  --color-destructive: #d4183d;
+  --color-destructive-foreground: #ffffff;
+
+  /* === SIDEBAR — light/white (was dark purple) === */
+  --color-sidebar: oklch(0.985 0 0);
+  --color-sidebar-foreground: #030213;
+  --color-sidebar-primary: #030213;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: oklch(0.97 0 0);
+  --color-sidebar-accent-foreground: #030213;
+  --color-sidebar-border: oklch(0.922 0 0);
+  --color-sidebar-ring: #4F46E5;
+
+  /* === ATS BRAND COLORS — kept for backward compat across unmigrated pages === */
+  --color-ats-blue: #3B82F6;
+  --color-ats-light-blue: #60A5FA;
+  --color-ats-dark-blue: #2563EB;
+  --color-ats-purple: #8A70D6;
+  --color-ats-light-purple: #9b87f5;
+  --color-ats-dark-purple: #6046b6;
+  --color-ats-gray: #f8f9fa;
+  --color-ats-dark-gray: #343a40;
+  --color-ats-border-gray: #e9ecef;
+
+  /* === ATS PIPELINE STATUS COLORS === */
+  --color-status-applied: #3B82F6;
+  --color-status-screening: #8B5CF6;
+  --color-status-interview: #6366F1;
+  --color-status-offer: #10B981;
+  --color-status-hired: #059669;
+  --color-status-rejected: #EF4444;
+
+  /* === CHART PALETTE (5 colors for recharts) === */
+  --color-chart-1: oklch(0.646 0.222 41.116);
+  --color-chart-2: oklch(0.6 0.118 184.704);
+  --color-chart-3: oklch(0.398 0.07 227.392);
+  --color-chart-4: oklch(0.828 0.189 84.429);
+  --color-chart-5: oklch(0.769 0.188 70.08);
+
+  /* === BORDER RADIUS === */
+  --radius: 0.625rem;
+  --radius-sm: calc(0.625rem - 4px);
+  --radius-md: calc(0.625rem - 2px);
+  --radius-lg: 0.625rem;
+  --radius-xl: calc(0.625rem + 4px);
+
+  /* === TYPOGRAPHY === */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* === CUSTOM SPACING TOKENS === */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+
+  /* Card spacing */
+  --spacing-card-inner: 2rem;
+  --spacing-card-inner-sm: 1.5rem;
+  --spacing-card-gap: 2rem;
+  --spacing-card-gap-sm: 1.5rem;
+
+  /* Section spacing */
+  --spacing-section: 2.5rem;
+  --spacing-section-lg: 3rem;
+  --spacing-section-xl: 4rem;
+
+  /* Navigation spacing */
+  --spacing-header-bottom: 2rem;
+  --spacing-nav-padding: 1.25rem;
+  --spacing-tab-padding: 1.5rem;
+
+  /* Layout spacing */
+  --spacing-page-x: 1.5rem;
+  --spacing-page-y: 2rem;
+  --spacing-container-padding: 2rem;
+
+  /* Data and metric spacing */
+  --spacing-metric-gap: 1.5rem;
+  --spacing-data-spacing: 0.75rem;
+  --spacing-chart-padding: 2rem;
+
+  /* Interactive element spacing */
+  --spacing-button-gap: 0.75rem;
+  --spacing-form-gap: 1.5rem;
+  --spacing-input-padding: 0.75rem;
+
+  /* === SHADOWS === */
+  --shadow-ats-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-ats-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-ats-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-ats-dropdown: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* === ANIMATIONS === */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-out;
+  --animate-collapsible-up: collapsible-up 0.2s ease-out;
+}
+
+/* ============================================================
+   KEYFRAMES (accordion + collapsible for Radix UI)
+   ============================================================ */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+@keyframes collapsible-down {
+  from { height: 0; }
+  to { height: var(--radix-collapsible-content-height); }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); }
+  to { height: 0; }
+}
+
+/* ============================================================
+   BACKGROUND GRADIENT UTILITIES
+   (status pipeline badges — referenced in badge.tsx variants)
+   ============================================================ */
+@utility bg-ats-blue-gradient {
+  background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+@utility bg-ats-purple-gradient {
+  background-image: linear-gradient(135deg, #8A70D6 0%, #6046b6 100%);
+}
+
+@utility bg-ats-status-applied {
+  background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+@utility bg-ats-status-screening {
+  background-image: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+@utility bg-ats-status-interview {
+  background-image: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+}
+
+@utility bg-ats-status-offer {
+  background-image: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+@utility bg-ats-status-hired {
+  background-image: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+@utility bg-ats-status-rejected {
+  background-image: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+/* Primary indigo gradient */
+@utility bg-primary-gradient {
+  background-image: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%);
+}
+
+/* ============================================================
+   DARK MODE OVERRIDES — exact Figma Make dark tokens
+   ============================================================ */
 @layer base {
-  :root {
-    /* === CORE LAYOUT COLORS === */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
-
-    /* === BRAND COLORS === */
-    /* Blue as primary color scheme (based on ats-blue: #3B82F6) */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    /* Purple as secondary color scheme (based on ats-purple: #8A70D6) */
-    --secondary: 256 57% 64%;
-    --secondary-foreground: 0 0% 100%;
-
-    /* === COMPONENT COLORS === */
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    /* === SIDEBAR THEME === */
-    /* Enhanced sidebar colors with purple theme (based on 253 68% values) */
-    --sidebar-background: 253 68% 20%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 253 68% 60%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 253 68% 30%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 253 68% 25%;
-    --sidebar-ring: 253 68% 60%;
-
-    /* === DESIGN TOKENS === */
-    --radius: 0.5rem;
-  }
-
   .dark {
-    /* === CORE LAYOUT COLORS (DARK MODE) === */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217 91% 60%;
-
-    /* === BRAND COLORS (DARK MODE) === */
-    /* Blue as primary color scheme (dark mode) */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    /* Purple as secondary color scheme (dark mode) */
-    --secondary: 256 57% 64%;
-    --secondary-foreground: 0 0% 100%;
-
-    /* === COMPONENT COLORS (DARK MODE) === */
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    /* === SIDEBAR THEME (DARK MODE) === */
-    /* Enhanced sidebar colors with purple theme (dark mode) */
-    --sidebar-background: 253 68% 20%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 253 68% 60%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 253 68% 30%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 253 68% 25%;
-    --sidebar-ring: 253 68% 60%;
+    --color-background: oklch(0.145 0 0);
+    --color-foreground: oklch(0.985 0 0);
+    --color-card: oklch(0.145 0 0);
+    --color-card-foreground: oklch(0.985 0 0);
+    --color-popover: oklch(0.145 0 0);
+    --color-popover-foreground: oklch(0.985 0 0);
+    --color-primary: oklch(0.985 0 0);
+    --color-primary-foreground: oklch(0.205 0 0);
+    --color-secondary: oklch(0.269 0 0);
+    --color-secondary-foreground: oklch(0.985 0 0);
+    --color-muted: oklch(0.269 0 0);
+    --color-muted-foreground: oklch(0.708 0 0);
+    --color-accent: oklch(0.269 0 0);
+    --color-accent-foreground: oklch(0.985 0 0);
+    --color-destructive: oklch(0.396 0.141 25.723);
+    --color-destructive-foreground: oklch(0.637 0.237 25.331);
+    --color-border: oklch(0.269 0 0);
+    --color-input: oklch(0.269 0 0);
+    --color-input-background: oklch(0.269 0 0);
+    --color-ring: oklch(0.439 0 0);
+    --color-chart-1: oklch(0.488 0.243 264.376);
+    --color-chart-2: oklch(0.696 0.17 162.48);
+    --color-chart-3: oklch(0.769 0.188 70.08);
+    --color-chart-4: oklch(0.627 0.265 303.9);
+    --color-chart-5: oklch(0.645 0.246 16.439);
+    --color-sidebar: oklch(0.205 0 0);
+    --color-sidebar-foreground: oklch(0.985 0 0);
+    --color-sidebar-primary: oklch(0.488 0.243 264.376);
+    --color-sidebar-primary-foreground: oklch(0.985 0 0);
+    --color-sidebar-accent: oklch(0.269 0 0);
+    --color-sidebar-accent-foreground: oklch(0.985 0 0);
+    --color-sidebar-border: oklch(0.269 0 0);
+    --color-sidebar-ring: oklch(0.439 0 0);
   }
 }
 
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 @layer base {
   * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground font-sans font-inter-system;
+    border-color: var(--color-border);
+    outline-color: color-mix(in oklch, var(--color-ring) 50%, transparent);
+    box-sizing: border-box;
   }
 
-  /* Ensure consistent font rendering across all elements */
-  h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, label {
-    @apply font-inter-system;
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* ============================================================
+   FONT UTILITIES (kept for backward compat)
+   ============================================================ */
 @layer utilities {
-  /* TalentSol consolidated font system utilities */
   .font-inter-system {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+      'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Legacy support - will be deprecated */
   .font-inter {
-    @apply font-inter-system;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+      'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   .ats-font-consistent {
-    @apply font-inter-system;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+      'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Scrollbar utilities (migrated from tailwind.config.ts plugin) */
+  .enhanced-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+  .enhanced-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+  .enhanced-scrollbar::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
+  .enhanced-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+  .enhanced-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; background-clip: content-box; }
+  .enhanced-scrollbar::-webkit-scrollbar-thumb:active { background: #6b7280; background-clip: content-box; }
+
+  .enhanced-scrollbar-blue {
+    scrollbar-width: thin;
+    scrollbar-color: #93c5fd transparent;
+  }
+  .enhanced-scrollbar-blue::-webkit-scrollbar { width: 8px; height: 8px; }
+  .enhanced-scrollbar-blue::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
+  .enhanced-scrollbar-blue::-webkit-scrollbar-thumb {
+    background: #93c5fd;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+  .enhanced-scrollbar-blue::-webkit-scrollbar-thumb:hover { background: #60a5fa; background-clip: content-box; }
+  .enhanced-scrollbar-blue::-webkit-scrollbar-thumb:active { background: #3b82f6; background-clip: content-box; }
+
+  .scrollbar-auto-hide { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-auto-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-auto-hide:hover { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+  .scrollbar-auto-hide:hover::-webkit-scrollbar { display: block; width: 6px; height: 6px; }
+  .scrollbar-auto-hide:hover::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+  .scrollbar-thin { scrollbar-width: thin; }
+  .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  .scrollbar-thumb-gray-400::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
 }
 
-
+/* ============================================================
+   SPACE UTILITIES (migrated from tailwind.config.ts plugin)
+   ============================================================ */
+@layer utilities {
+  .space-card-gap > * + * {
+    margin-top: var(--spacing-card-gap);
+  }
+  .space-section > * + * {
+    margin-top: var(--spacing-section);
+  }
+  .space-section-lg > * + * {
+    margin-top: var(--spacing-section-lg);
+  }
+}

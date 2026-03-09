@@ -40,7 +40,7 @@ export const useUserProfile = (): UseUserProfileReturn => {
       const response = await userApi.getProfile();
       
       if (response) {
-        setUser(response);
+        setUser(response.data || response);
       } else {
         // Fallback to mock data if API fails
         const mockUser: UserProfile = {

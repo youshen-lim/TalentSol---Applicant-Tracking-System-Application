@@ -18,7 +18,7 @@ const toastVariants = cva("group toast", {
   variants: {
     variant: {
       default: "group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border",
-      "ats-blue": "group-[.toaster]:bg-ats-blue/5 group-[.toaster]:text-ats-dark-blue group-[.toaster]:border-ats-blue/20",
+      "ats-blue": "group-[.toaster]:bg-primary/5 group-[.toaster]:text-ats-dark-blue group-[.toaster]:border-primary/20",
       "ats-purple": "group-[.toaster]:bg-ats-purple/5 group-[.toaster]:text-ats-dark-purple group-[.toaster]:border-ats-purple/20",
     },
   },
@@ -46,7 +46,7 @@ const cancelButtonVariants = cva("", {
   variants: {
     variant: {
       default: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-      "ats-blue": "group-[.toast]:bg-ats-blue/10 group-[.toast]:text-ats-blue",
+      "ats-blue": "group-[.toast]:bg-primary/10 group-[.toast]:text-primary",
       "ats-purple": "group-[.toast]:bg-ats-purple/10 group-[.toast]:text-ats-purple",
     },
   },
@@ -60,7 +60,7 @@ const descriptionVariants = cva("", {
   variants: {
     variant: {
       default: "group-[.toast]:text-muted-foreground",
-      "ats-blue": "group-[.toast]:text-ats-blue/80",
+      "ats-blue": "group-[.toast]:text-primary/80",
       "ats-purple": "group-[.toast]:text-ats-purple/80",
     },
   },
@@ -92,18 +92,18 @@ const Toaster = ({ variant = "default", ...props }: ToasterProps) => {
               ? "group-[.toast]:font-medium group-[.toast]:text-ats-dark-purple"
               : "",
           closeButton: variant === "ats-blue"
-            ? "group-[.toast]:text-ats-blue/70 group-[.toast]:hover:text-ats-blue"
+            ? "group-[.toast]:text-primary/70 group-[.toast]:hover:text-primary"
             : variant === "ats-purple"
               ? "group-[.toast]:text-ats-purple/70 group-[.toast]:hover:text-ats-purple"
               : "",
           success: variant === "ats-blue"
-            ? "group-[.toast]:text-ats-blue group-[.toast]:bg-ats-blue/10"
+            ? "group-[.toast]:text-primary group-[.toast]:bg-primary/10"
             : variant === "ats-purple"
               ? "group-[.toast]:text-ats-purple group-[.toast]:bg-ats-purple/10"
               : "",
           error: "group-[.toast]:text-destructive group-[.toast]:bg-destructive/10",
           info: variant === "ats-blue"
-            ? "group-[.toast]:text-ats-blue group-[.toast]:bg-ats-blue/10"
+            ? "group-[.toast]:text-primary group-[.toast]:bg-primary/10"
             : variant === "ats-purple"
               ? "group-[.toast]:text-ats-purple group-[.toast]:bg-ats-purple/10"
               : "group-[.toast]:text-primary group-[.toast]:bg-primary/10",
@@ -127,7 +127,7 @@ const toast = {
   },
   // Add ATS-specific variants
   atsBlue: (message: string, options?: Omit<ToastOptions, "variant">) => {
-    return sonnerToast(message, { ...options, className: "bg-ats-blue/5 border-ats-blue/20 text-ats-dark-blue" })
+    return sonnerToast(message, { ...options, className: "bg-primary/5 border-primary/20 text-ats-dark-blue" })
   },
   atsPurple: (message: string, options?: Omit<ToastOptions, "variant">) => {
     return sonnerToast(message, { ...options, className: "bg-ats-purple/5 border-ats-purple/20 text-ats-dark-purple" })
@@ -135,7 +135,7 @@ const toast = {
   // Override success with ATS-specific styling
   success: (message: string, options?: ToastOptions) => {
     const className = options?.variant === "ats-blue"
-      ? "border-ats-blue/20 [&>div>.sonner-toast-icon]:text-ats-blue [&>div>.sonner-toast-icon]:bg-ats-blue/10"
+      ? "border-primary/20 [&>div>.sonner-toast-icon]:text-primary [&>div>.sonner-toast-icon]:bg-primary/10"
       : options?.variant === "ats-purple"
         ? "border-ats-purple/20 [&>div>.sonner-toast-icon]:text-ats-purple [&>div>.sonner-toast-icon]:bg-ats-purple/10"
         : ""
@@ -148,7 +148,7 @@ const toast = {
   // Override info with ATS-specific styling
   info: (message: string, options?: ToastOptions) => {
     const className = options?.variant === "ats-blue"
-      ? "border-ats-blue/20 [&>div>.sonner-toast-icon]:text-ats-blue [&>div>.sonner-toast-icon]:bg-ats-blue/10"
+      ? "border-primary/20 [&>div>.sonner-toast-icon]:text-primary [&>div>.sonner-toast-icon]:bg-primary/10"
       : options?.variant === "ats-purple"
         ? "border-ats-purple/20 [&>div>.sonner-toast-icon]:text-ats-purple [&>div>.sonner-toast-icon]:bg-ats-purple/10"
         : ""

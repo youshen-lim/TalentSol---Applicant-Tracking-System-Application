@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { interviewsApi } from '@/services/api';
 
 interface BulkOperationResult {
   success: boolean;
@@ -11,421 +12,87 @@ interface BulkOperationResult {
 export const useBulkInterviewOperations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [operationError, setOperationError] = useState<{ operation: string; message: string } | null>(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-  // Get auth token
-  const getAuthToken = () => {
-    return localStorage.getItem('authToken');
-  };
-
-  // Get auth headers
-  const getAuthHeaders = () => {
-    const token = getAuthToken();
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  };
-
-  // Bulk reschedule interviews
-  const bulkReschedule = useCallback(async (
-    interviewIds: string[], 
-    newDate: string, 
-    newTime: string
+  const runBulkOp = useCallback(async (
+    operation: 'reschedule' | 'cancel' | 'send_reminder' | 'delete' | 'update_status' | 'assign_interviewer',
+    interviewIds: string[],
+    opData?: Record<string, unknown>,
+    successTitle?: string,
+    successDesc?: string,
   ): Promise<BulkOperationResult> => {
     setLoading(true);
     setError(null);
+    setOperationError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'reschedule',
-          interviewIds,
-          data: { newDate, newTime }
-        }),
-      });
+      await interviewsApi.bulkOperations({ operation, interviewIds, data: opData });
 
-      if (!response.ok) {
-        throw new Error(`Failed to reschedule interviews: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
       toast({
-        title: 'Interviews Rescheduled',
-        description: `${interviewIds.length} interview(s) have been rescheduled successfully.`,
+        title: successTitle || 'Operation complete',
+        description: successDesc || `${interviewIds.length} interview(s) updated.`,
       });
 
-      return {
-        success: true,
-        message: 'Interviews rescheduled successfully',
-        affectedCount: interviewIds.length
-      };
+      return { success: true, message: 'Operation completed successfully', affectedCount: interviewIds.length };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to reschedule interviews';
+      const errorMessage = err instanceof Error ? err.message : 'Operation failed';
       setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      setOperationError({ operation, message: errorMessage });
 
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+
+      return { success: false, message: errorMessage, affectedCount: 0 };
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, []);
 
-  // Bulk cancel interviews
-  const bulkCancel = useCallback(async (
-    interviewIds: string[], 
-    reason: string
-  ): Promise<BulkOperationResult> => {
-    setLoading(true);
-    setError(null);
+  const bulkReschedule = useCallback(async (interviewIds: string[], newDate: string, newTime: string) =>
+    runBulkOp('reschedule', interviewIds, { newDate, newTime },
+      'Interviews Rescheduled',
+      `${interviewIds.length} interview(s) have been rescheduled.`
+    ), [runBulkOp]);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'cancel',
-          interviewIds,
-          data: { reason }
-        }),
-      });
+  const bulkCancel = useCallback(async (interviewIds: string[], reason: string) =>
+    runBulkOp('cancel', interviewIds, { reason },
+      'Interviews Cancelled',
+      `${interviewIds.length} interview(s) have been cancelled.`
+    ), [runBulkOp]);
 
-      if (!response.ok) {
-        throw new Error(`Failed to cancel interviews: ${response.statusText}`);
-      }
+  const bulkSendReminder = useCallback(async (interviewIds: string[], message: string) =>
+    runBulkOp('send_reminder', interviewIds, { message },
+      'Reminders Sent',
+      `Reminder sent to ${interviewIds.length} candidate(s).`
+    ), [runBulkOp]);
 
-      const result = await response.json();
-      
-      toast({
-        title: 'Interviews Cancelled',
-        description: `${interviewIds.length} interview(s) have been cancelled.`,
-      });
+  const bulkExport = useCallback(async (interviewIds: string[], format: string) =>
+    runBulkOp('update_status', interviewIds, { format },
+      'Export Complete',
+      `${interviewIds.length} interview(s) exported.`
+    ), [runBulkOp]);
 
-      return {
-        success: true,
-        message: 'Interviews cancelled successfully',
-        affectedCount: interviewIds.length
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to cancel interviews';
-      setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+  const bulkDelete = useCallback(async (interviewIds: string[]) =>
+    runBulkOp('delete', interviewIds, undefined,
+      'Interviews Deleted',
+      `${interviewIds.length} interview(s) permanently deleted.`
+    ), [runBulkOp]);
 
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [API_BASE_URL]);
+  const bulkUpdateStatus = useCallback(async (interviewIds: string[], status: string) =>
+    runBulkOp('update_status', interviewIds, { status },
+      'Status Updated',
+      `${interviewIds.length} interview(s) updated to ${status}.`
+    ), [runBulkOp]);
 
-  // Bulk send reminders
-  const bulkSendReminder = useCallback(async (
-    interviewIds: string[], 
-    message: string
-  ): Promise<BulkOperationResult> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'send_reminder',
-          interviewIds,
-          data: { message }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to send reminders: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      toast({
-        title: 'Reminders Sent',
-        description: `Reminder emails sent to ${interviewIds.length} candidate(s).`,
-      });
-
-      return {
-        success: true,
-        message: 'Reminders sent successfully',
-        affectedCount: interviewIds.length
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send reminders';
-      setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [API_BASE_URL]);
-
-  // Bulk export interviews
-  const bulkExport = useCallback(async (
-    interviewIds: string[], 
-    format: string
-  ): Promise<BulkOperationResult> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'export',
-          interviewIds,
-          data: { format }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to export interviews: ${response.statusText}`);
-      }
-
-      // Handle file download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `interviews_export.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: 'Export Complete',
-        description: `${interviewIds.length} interview(s) exported successfully.`,
-      });
-
-      return {
-        success: true,
-        message: 'Interviews exported successfully',
-        affectedCount: interviewIds.length
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to export interviews';
-      setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [API_BASE_URL]);
-
-  // Bulk delete interviews
-  const bulkDelete = useCallback(async (
-    interviewIds: string[]
-  ): Promise<BulkOperationResult> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'delete',
-          interviewIds
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete interviews: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      toast({
-        title: 'Interviews Deleted',
-        description: `${interviewIds.length} interview(s) have been deleted permanently.`,
-      });
-
-      return {
-        success: true,
-        message: 'Interviews deleted successfully',
-        affectedCount: interviewIds.length
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete interviews';
-      setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [API_BASE_URL]);
-
-  // Bulk update interview status
-  const bulkUpdateStatus = useCallback(async (
-    interviewIds: string[], 
-    status: string
-  ): Promise<BulkOperationResult> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'update_status',
-          interviewIds,
-          data: { status }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update interview status: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      toast({
-        title: 'Status Updated',
-        description: `${interviewIds.length} interview(s) status updated to ${status}.`,
-      });
-
-      return {
-        success: true,
-        message: 'Interview status updated successfully',
-        affectedCount: interviewIds.length
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update interview status';
-      setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [API_BASE_URL]);
-
-  // Bulk assign interviewer
-  const bulkAssignInterviewer = useCallback(async (
-    interviewIds: string[], 
-    interviewerId: string,
-    interviewerName: string
-  ): Promise<BulkOperationResult> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/interviews/bulk-operations`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          operation: 'assign_interviewer',
-          interviewIds,
-          data: { interviewerId, interviewerName }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to assign interviewer: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      toast({
-        title: 'Interviewer Assigned',
-        description: `${interviewerName} has been assigned to ${interviewIds.length} interview(s).`,
-      });
-
-      return {
-        success: true,
-        message: 'Interviewer assigned successfully',
-        affectedCount: interviewIds.length
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to assign interviewer';
-      setError(errorMessage);
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-
-      return {
-        success: false,
-        message: errorMessage,
-        affectedCount: 0
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, [API_BASE_URL]);
+  const bulkAssignInterviewer = useCallback(async (interviewIds: string[], interviewerId: string, interviewerName: string) =>
+    runBulkOp('assign_interviewer', interviewIds, { interviewerId, interviewerName },
+      'Interviewer Assigned',
+      `${interviewerName} assigned to ${interviewIds.length} interview(s).`
+    ), [runBulkOp]);
 
   return {
     loading,
     error,
+    operationError,
     bulkReschedule,
     bulkCancel,
     bulkSendReminder,

@@ -159,7 +159,7 @@ const ProfileManagement: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <User className="h-6 w-6 text-ats-blue" />
+            <User className="h-6 w-6 text-indigo-600" />
             Profile Management
           </h1>
           <p className="text-sm text-gray-500">
@@ -198,7 +198,7 @@ const ProfileManagement: React.FC = () => {
                   <div className="relative">
                     <Avatar className="h-24 w-24">
                       <AvatarImage src={userData.avatarUrl} />
-                      <AvatarFallback className="text-lg bg-ats-blue text-white">
+                      <AvatarFallback className="text-lg bg-indigo-600 text-white">
                         {userData.firstName[0]}{userData.lastName[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -318,7 +318,7 @@ const ProfileManagement: React.FC = () => {
 
                   {isEditing && (
                     <div className="flex gap-2">
-                      <Button type="submit" className="bg-ats-blue hover:bg-ats-dark-blue">
+                      <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
                         <Save className="h-4 w-4 mr-2" />
                         Save Changes
                       </Button>
@@ -379,7 +379,7 @@ const ProfileManagement: React.FC = () => {
                   />
                 </div>
 
-                <Button type="submit" className="bg-ats-blue hover:bg-ats-dark-blue">
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
                   Change Password
                 </Button>
               </form>
@@ -392,19 +392,19 @@ const ProfileManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardContent className="p-6 text-center">
-                <div className="text-2xl font-bold text-ats-blue">{userData.totalApplicationsReviewed}</div>
+                <div className="text-2xl font-bold text-indigo-600">{userData.totalApplicationsReviewed}</div>
                 <p className="text-sm text-gray-500">Applications Reviewed</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-6 text-center">
-                <div className="text-2xl font-bold text-ats-blue">{userData.totalInterviewsScheduled}</div>
+                <div className="text-2xl font-bold text-indigo-600">{userData.totalInterviewsScheduled}</div>
                 <p className="text-sm text-gray-500">Interviews Scheduled</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-6 text-center">
-                <div className="text-2xl font-bold text-ats-blue">{userData.averageTimeToHire}</div>
+                <div className="text-2xl font-bold text-indigo-600">{userData.averageTimeToHire}</div>
                 <p className="text-sm text-gray-500">Avg. Time to Hire</p>
               </CardContent>
             </Card>

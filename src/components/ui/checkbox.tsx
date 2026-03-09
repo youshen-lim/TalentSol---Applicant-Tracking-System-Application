@@ -18,7 +18,7 @@ const checkboxVariants = cva(
         default: "border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary",
         "ats-blue": "border-ats-blue data-[state=checked]:bg-ats-blue data-[state=checked]:border-ats-blue",
         "ats-purple": "border-ats-purple data-[state=checked]:bg-ats-purple data-[state=checked]:border-ats-purple",
-        "ats-outline-blue": "border-ats-blue bg-transparent data-[state=checked]:bg-ats-blue/20 data-[state=checked]:border-ats-blue data-[state=checked]:text-ats-blue",
+        "ats-outline-blue": "border-ats-blue bg-transparent data-[state=checked]:bg-primary/20 data-[state=checked]:border-ats-blue data-[state=checked]:text-primary",
         "ats-outline-purple": "border-ats-purple bg-transparent data-[state=checked]:bg-ats-purple/20 data-[state=checked]:border-ats-purple data-[state=checked]:text-ats-purple",
       },
       size: {

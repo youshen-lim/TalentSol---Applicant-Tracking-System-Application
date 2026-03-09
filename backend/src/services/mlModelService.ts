@@ -48,7 +48,7 @@ export class MLModelService {
   private modelsInitialized: boolean = false;
 
   constructor() {
-    this.modelsPath = path.join(process.cwd(), 'backend', 'ml-models');
+    this.modelsPath = path.join(process.cwd(), 'ml-models');
     this.pythonEnvPath = path.join(this.modelsPath, 'shared', 'ml-env', 'bin', 'python');
     this.pythonPath = process.env.PYTHON_PATH || 'python'; // Use system Python for now
     this.logisticRegressionPath = path.join(this.modelsPath, 'logistic-regression');

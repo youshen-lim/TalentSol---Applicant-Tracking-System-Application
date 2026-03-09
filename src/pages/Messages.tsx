@@ -1,270 +1,308 @@
-import React, { useState } from 'react';
-import { Avatar } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Star, MoreHorizontal, Edit, MessageSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import {
+  Search,
+  Plus,
+  MessageSquare,
+  Inbox,
+  Send,
+  FileText,
+  Archive,
+  Edit2,
+} from "lucide-react";
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface Message {
   id: string;
   sender: string;
-  avatar?: string;
+  initials: string;
+  color: string;
   subject: string;
   preview: string;
-  date: string;
-  isStarred: boolean;
-  isRead: boolean;
-  folder: 'inbox' | 'sent' | 'drafts' | 'archived';
+  shortTime: string;
+  read: boolean;
+  folder: "inbox" | "sent" | "drafts" | "archived";
 }
 
-/**
- * Messages page component
- * Displays a list of messages with a conversation view
- */
+// ─── Mock data (matching screenshot) ─────────────────────────────────────────
+
+const MESSAGES: Message[] = [
+  {
+    id: "1",
+    sender: "John Smith",
+    initials: "JS",
+    color: "bg-indigo-100 text-indigo-700",
+    subject: "Interview Feedback",
+    preview: "I wanted to share my thoughts on the...",
+    shortTime: "Today",
+    read: false,
+    folder: "inbox",
+  },
+  {
+    id: "2",
+    sender: "Sarah Johnson",
+    initials: "SJ",
+    color: "bg-emerald-100 text-emerald-700",
+    subject: "New candidate application",
+    preview: "We received a promising application for t...",
+    shortTime: "Yesterday",
+    read: false,
+    folder: "inbox",
+  },
+  {
+    id: "3",
+    sender: "Michael Green",
+    initials: "MG",
+    color: "bg-teal-100 text-teal-700",
+    subject: "Meeting rescheduled",
+    preview: "The hiring meeting has been moved to T...",
+    shortTime: "May 10",
+    read: true,
+    folder: "inbox",
+  },
+  {
+    id: "4",
+    sender: "Cindy Davis",
+    initials: "CD",
+    color: "bg-rose-100 text-rose-700",
+    subject: "Onboarding documents",
+    preview: "Please find attached the onboarding doc...",
+    shortTime: "May 9",
+    read: true,
+    folder: "inbox",
+  },
+  {
+    id: "5",
+    sender: "David Wilson",
+    initials: "DW",
+    color: "bg-blue-100 text-blue-700",
+    subject: "Quarterly hiring report",
+    preview: "Here is the Q2 hiring report with our pro...",
+    shortTime: "May 8",
+    read: true,
+    folder: "inbox",
+  },
+  {
+    id: "6",
+    sender: "Lisa Taylor",
+    initials: "LT",
+    color: "bg-purple-100 text-purple-700",
+    subject: "Candidate withdrew application",
+    preview: "Unfortunately, the candidate for the UX ...",
+    shortTime: "May 2",
+    read: true,
+    folder: "inbox",
+  },
+  {
+    id: "7",
+    sender: "Robert Morrison",
+    initials: "RM",
+    color: "bg-amber-100 text-amber-700",
+    subject: "Interview scheduling",
+    preview: "Can we schedule the technical interviews ...",
+    shortTime: "May 1",
+    read: true,
+    folder: "inbox",
+  },
+];
+
+const FOLDERS = [
+  { key: "inbox",    label: "Inbox",    Icon: Inbox,    count: 16 },
+  { key: "sent",     label: "Sent",     Icon: Send,     count: 8  },
+  { key: "drafts",   label: "Drafts",   Icon: FileText, count: 3  },
+  { key: "archived", label: "Archived", Icon: Archive,  count: 6  },
+] as const;
+
+type FolderKey = typeof FOLDERS[number]["key"];
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
 const Messages = () => {
-  const [selectedFolder, setSelectedFolder] = useState<'inbox' | 'sent' | 'drafts' | 'archived'>('inbox');
+  const [activeFolder, setActiveFolder] = useState<FolderKey>("inbox");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [search, setSearch] = useState("");
 
-  // Sample messages data
-  const messages: Message[] = [
-    {
-      id: '1',
-      sender: 'John Smith',
-      subject: 'Interview Feedback',
-      preview: 'I wanted to share my thoughts on the candidate we interviewed yesterday...',
-      date: 'Today, 10:30 AM',
-      isStarred: true,
-      isRead: false,
-      folder: 'inbox'
-    },
-    {
-      id: '2',
-      sender: 'Sarah Johnson',
-      subject: 'New candidate application',
-      preview: 'We received a promising application for the Senior Developer position...',
-      date: 'Yesterday, 3:45 PM',
-      isStarred: false,
-      isRead: true,
-      folder: 'inbox'
-    },
-    {
-      id: '3',
-      sender: 'Michael Brown',
-      subject: 'Meeting rescheduled',
-      preview: 'The team meeting has been moved to Thursday at 2 PM instead of Wednesday...',
-      date: 'May 10, 2023',
-      isStarred: false,
-      isRead: true,
-      folder: 'inbox'
-    },
-    {
-      id: '4',
-      sender: 'Emily Davis',
-      subject: 'Onboarding documents',
-      preview: 'Please find attached the onboarding documents for our new hire starting next week...',
-      date: 'May 8, 2023',
-      isStarred: true,
-      isRead: true,
-      folder: 'inbox'
-    },
-    {
-      id: '5',
-      sender: 'David Wilson',
-      subject: 'Quarterly hiring report',
-      preview: 'Here is the Q2 hiring report with our progress against targets and key metrics...',
-      date: 'May 5, 2023',
-      isStarred: false,
-      isRead: true,
-      folder: 'inbox'
-    },
-    {
-      id: '6',
-      sender: 'Lisa Taylor',
-      subject: 'Candidate withdrew application',
-      preview: 'Unfortunately, the candidate for the UX Designer position has decided to withdraw...',
-      date: 'May 3, 2023',
-      isStarred: false,
-      isRead: true,
-      folder: 'inbox'
-    },
-    {
-      id: '7',
-      sender: 'Robert Martinez',
-      subject: 'Interview scheduling',
-      preview: 'Can we schedule the technical interviews for next week? I have availability on...',
-      date: 'May 1, 2023',
-      isStarred: false,
-      isRead: true,
-      folder: 'inbox'
-    }
-  ];
-
-  // Filter messages based on selected folder and search query
-  const filteredMessages = messages.filter(message => 
-    message.folder === selectedFolder && 
-    (searchQuery === '' || 
-      message.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      message.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      message.preview.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filtered = MESSAGES.filter(
+    (m) =>
+      m.folder === activeFolder &&
+      (search === "" ||
+        m.sender.toLowerCase().includes(search.toLowerCase()) ||
+        m.subject.toLowerCase().includes(search.toLowerCase()))
   );
 
-  // Folder options
-  const folders = [
-    { id: 'inbox', name: 'Inbox', count: messages.filter(m => m.folder === 'inbox').length },
-    { id: 'sent', name: 'Sent', count: messages.filter(m => m.folder === 'sent').length },
-    { id: 'drafts', name: 'Drafts', count: messages.filter(m => m.folder === 'drafts').length },
-    { id: 'archived', name: 'Archived', count: messages.filter(m => m.folder === 'archived').length }
-  ];
-
-  const handleMessageClick = (message: Message) => {
-    setSelectedMessage(message);
-  };
-
-  const handleStarClick = (messageId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    // In a real app, this would update the message in the database
-    console.log(`Toggled star for message ${messageId}`);
-  };
-
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-white">
-      {/* Left sidebar - Folders */}
-      <div className="w-48 border-r border-gray-200 p-4">
-        <h2 className="text-lg font-semibold mb-4">Messages</h2>
-        <ul className="space-y-1">
-          {folders.map(folder => (
-            <li key={folder.id}>
+    <div className="flex flex-col overflow-hidden" style={{ height: "calc(100vh - 56px)" }}>
+
+      {/* ── Page header ── */}
+      <div className="px-6 py-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+            <MessageSquare size={16} className="text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-gray-900" style={{ fontSize: 20, fontWeight: 600 }}>Messages</h1>
+            <p className="text-gray-500 mt-0.5" style={{ fontSize: 13 }}>
+              Communicate with candidates, interviewers, and team members
+            </p>
+          </div>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-all">
+          <Plus size={15} />
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Compose</span>
+        </button>
+      </div>
+
+      {/* ── 2-col content ── */}
+      <div className="flex flex-1 min-h-0 border-t border-gray-200">
+
+        {/* Left panel: search + folders + thread list */}
+        <div className="w-72 shrink-0 border-r border-gray-200 bg-white flex flex-col min-h-0">
+
+          {/* Search */}
+          <div className="p-3 border-b border-gray-100 shrink-0">
+            <div className="relative">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search messages..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 text-gray-700 placeholder-gray-400"
+                style={{ fontSize: 12 }}
+              />
+            </div>
+          </div>
+
+          {/* Folders */}
+          <div className="p-2 border-b border-gray-100 shrink-0">
+            {FOLDERS.map(({ key, label, Icon, count }) => (
               <button
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-md text-sm font-medium flex justify-between items-center",
-                  selectedFolder === folder.id 
-                    ? "bg-ats-blue/10 text-ats-blue" 
-                    : "text-gray-600 hover:bg-gray-100"
-                )}
-                onClick={() => setSelectedFolder(folder.id as any)}
+                key={key}
+                onClick={() => { setActiveFolder(key); setSelectedMessage(null); }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
+                  activeFolder === key
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+                style={{ fontSize: 13, fontWeight: activeFolder === key ? 600 : 400 }}
               >
-                <span>{folder.name}</span>
-                <span className="bg-gray-200 text-gray-700 rounded-full px-2 py-0.5 text-xs">
-                  {folder.count}
+                <div className="flex items-center gap-2">
+                  <Icon size={14} />
+                  <span>{label}</span>
+                </div>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full ${
+                    activeFolder === key
+                      ? "bg-indigo-200 text-indigo-700"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                  style={{ fontSize: 11, fontWeight: 600 }}
+                >
+                  {count}
                 </span>
               </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+            ))}
+          </div>
 
-      {/* Middle section - Message list */}
-      <div className="w-80 border-r border-gray-200 flex flex-col">
-        <div className="p-3 border-b border-gray-200">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search messages"
-              className="pl-9 bg-gray-50"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          {/* Thread list */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {filtered.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-gray-400" style={{ fontSize: 13 }}>No messages</p>
+              </div>
+            ) : (
+              filtered.map((msg) => (
+                <button
+                  key={msg.id}
+                  onClick={() => setSelectedMessage(msg)}
+                  className={`w-full text-left px-4 py-3.5 border-b border-gray-50 hover:bg-gray-50 transition-all ${
+                    selectedMessage?.id === msg.id
+                      ? "bg-indigo-50 border-l-2 border-l-indigo-500"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <div className={`w-8 h-8 rounded-full ${msg.color} flex items-center justify-center shrink-0 mt-0.5`}>
+                      <span style={{ fontSize: 11, fontWeight: 700 }}>{msg.initials}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span
+                          className="text-gray-900 truncate"
+                          style={{ fontSize: 13, fontWeight: msg.read ? 400 : 700 }}
+                        >
+                          {msg.sender}
+                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                          <span style={{ fontSize: 10 }} className="text-gray-400">
+                            {msg.shortTime}
+                          </span>
+                          {!msg.read && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                          )}
+                        </div>
+                      </div>
+                      <p
+                        className="text-indigo-600 truncate"
+                        style={{ fontSize: 12, fontWeight: msg.read ? 400 : 600 }}
+                      >
+                        {msg.subject}
+                      </p>
+                      <p className="text-gray-400 truncate" style={{ fontSize: 11 }}>
+                        {msg.preview}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
-        <div className="flex-1 overflow-auto">
-          {filteredMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-              <p>No messages found</p>
+
+        {/* Right panel: empty state or message detail */}
+        <div className="flex-1 bg-white flex flex-col items-center justify-center">
+          {selectedMessage ? (
+            <div className="w-full h-full flex flex-col">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <p className="text-gray-900" style={{ fontSize: 16, fontWeight: 600 }}>
+                  {selectedMessage.subject}
+                </p>
+                <div className="flex items-center gap-2.5 mt-2">
+                  <div className={`w-7 h-7 rounded-full ${selectedMessage.color} flex items-center justify-center shrink-0`}>
+                    <span style={{ fontSize: 10, fontWeight: 700 }}>{selectedMessage.initials}</span>
+                  </div>
+                  <p className="text-gray-500" style={{ fontSize: 13 }}>
+                    {selectedMessage.sender} · {selectedMessage.shortTime}
+                  </p>
+                </div>
+              </div>
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-gray-400" style={{ fontSize: 13 }}>
+                  Select a different message or compose a reply.
+                </p>
+              </div>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
-              {filteredMessages.map(message => (
-                <li 
-                  key={message.id}
-                  className={cn(
-                    "hover:bg-gray-50 cursor-pointer",
-                    message.isRead ? "bg-white" : "bg-blue-50",
-                    selectedMessage?.id === message.id ? "bg-gray-100" : ""
-                  )}
-                  onClick={() => handleMessageClick(message)}
-                >
-                  <div className="px-4 py-3">
-                    <div className="flex justify-between items-start">
-                      <span className="font-medium text-sm">{message.sender}</span>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-xs text-gray-500">{message.date}</span>
-                        <button 
-                          className="text-gray-400 hover:text-yellow-400"
-                          onClick={(e) => handleStarClick(message.id, e)}
-                        >
-                          <Star className="h-4 w-4" fill={message.isStarred ? "currentColor" : "none"} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="font-medium text-sm mt-1">{message.subject}</div>
-                    <div className="text-xs text-gray-500 mt-1 truncate">{message.preview}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
+                <MessageSquare size={22} className="text-gray-400" />
+              </div>
+              <p className="text-gray-900" style={{ fontSize: 15, fontWeight: 600 }}>
+                No message selected
+              </p>
+              <p className="text-gray-400 mt-1" style={{ fontSize: 13 }}>
+                Select a message to view its contents
+              </p>
+              <button
+                className="mt-4 flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
+                style={{ fontSize: 13 }}
+              >
+                <Edit2 size={14} />
+                Compose new message
+              </button>
+            </div>
           )}
         </div>
-      </div>
-
-      {/* Right section - Message content */}
-      <div className="flex-1 flex flex-col">
-        {selectedMessage ? (
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">{selectedMessage.subject}</h2>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex items-center mt-4">
-                <Avatar className="h-10 w-10 mr-3">
-                  <div className="bg-ats-blue text-white flex items-center justify-center h-full w-full rounded-full text-sm font-medium">
-                    {selectedMessage.sender.split(' ').map(n => n[0]).join('')}
-                  </div>
-                </Avatar>
-                <div>
-                  <div className="font-medium">{selectedMessage.sender}</div>
-                  <div className="text-sm text-gray-500">{selectedMessage.date}</div>
-                </div>
-              </div>
-            </div>
-            <div className="p-4 flex-1 overflow-auto">
-              <p className="text-gray-700">
-                {selectedMessage.preview}
-                <br /><br />
-                This is a placeholder for the full message content. In a real application, this would display the complete message text.
-              </p>
-            </div>
-            <div className="p-4 border-t border-gray-200">
-              <Button className="bg-ats-blue hover:bg-ats-dark-blue text-white">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Reply
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            <div className="bg-gray-100 rounded-full p-4 mb-4">
-              <MessageSquare className="h-8 w-8" />
-            </div>
-            <p className="text-lg font-medium">No message selected</p>
-            <p className="text-sm">Select a message to view its contents</p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => {
-                // In a real app, this would open a compose message dialog
-              }}
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Compose new message
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );

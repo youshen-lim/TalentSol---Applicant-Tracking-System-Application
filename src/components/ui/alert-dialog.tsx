@@ -107,7 +107,7 @@ const AlertDialogAction = React.forwardRef<
     if (variant === "ats") {
       return buttonVariants({
         variant: "default",
-        className: "bg-ats-blue hover:bg-ats-blue/90 text-white"
+        className: "bg-primary hover:bg-primary/90 text-white"
       })
     } else if (variant === "ats-secondary") {
       return buttonVariants({

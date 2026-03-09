@@ -3,6 +3,7 @@ import { interviewsApi } from '@/services/api';
 
 export interface Interview {
   id: string;
+  title?: string;
   candidateName: string;
   candidateId: string;
   position: string;
@@ -10,8 +11,11 @@ export interface Interview {
   type: string;
   interviewers: string[];
   dateTime: string;
+  startTime?: string;
+  endTime?: string;
   status: string;
   location?: string;
+  meetingLink?: string;
   notes?: string;
   feedback?: {
     rating: number;
@@ -59,13 +63,13 @@ export const useInterviews = (params?: UseInterviewsParams): UseInterviewsReturn
   const [currentPage, setCurrentPage] = useState(params?.page || 1);
   const [total, setTotal] = useState(0);
 
-  const fetchInterviews = async () => {
+  const fetchInterviews = async (retryCount = 0) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await interviewsApi.getInterviews(params);
-      
+
       if (response.data) {
         setInterviews(response.data);
         setTotalPages(response.pagination?.totalPages || 1);
@@ -73,6 +77,11 @@ export const useInterviews = (params?: UseInterviewsParams): UseInterviewsReturn
         setTotal(response.pagination?.total || 0);
       }
     } catch (err) {
+      const isNetworkError = err instanceof TypeError && err.message === 'Failed to fetch';
+      if (isNetworkError && retryCount < 2) {
+        setTimeout(() => fetchInterviews(retryCount + 1), 1500 * (retryCount + 1));
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to fetch interviews');
       console.error('Error fetching interviews:', err);
     } finally {
@@ -91,7 +100,7 @@ export const useInterviews = (params?: UseInterviewsParams): UseInterviewsReturn
     totalPages,
     currentPage,
     total,
-    refetch: fetchInterviews,
+    refetch: () => fetchInterviews(0),
   };
 };
 

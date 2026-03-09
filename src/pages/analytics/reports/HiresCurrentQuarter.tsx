@@ -1,198 +1,168 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import ReportHeader from "@/components/analytics/ReportHeader";
 import { BarChart } from "@/components/dashboard/BarChart";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-/**
- * HiresCurrentQuarter component
- * Displays a report of hires in the current quarter
- * Based on the Ashby ATS interface shown in the image
- */
+const hiresData = [
+  { name: 'Accounting', value: 2 },
+  { name: 'Analytics', value: 2 },
+  { name: 'BD', value: 6 },
+  { name: 'Communications', value: 1 },
+  { name: 'Compliance', value: 5 },
+  { name: 'Cust. Success', value: 3 },
+  { name: 'Data', value: 5 },
+  { name: 'Design', value: 5 },
+  { name: 'Engineering', value: 9 },
+  { name: 'Facilities', value: 8 },
+  { name: 'IT', value: 1 },
+  { name: 'Sales', value: 1 },
+];
+
+const tableData = [
+  { department: 'Accounting', recruiter: 'Adelle Winslow', candidate: 'Garnett West', count: 1 },
+  { department: 'Accounting', recruiter: 'Helena Witsock', candidate: 'Adelle Winslow', count: 1 },
+  { department: 'Analytics', recruiter: 'Amari Huel', candidate: 'Helena Witsock', count: 1 },
+  { department: 'Analytics', recruiter: 'Daphney Dickinson', candidate: 'Taurean Macejkovic', count: 1 },
+  { department: 'BD', recruiter: 'Dianna Gleason', candidate: 'Charity Okumeva', count: 2 },
+  { department: 'BD', recruiter: 'Matya Vaum', candidate: 'Unspecified', count: 4 },
+  { department: 'Communications', recruiter: 'Wilfred Upton', candidate: 'Jacynthe Rolfson', count: 1 },
+  { department: 'Compliance', recruiter: 'Zola Christiansen', candidate: 'Abraham Johnston', count: 4 },
+  { department: 'Compliance', recruiter: 'Aimee Funk', candidate: 'Shanon Mayert', count: 1 },
+];
+
 const HiresCurrentQuarter = () => {
   const [viewOption, setViewOption] = useState("visualization");
+  const [timeRange, setTimeRange] = useState("quarter");
 
-  // Sample data for the report
-  const hiresData = [
-    { name: 'Accounting', candidates: 2, color: '#8884d8' },
-    { name: 'Analytics', candidates: 2, color: '#82ca9d' },
-    { name: 'BD', candidates: 6, color: '#ffc658' },
-    { name: 'Communications', candidates: 1, color: '#ff8042' },
-    { name: 'Compliance', candidates: 5, color: '#0088fe' },
-    { name: 'Customer Success', candidates: 3, color: '#00c49f' },
-    { name: 'Data', candidates: 5, color: '#ffbb28' },
-    { name: 'Design', candidates: 5, color: '#ff8042' },
-    { name: 'Engineering', candidates: 9, color: '#8884d8' },
-    { name: 'Facilities', candidates: 8, color: '#82ca9d' },
-    { name: 'IT', candidates: 1, color: '#ffc658' },
-    { name: 'Sales', candidates: 1, color: '#ff8042' },
-  ];
-
-  // Sample data for the table view
-  const tableData = [
-    { department: 'Accounting', recruiter: 'Adelle Winslow', candidate: 'Garnett West', count: 1 },
-    { department: 'Accounting', recruiter: 'Helena Witsock', candidate: 'Adelle Winslow', count: 1 },
-    { department: 'Analytics', recruiter: 'Amari Huel', candidate: 'Helena Witsock', count: 1 },
-    { department: 'Analytics', recruiter: 'Daphney Dickinson', candidate: 'Taurean Macejkovic', count: 1 },
-    { department: 'BD', recruiter: 'Dianna Gleason', candidate: 'Charity Okumeva', count: 2 },
-    { department: 'BD', recruiter: 'Matya Vaum', candidate: 'Unspecified', count: 4 },
-    { department: 'Communications', recruiter: 'Wilfred Upton', candidate: 'Jacynthe Rolfson', count: 1 },
-    { department: 'Compliance', recruiter: 'Zola Christiansen', candidate: 'Abraham Johnston', count: 4 },
-    { department: 'Compliance', recruiter: 'Aimee Funk', candidate: 'Shanon Mayert', count: 1 },
-  ];
+  const totalHires = hiresData.reduce((sum, d) => sum + d.value, 0);
 
   return (
-    <div className="space-y-8">
-      <ReportHeader
-        title="Hires in Current Quarter"
-        subtitle="Build a Report"
-        showLocationFilter={true}
-        showUnsavedBadge={true}
-      />
+    <div className="p-6 space-y-6">
+      <ReportHeader title="Hires — Current Quarter" saveLabel="Save Report" />
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">1</span>
-                  <h3 className="text-base font-medium">Application's Job's Department</h3>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                    <path d="M4.5 6.5L7.5 9.5L10.5 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                  </svg>
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">2</span>
-                  <h3 className="text-base font-medium">Application's Recruiter</h3>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                    <path d="M4.5 6.5L7.5 9.5L10.5 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                  </svg>
-                </Button>
-              </div>
-            </div>
-
-            <Button variant="outline" size="sm" className="text-ats-blue border-ats-blue/20 hover:bg-ats-blue/10">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Field to Group By
-            </Button>
+      {/* Filter row */}
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="text-gray-500 block mb-1.5" style={{ fontSize: 12, fontWeight: 500 }}>Department</label>
+            <Select defaultValue="all">
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Departments" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                <SelectItem value="engineering">Engineering</SelectItem>
+                <SelectItem value="design">Design</SelectItem>
+                <SelectItem value="analytics">Analytics</SelectItem>
+                <SelectItem value="sales">Sales</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            <h3 className="text-base font-medium flex items-center">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2">
-                <path d="M7.5 0.875C4.32 0.875 1.75 3.445 1.75 6.625C1.75 9.805 4.32 12.375 7.5 12.375C10.68 12.375 13.25 9.805 13.25 6.625C13.25 3.445 10.68 0.875 7.5 0.875ZM7.5 11.125C5.02 11.125 3 9.105 3 6.625C3 4.145 5.02 2.125 7.5 2.125C9.98 2.125 12 4.145 12 6.625C12 9.105 9.98 11.125 7.5 11.125Z" fill="currentColor"/>
-                <path d="M7.5 3.375C7.5 3.72018 7.22018 4 6.875 4C6.52982 4 6.25 3.72018 6.25 3.375C6.25 3.02982 6.52982 2.75 6.875 2.75C7.22018 2.75 7.5 3.02982 7.5 3.375Z" fill="currentColor"/>
-                <path d="M6.5 5.125C6.5 4.85886 6.71386 4.625 7 4.625C7.28614 4.625 7.5 4.83586 7.5 5.125V9.125C7.5 9.39114 7.28614 9.625 7 9.625C6.71386 9.625 6.5 9.41414 6.5 9.125V5.125Z" fill="currentColor"/>
-              </svg>
-              View Options
-            </h3>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Show</label>
-                <select className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
-                  <option>Count</option>
-                  <option>Sum</option>
-                  <option>Average</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Chart</label>
-                <select className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
-                  <option>Bar</option>
-                  <option>Line</option>
-                  <option>Pie</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Sort</label>
-                <select className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
-                  <option>None</option>
-                  <option>Ascending</option>
-                  <option>Descending</option>
-                </select>
-              </div>
-            </div>
-
-            <Button variant="outline" size="sm" className="text-ats-blue border-ats-blue/20 hover:bg-ats-blue/10">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Line
-            </Button>
+          <div>
+            <label className="text-gray-500 block mb-1.5" style={{ fontSize: 12, fontWeight: 500 }}>Time Range</label>
+            <Select defaultValue={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select time range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="month">Last Month</SelectItem>
+                <SelectItem value="quarter">Current Quarter</SelectItem>
+                <SelectItem value="year">Last Year</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Results</h3>
-        <div className="text-sm text-gray-500">Last Updated: 2 minutes ago</div>
+          <div>
+            <label className="text-gray-500 block mb-1.5" style={{ fontSize: 12, fontWeight: 500 }}>Job Type</label>
+            <Select defaultValue="all">
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Job Types</SelectItem>
+                <SelectItem value="full-time">Full Time</SelectItem>
+                <SelectItem value="part-time">Part Time</SelectItem>
+                <SelectItem value="contract">Contract</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="visualization" value={viewOption} onValueChange={setViewOption}>
-        <TabsList variant="ats-blue">
-          <TabsTrigger value="visualization" variant="ats-blue">Visualization</TabsTrigger>
-          <TabsTrigger value="table" variant="ats-blue">Table</TabsTrigger>
-        </TabsList>
-        <TabsContent value="visualization" className="pt-4">
-          <Card>
-            <CardContent className="p-6">
-              <BarChart
-                title="Hires by Department"
-                description="Total: 48 hires in current quarter"
-                data={hiresData}
-                bars={[{ dataKey: "candidates", fill: "#3B82F6", name: "Hires" }]}
-                vertical={false}
-                height={400}
-                variant="ats-blue"
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="table" className="pt-4">
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Recruiter</TableHead>
-                    <TableHead>Candidate</TableHead>
-                    <TableHead className="text-right">Count</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tableData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{row.department}</TableCell>
-                      <TableCell>{row.recruiter}</TableCell>
-                      <TableCell>{row.candidate}</TableCell>
-                      <TableCell className="text-right">{row.count}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Results row */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-gray-900" style={{ fontSize: 14, fontWeight: 600 }}>Results</h3>
+        <div className="flex items-center gap-3">
+          <span className="text-gray-400" style={{ fontSize: 12 }}>Last Updated: 2 minutes ago</span>
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewOption("visualization")}
+              className={`px-3 py-1.5 transition-all ${viewOption === "visualization" ? "bg-indigo-600 text-white" : "text-gray-500 hover:text-gray-700"}`}
+              style={{ fontSize: 13 }}
+            >
+              Visualization
+            </button>
+            <button
+              onClick={() => setViewOption("table")}
+              className={`px-3 py-1.5 transition-all ${viewOption === "table" ? "bg-indigo-600 text-white" : "text-gray-500 hover:text-gray-700"}`}
+              style={{ fontSize: 13 }}
+            >
+              Table
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <div className="flex justify-end">
-        <Button className="bg-ats-blue hover:bg-ats-dark-blue text-white">
-          Export
-        </Button>
+      {viewOption === "visualization" ? (
+        <div className="bg-white rounded-xl border border-gray-100 p-6">
+          <BarChart
+            title="Hires by Department"
+            description={`Total: ${totalHires} hires (${timeRange === "quarter" ? "Current Quarter" : timeRange === "month" ? "Last Month" : "Last Year"})`}
+            data={hiresData}
+            bars={[{ dataKey: "value", fill: "#4F46E5", name: "Hires" }]}
+            vertical={false}
+            height={400}
+          />
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-100">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Department</TableHead>
+                <TableHead>Recruiter</TableHead>
+                <TableHead>Candidate</TableHead>
+                <TableHead>Count</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{row.department}</TableCell>
+                  <TableCell>{row.recruiter}</TableCell>
+                  <TableCell>{row.candidate}</TableCell>
+                  <TableCell>{row.count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+          <p className="text-indigo-600" style={{ fontSize: 32, fontWeight: 700 }}>{totalHires}</p>
+          <p className="text-gray-500 mt-1" style={{ fontSize: 12 }}>Total Hires This Quarter</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+          <p className="text-indigo-600" style={{ fontSize: 32, fontWeight: 700 }}>Engineering</p>
+          <p className="text-gray-500 mt-1" style={{ fontSize: 12 }}>Top Hiring Department</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+          <p className="text-indigo-600" style={{ fontSize: 32, fontWeight: 700 }}>9</p>
+          <p className="text-gray-500 mt-1" style={{ fontSize: 12 }}>Most Hires (Engineering)</p>
+        </div>
       </div>
     </div>
   );

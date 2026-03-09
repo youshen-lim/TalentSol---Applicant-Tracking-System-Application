@@ -16,7 +16,7 @@ const textareaVariants = cva(
         default: "focus-visible:ring-ring focus:border-input",
         "ats-blue": "focus-visible:ring-ats-blue focus:border-ats-blue",
         "ats-purple": "focus-visible:ring-ats-purple focus:border-ats-purple",
-        "ats-blue-subtle": "bg-ats-blue/5 border-ats-blue/20 focus-visible:ring-ats-blue focus:border-ats-blue",
+        "ats-blue-subtle": "bg-primary/5 border-primary/20 focus-visible:ring-ats-blue focus:border-ats-blue",
         "ats-purple-subtle": "bg-ats-purple/5 border-ats-purple/20 focus-visible:ring-ats-purple focus:border-ats-purple",
       },
       size: {

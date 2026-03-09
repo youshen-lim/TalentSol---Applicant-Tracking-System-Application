@@ -73,7 +73,7 @@ const sheetVariants = cva(
       },
       variant: {
         default: "",
-        "ats-blue": "border-ats-blue/20 bg-ats-blue/5",
+        "ats-blue": "border-primary/20 bg-primary/5",
         "ats-purple": "border-ats-purple/20 bg-ats-purple/5",
       },
     },
@@ -106,7 +106,7 @@ const SheetContent = React.forwardRef<
       <SheetPrimitive.Close
         className={cn(
           "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none",
-          variant === "ats-blue" ? "hover:bg-ats-blue/10 data-[state=open]:bg-ats-blue/20" :
+          variant === "ats-blue" ? "hover:bg-primary/10 data-[state=open]:bg-primary/20" :
           variant === "ats-purple" ? "hover:bg-ats-purple/10 data-[state=open]:bg-ats-purple/20" :
           "data-[state=open]:bg-secondary"
         )}
@@ -223,7 +223,7 @@ const SheetDescription = React.forwardRef<
 >(({ className, variant = "default", ...props }, ref) => {
   const variantStyles = {
     "default": "text-muted-foreground",
-    "ats-blue": "text-ats-blue/80",
+    "ats-blue": "text-primary/80",
     "ats-purple": "text-ats-purple/80",
   }
 

@@ -1,8 +1,10 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { prisma } from '../index.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { AuthenticatedRequest, requireRole } from '../middleware/auth.js';
+import { enforceUserLimit } from '../middleware/planEnforcement.js';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -319,6 +321,49 @@ router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: Authentic
   res.json({
     message: 'User deleted successfully',
   });
+}));
+
+// Invite a team member (admin only, plan user limit enforced)
+router.post('/invite', requireRole(['admin']), enforceUserLimit, asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { email, role = 'recruiter' } = req.body;
+
+  if (!email) throw new AppError('Email is required', 400);
+
+  // Check if user already exists in this company
+  const existing = await prisma.user.findFirst({
+    where: { email, companyId: req.user!.companyId },
+  });
+  if (existing) throw new AppError('User already belongs to this company', 409);
+
+  const inviteToken = crypto.randomUUID();
+  const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+  // Upsert — create stub user or update existing unaffiliated user with invite token
+  const existingAny = await prisma.user.findUnique({ where: { email } });
+  let invitedUser;
+  if (existingAny) {
+    invitedUser = await prisma.user.update({
+      where: { email },
+      data: { inviteToken, inviteTokenExpiresAt, companyId: req.user!.companyId, role },
+    });
+  } else {
+    invitedUser = await prisma.user.create({
+      data: {
+        email,
+        passwordHash: '', // set on invite acceptance
+        role,
+        companyId: req.user!.companyId,
+        emailVerified: false,
+        inviteToken,
+        inviteTokenExpiresAt,
+      },
+    });
+  }
+
+  const acceptUrl = `${process.env.APP_URL || 'http://localhost:5173'}/api/auth/accept-invite?token=${inviteToken}`;
+  console.log(`📧 Team invite for ${email}: ${acceptUrl}`);
+
+  res.json({ message: 'Invite sent', email, role, inviteUrl: acceptUrl });
 }));
 
 export default router;

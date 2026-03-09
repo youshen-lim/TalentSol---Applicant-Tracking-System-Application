@@ -37,7 +37,7 @@ const trackVariants = cva(
     variants: {
       variant: {
         default: "bg-secondary",
-        "ats-blue": "bg-ats-blue/20",
+        "ats-blue": "bg-primary/20",
         "ats-purple": "bg-ats-purple/20",
       },
       size: {
@@ -135,7 +135,7 @@ const Slider = React.forwardRef<
           {showTooltip && (
             <div className={cn(
               "absolute -top-8 left-1/2 -translate-x-1/2 rounded px-2 py-1 text-xs font-semibold",
-              variant === "ats-blue" ? "bg-ats-blue text-white" :
+              variant === "ats-blue" ? "bg-primary text-white" :
               variant === "ats-purple" ? "bg-ats-purple text-white" :
               "bg-primary text-primary-foreground"
             )}>

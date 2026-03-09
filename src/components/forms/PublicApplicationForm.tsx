@@ -577,7 +577,7 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
                     <div className={`
                       w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
                       ${index === currentStep 
-                        ? 'bg-ats-blue text-white' 
+                        ? 'bg-primary text-white' 
                         : completedSteps.has(index)
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-200 text-gray-600'
@@ -591,7 +591,7 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
                     </div>
                     <div className="ml-2">
                       <p className={`text-sm font-medium ${
-                        index === currentStep ? 'text-ats-blue' : 'text-gray-600'
+                        index === currentStep ? 'text-primary' : 'text-gray-600'
                       }`}>
                         {section.title}
                       </p>
@@ -651,7 +651,7 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
                   type="button" 
                   onClick={handleNext}
                   disabled={!canProceed}
-                  className="bg-ats-blue hover:bg-ats-dark-blue"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-2" />
@@ -660,7 +660,7 @@ const PublicApplicationForm: React.FC<PublicApplicationFormProps> = ({
                 <Button 
                   type="submit"
                   disabled={!canProceed || isSubmitting}
-                  className="bg-ats-blue hover:bg-ats-dark-blue"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   {isSubmitting ? (
                     <>

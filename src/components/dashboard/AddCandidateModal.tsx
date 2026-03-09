@@ -322,7 +322,7 @@ export const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ open, onOp
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-ats-blue" />
+            <Users className="h-5 w-5 text-primary" />
             Add New Candidate
           </DialogTitle>
           <DialogDescription>
@@ -355,7 +355,7 @@ export const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ open, onOp
               <Upload className="mx-auto h-8 w-8 text-gray-400" />
               <div className="mt-2">
                 <Label htmlFor="resume-upload" className="cursor-pointer">
-                  <span className="text-sm font-medium text-ats-blue hover:text-ats-dark-blue">
+                  <span className="text-sm font-medium text-primary hover:text-ats-dark-blue">
                     Upload Resume
                   </span>
                   <span className="text-sm text-gray-500 ml-1">
@@ -518,7 +518,7 @@ export const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ open, onOp
                   type="button" 
                   size="sm" 
                   onClick={() => addSkill(skillInput)}
-                  className="bg-ats-blue hover:bg-ats-dark-blue"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -579,7 +579,7 @@ export const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ open, onOp
                   type="button" 
                   size="sm" 
                   onClick={() => addLanguage(languageInput)}
-                  className="bg-ats-blue hover:bg-ats-dark-blue"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -636,7 +636,7 @@ export const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ open, onOp
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting}
-            className="bg-ats-blue hover:bg-ats-dark-blue"
+            className="bg-primary hover:bg-primary/90"
           >
             {isSubmitting ? (
               <>

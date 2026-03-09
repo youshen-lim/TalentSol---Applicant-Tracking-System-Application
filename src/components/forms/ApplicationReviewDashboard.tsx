@@ -497,7 +497,7 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
         <div className="flex gap-2">
           <Button 
             size="sm" 
-            className="flex-1 bg-ats-blue hover:bg-ats-dark-blue"
+            className="flex-1 bg-primary hover:bg-primary/90"
             onClick={() => handleApplicationAction(application.id, 'view')}
           >
             <Eye className="h-3 w-3 mr-1" />
@@ -523,9 +523,9 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Users className="h-6 w-6 text-ats-blue" />
+            <Users className="h-6 w-6 text-primary" />
             Applications
-            {loading && <Loader2 className="h-4 w-4 animate-spin text-ats-blue" />}
+            {loading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
           </h1>
           <p className="text-sm text-gray-500">
             {loading ? (
@@ -622,7 +622,7 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
 
       {/* Bulk Actions */}
       {selectedApplications.length > 0 && (
-        <Card className={`bg-ats-blue/5 border-ats-blue/20 ${shadows.card}`}>
+        <Card className={`bg-primary/5 border-primary/20 ${shadows.card}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -677,7 +677,7 @@ const ApplicationReviewDashboard: React.FC<ApplicationReviewDashboardProps> = ({
         // Loading state
         <Card className={shadows.card}>
           <CardContent className="p-8 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-ats-blue" />
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
             <p className="text-gray-500">Loading applications...</p>
           </CardContent>
         </Card>

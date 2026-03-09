@@ -238,7 +238,7 @@ const DocumentRequestForm: React.FC<DocumentRequestFormProps> = ({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" className="bg-ats-blue hover:bg-ats-dark-blue text-white">
+        <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">
           Request Document
         </Button>
       </div>

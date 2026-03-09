@@ -30,21 +30,21 @@ const PageHeader = ({
         return {
           container: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 font-sans",
           title: "text-metric text-gray-900 flex items-center gap-3 font-sans",
-          icon: "h-8 w-8 text-ats-blue flex-shrink-0",
+          icon: "h-8 w-8 text-primary flex-shrink-0",
           subtitle: "text-base text-gray-500 mt-2 font-sans"
         };
       case 'compact':
         return {
           container: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 font-sans",
           title: "text-section-header text-gray-900 flex items-center gap-2 font-sans",
-          icon: "h-5 w-5 text-ats-blue flex-shrink-0",
+          icon: "h-5 w-5 text-primary flex-shrink-0",
           subtitle: "text-sm text-gray-500 mt-1 font-sans"
         };
       default:
         return {
           container: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 font-sans",
           title: "text-page-title text-gray-900 flex items-center gap-3 font-sans",
-          icon: "h-6 w-6 text-ats-blue flex-shrink-0",
+          icon: "h-6 w-6 text-primary flex-shrink-0",
           subtitle: "text-sm text-gray-500 mt-1 font-sans"
         };
     }

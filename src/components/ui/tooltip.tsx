@@ -22,11 +22,11 @@ const tooltipVariants = cva(
       variant: {
         default: "border bg-popover text-popover-foreground",
         primary: "bg-primary text-primary-foreground",
-        "ats-blue": "bg-ats-blue text-white",
+        "ats-blue": "bg-primary text-white",
         "ats-light-blue": "bg-ats-light-blue text-white",
         "ats-purple": "bg-ats-purple text-white",
         "ats-light-purple": "bg-ats-light-purple text-white",
-        "ats-blue-subtle": "bg-ats-blue/10 text-ats-dark-blue border border-ats-blue/20",
+        "ats-blue-subtle": "bg-primary/10 text-ats-dark-blue border border-primary/20",
         "ats-purple-subtle": "bg-ats-purple/10 text-ats-dark-purple border border-ats-purple/20",
       },
       size: {

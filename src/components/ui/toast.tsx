@@ -37,7 +37,7 @@ const toastVariants = cva(
           "destructive group border-destructive bg-destructive text-destructive-foreground",
         // ATS-specific variants
         "ats-blue":
-          "border-ats-blue/20 bg-ats-blue/5 text-ats-dark-blue",
+          "border-primary/20 bg-primary/5 text-ats-dark-blue",
         "ats-purple":
           "border-ats-purple/20 bg-ats-purple/5 text-ats-dark-purple",
       },
@@ -70,7 +70,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive group-[.ats-blue]:border-ats-blue/30 group-[.ats-blue]:text-ats-blue group-[.ats-blue]:hover:bg-ats-blue group-[.ats-blue]:hover:text-white group-[.ats-blue]:focus:ring-ats-blue group-[.ats-purple]:border-ats-purple/30 group-[.ats-purple]:text-ats-purple group-[.ats-purple]:hover:bg-ats-purple group-[.ats-purple]:hover:text-white group-[.ats-purple]:focus:ring-ats-purple",
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive group-[.ats-blue]:border-ats-blue/30 group-[.ats-blue]:text-primary group-[.ats-blue]:hover:bg-ats-blue group-[.ats-blue]:hover:text-white group-[.ats-blue]:focus:ring-ats-blue group-[.ats-purple]:border-ats-purple/30 group-[.ats-purple]:text-ats-purple group-[.ats-purple]:hover:bg-ats-purple group-[.ats-purple]:hover:text-white group-[.ats-purple]:focus:ring-ats-purple",
       className
     )}
     {...props}
@@ -85,7 +85,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 group-[.ats-blue]:text-ats-blue/70 group-[.ats-blue]:hover:text-ats-blue group-[.ats-blue]:focus:ring-ats-blue group-[.ats-purple]:text-ats-purple/70 group-[.ats-purple]:hover:text-ats-purple group-[.ats-purple]:focus:ring-ats-purple",
+      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 group-[.ats-blue]:text-primary/70 group-[.ats-blue]:hover:text-primary group-[.ats-blue]:focus:ring-ats-blue group-[.ats-purple]:text-ats-purple/70 group-[.ats-purple]:hover:text-ats-purple group-[.ats-purple]:focus:ring-ats-purple",
       className
     )}
     toast-close=""
@@ -118,7 +118,7 @@ const ToastDescription = React.forwardRef<
   <ToastPrimitives.Description
     ref={ref}
     className={cn(
-      "text-sm opacity-90 group-[.ats-blue]:text-ats-blue/80 group-[.ats-purple]:text-ats-purple/80",
+      "text-sm opacity-90 group-[.ats-blue]:text-primary/80 group-[.ats-purple]:text-ats-purple/80",
       className
     )}
     {...props}

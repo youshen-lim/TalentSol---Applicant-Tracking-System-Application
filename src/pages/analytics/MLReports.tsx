@@ -1,116 +1,109 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Sparkles, UserCheck, Zap, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RecommendationAnalyticsDashboard } from "@/components/ml/RecommendationAnalyticsDashboard";
 
-/**
- * MLReports component
- * Displays machine learning generated reports for the TalentSol ATS
- */
-const MLReports = () => {
-  // Sample ML reports
-  const mlReports = [
-    {
-      id: "candidate-recommendations",
-      title: "Candidate Recommendations",
-      description: "AI-powered candidate matches for open positions",
-      icon: <UserCheck className="h-5 w-5 text-ats-blue" />,
-      lastUpdated: "1 hour ago",
-      path: "/analytics/reports/candidate-recommendations",
-      beta: true
-    },
-    {
-      id: "hiring-predictions",
-      title: "Hiring Predictions",
-      description: "Forecast hiring timelines based on historical data",
-      icon: <Sparkles className="h-5 w-5 text-ats-blue" />,
-      lastUpdated: "3 hours ago",
-      path: "/analytics/reports/hiring-predictions",
-      beta: true
-    },
-    {
-      id: "talent-insights",
-      title: "Talent Insights",
-      description: "AI analysis of candidate pool and market trends",
-      icon: <Zap className="h-5 w-5 text-ats-blue" />,
-      lastUpdated: "1 day ago",
-      path: "/analytics/reports/talent-insights",
-      beta: true
-    },
-    {
-      id: "ml-analytics",
-      title: "ML Analytics Dashboard",
-      description: "Real-time performance metrics and analytics for ML recommendation models",
-      icon: <BarChart3 className="h-5 w-5 text-ats-blue" />,
-      lastUpdated: "Live",
-      path: "/analytics/ml-dashboard",
-      beta: false,
-      featured: true
-    }
-  ];
+const mlReports = [
+  {
+    id: "candidate-recommendations",
+    title: "Candidate Recommendations",
+    description: "AI-powered candidate matches for open positions",
+    icon: UserCheck,
+    lastUpdated: "1 hour ago",
+    path: "/analytics/reports/candidate-recommendations",
+    beta: true,
+    featured: false,
+  },
+  {
+    id: "hiring-predictions",
+    title: "Hiring Predictions",
+    description: "Forecast hiring timelines based on historical data",
+    icon: Sparkles,
+    lastUpdated: "3 hours ago",
+    path: "/analytics/reports/hiring-predictions",
+    beta: true,
+    featured: false,
+  },
+  {
+    id: "talent-insights",
+    title: "Talent Insights",
+    description: "AI analysis of candidate pool and market trends",
+    icon: Zap,
+    lastUpdated: "1 day ago",
+    path: "/analytics/reports/talent-insights",
+    beta: true,
+    featured: false,
+  },
+  {
+    id: "ml-analytics",
+    title: "ML Analytics Dashboard",
+    description: "Real-time performance metrics and analytics for ML recommendation models",
+    icon: BarChart3,
+    lastUpdated: "Live",
+    path: "/analytics/ml-dashboard",
+    beta: false,
+    featured: true,
+  },
+];
 
+const MLReports = () => {
   return (
     <div className="space-y-6">
-      <Alert className="bg-ats-blue/5 border-ats-blue/20">
-        <Brain className="h-4 w-4 text-ats-blue" />
-        <AlertTitle>Machine Learning Reports</AlertTitle>
-        <AlertDescription>
-          These reports use machine learning to provide insights and recommendations.
-          This is an experimental feature currently in beta.
-        </AlertDescription>
-      </Alert>
+      {/* Info banner */}
+      <div className="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+        <Brain size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-gray-900" style={{ fontSize: 13, fontWeight: 600 }}>Machine Learning Reports</p>
+          <p className="text-gray-500 mt-0.5" style={{ fontSize: 12 }}>
+            These reports use machine learning to provide insights and recommendations.
+            This is an experimental feature currently in beta.
+          </p>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         {mlReports.map((report) => (
           <Link to={report.path} key={report.id} className="block">
-            <Card className={`h-full hover:shadow-md transition-shadow cursor-pointer border-ats-blue/20 ${
-              report.featured ? 'ring-2 ring-ats-blue/30 bg-gradient-to-br from-ats-blue/5 to-transparent' : ''
+            <div className={`bg-white rounded-xl border p-5 hover:shadow-md transition-all cursor-pointer h-full ${
+              report.featured ? "border-indigo-200 ring-1 ring-indigo-100" : "border-gray-100"
             }`}>
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg font-medium">{report.title}</CardTitle>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-gray-900 truncate" style={{ fontSize: 14, fontWeight: 600 }}>{report.title}</p>
                     {report.beta && (
-                      <Badge className="bg-ats-blue text-white">Beta</Badge>
+                      <Badge className="bg-indigo-600 text-white text-[10px] px-1.5 py-0 shrink-0">Beta</Badge>
                     )}
                     {report.featured && (
-                      <Badge className="bg-green-600 text-white">Live</Badge>
+                      <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0 shrink-0">Live</Badge>
                     )}
                   </div>
-                  <CardDescription>{report.description}</CardDescription>
+                  <p className="text-gray-500" style={{ fontSize: 12 }}>{report.description}</p>
                 </div>
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                  report.featured ? 'bg-ats-blue/20' : 'bg-ats-blue/10'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ml-3 ${
+                  report.featured ? "bg-indigo-100" : "bg-indigo-50"
                 }`}>
-                  {report.icon}
+                  <report.icon size={18} className="text-indigo-600" />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between text-sm">
-                  <Badge variant="outline" className="text-xs">
-                    {report.featured ? 'Analytics Dashboard' : 'ML Report'}
-                  </Badge>
-                  <span className="text-gray-500">Updated: {report.lastUpdated}</span>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <Badge variant="outline" className="text-xs">
+                  {report.featured ? "Analytics Dashboard" : "ML Report"}
+                </Badge>
+                <span className="text-gray-400" style={{ fontSize: 11 }}>Updated: {report.lastUpdated}</span>
+              </div>
+            </div>
           </Link>
         ))}
       </div>
 
-      {/* Featured ML Analytics Dashboard */}
+      {/* Live ML Analytics Dashboard */}
       <div className="mt-8">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-ats-blue" />
+        <h3 className="text-gray-900 mb-4 flex items-center gap-2" style={{ fontSize: 16, fontWeight: 600 }}>
+          <BarChart3 size={18} className="text-indigo-600" />
           Live ML Analytics Dashboard
         </h3>
-        <RecommendationAnalyticsDashboard
-          timeRange="30d"
-          autoRefresh={true}
-        />
+        <RecommendationAnalyticsDashboard timeRange="30d" autoRefresh={true} />
       </div>
     </div>
   );

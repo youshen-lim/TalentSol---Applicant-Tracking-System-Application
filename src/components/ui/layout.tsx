@@ -50,7 +50,7 @@ const cardContainerVariants = cva(
         default: "border-slate-200 shadow-ats-card hover:shadow-ats-card-hover",
         enhanced: "border-gray-200 shadow-ats-card-hover hover:shadow-ats-modal backdrop-blur-sm",
         flat: "border-slate-200 shadow-none hover:shadow-ats-card",
-        outlined: "border-ats-blue/20 shadow-none hover:border-ats-blue/30 hover:shadow-ats-card",
+        outlined: "border-primary/20 shadow-none hover:border-ats-blue/30 hover:shadow-ats-card",
       },
       padding: {
         none: "p-0",

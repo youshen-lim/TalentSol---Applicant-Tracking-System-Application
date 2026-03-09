@@ -64,7 +64,7 @@ const ResizableHandle = ({
       )}>
         <GripVertical className={cn(
           "h-2.5 w-2.5",
-          variant === "blue" && "text-ats-blue",
+          variant === "blue" && "text-primary",
           variant === "purple" && "text-ats-purple"
         )} />
       </div>

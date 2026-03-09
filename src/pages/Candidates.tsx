@@ -1,42 +1,19 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { shadows } from "@/components/ui/shadow";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Search,
   Filter,
   Plus,
-  Download,
-  MoreHorizontal,
   Users,
-  Calendar,
   Mail,
   Phone,
   MapPin,
-  Star,
-  X,
-  Clock,
-  Zap,
-  Briefcase
 } from "lucide-react";
-import KanbanBoard from "@/components/candidates/KanbanBoard";
 import CandidateFilterModal, { FilterOptions } from "@/components/candidates/CandidateFilterModal";
 import AddCandidateModal from "@/components/dashboard/AddCandidateModal";
 import { Candidate } from "@/components/candidates/CandidateCard";
 import { toast } from "sonner";
 import { useToast } from "@/components/ui/use-toast";
-import PageHeader from "@/components/layout/PageHeader";
 import { useCandidatePipeline } from "@/hooks/useCandidates";
 import { useJobs } from "@/hooks/useJobs";
 import LoadingUI from "@/components/ui/loading";
@@ -300,6 +277,112 @@ const stages = [
   },
 ];
 
+// ─── Stage tabs config ────────────────────────────────────────────────────────
+
+const STAGE_TABS = [
+  { value: "all",         label: "All Stages" },
+  { value: "applied",     label: "Applied" },
+  { value: "screening",   label: "Screening" },
+  { value: "interview",   label: "Interview 1" },
+  { value: "interview2",  label: "Interview 2" },
+  { value: "offer",       label: "Offer" },
+  { value: "hired",       label: "Hired" },
+];
+
+const CAND_AVATAR_COLORS = [
+  "bg-indigo-100 text-indigo-700",
+  "bg-violet-100 text-violet-700",
+  "bg-amber-100 text-amber-700",
+  "bg-rose-100 text-rose-700",
+  "bg-cyan-100 text-cyan-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-teal-100 text-teal-700",
+  "bg-fuchsia-100 text-fuchsia-700",
+];
+
+// ─── Candidate table row ──────────────────────────────────────────────────────
+
+function CandidateRow({
+  candidate,
+  getStageBadge,
+  onView,
+}: {
+  candidate: any;
+  getStageBadge: (stage: string) => React.ReactNode;
+  onView: () => void;
+}) {
+  const colorIdx = candidate.name ? candidate.name.charCodeAt(0) % CAND_AVATAR_COLORS.length : 0;
+  const color = CAND_AVATAR_COLORS[colorIdx];
+  const ini = (candidate.name ?? "?")
+    .split(" ")
+    .map((n: string) => n[0] ?? "")
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <div
+      onClick={onView}
+      className="grid px-6 py-3.5 hover:bg-gray-50 cursor-pointer transition-colors items-center"
+      style={{ gridTemplateColumns: "2fr 2fr 1.5fr 1fr 1fr 1fr" }}
+    >
+      {/* Candidate */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center shrink-0`}>
+          <span style={{ fontSize: 11, fontWeight: 700 }}>{ini}</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-gray-900 truncate" style={{ fontSize: 13, fontWeight: 600 }}>{candidate.name}</p>
+          <p className="text-gray-500 truncate" style={{ fontSize: 11 }}>{candidate.position}</p>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div className="flex flex-col justify-center gap-0.5 min-w-0">
+        {candidate.email && (
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Mail size={11} className="text-gray-400 shrink-0" />
+            <span className="truncate text-gray-600" style={{ fontSize: 12 }}>{candidate.email}</span>
+          </div>
+        )}
+        {candidate.phone && (
+          <div className="flex items-center gap-1.5">
+            <Phone size={11} className="text-gray-400 shrink-0" />
+            <span className="text-gray-600" style={{ fontSize: 12 }}>{candidate.phone}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Location */}
+      <div className="flex items-center">
+        {(candidate as any).location ? (
+          <div className="flex items-center gap-1.5">
+            <MapPin size={11} className="text-gray-400 shrink-0" />
+            <span className="text-gray-600" style={{ fontSize: 12 }}>{(candidate as any).location}</span>
+          </div>
+        ) : (
+          <span className="text-gray-400" style={{ fontSize: 12 }}>—</span>
+        )}
+      </div>
+
+      {/* Stage */}
+      <div className="flex items-center">{getStageBadge(candidate.stage)}</div>
+
+      {/* Source */}
+      <div className="flex items-center">
+        <span className="text-gray-600" style={{ fontSize: 12 }}>{(candidate as any).source ?? "—"}</span>
+      </div>
+
+      {/* Applied */}
+      <div className="flex items-center">
+        <span className="text-gray-500" style={{ fontSize: 12 }}>{candidate.lastActivity ?? "—"}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Candidates Page ──────────────────────────────────────────────────────────
+
 const Candidates = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -309,44 +392,34 @@ const Candidates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState(jobIdFromUrl || 'all');
-  const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
+  const [stageTabFilter, setStageTabFilter] = useState("all");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [addCandidateModalOpen, setAddCandidateModalOpen] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Get stage badge with gradient styling (matching Jobs page design)
+  // Get stage badge
   const getStageBadge = (stage: string) => {
-    // Helper function to format stage text properly
     const formatStageText = (stageId: string) => {
       const stageData = stages.find(s => s.id === stageId);
-      if (stageData) {
-        return stageData.name; // Use the proper name from API
-      }
-      // Fallback: capitalize first letter of each word
-      return stageId.split(' ').map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ');
+      if (stageData) return stageData.name;
+      return stageId.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     };
-
-    switch (stage) {
-      case 'applied':
-        return <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      case 'screening':
-        return <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      case 'interview':
-        return <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      case 'assessment':
-        return <Badge className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      case 'offer':
-        return <Badge className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      case 'hired':
-        return <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      case 'rejected':
-        return <Badge className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-      default:
-        return <Badge className="bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-sm">{formatStageText(stage)}</Badge>;
-    }
+    const classMap: Record<string, string> = {
+      applied:    "bg-blue-100 text-blue-700",
+      screening:  "bg-yellow-100 text-yellow-700",
+      interview:  "bg-purple-100 text-purple-700",
+      assessment: "bg-orange-100 text-orange-700",
+      offer:      "bg-emerald-100 text-emerald-700",
+      hired:      "bg-emerald-100 text-emerald-700",
+      rejected:   "bg-red-100 text-red-700",
+    };
+    const cls = classMap[stage] ?? "bg-gray-100 text-gray-700";
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${cls}`} style={{ fontSize: 11 }}>
+        {formatStageText(stage)}
+      </span>
+    );
   };
 
   // Use real API data
@@ -692,209 +765,145 @@ const Candidates = () => {
     selectedJob !== 'all'
   ].filter(Boolean).length;
 
+  // Rows filtered by the stage pill tab
+  const tableRows = useMemo(() => {
+    if (stageTabFilter === "all") return filteredCandidates;
+    const stageKey = stageTabFilter === "interview2" ? "interview" : stageTabFilter;
+    return filteredCandidates.filter(c => c.stage === stageKey);
+  }, [filteredCandidates, stageTabFilter]);
+
   return (
-    <div className="ats-page-layout">
-      <div className="ats-content-container">
-        <PageHeader
-          title="Candidates"
-          subtitle="Manage and track candidates through your recruitment process"
-          icon={Users}
-        >
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterModalOpen(true)}
-          className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
-        >
-          <Filter className="h-4 w-4 mr-2" />
-          Filter
-          {activeFiltersCount > 0 && (
-            <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-blue-600 hover:bg-blue-700 flex items-center justify-center">
-              {activeFiltersCount}
-            </Badge>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExportData}
-          className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export
-        </Button>
-        <Button
-          size="sm"
+    <div className="p-6 space-y-5">
+
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+            <Users size={16} className="text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-gray-900" style={{ fontSize: 20, fontWeight: 600 }}>Candidates</h1>
+            <p className="text-gray-500 mt-0.5" style={{ fontSize: 13 }}>
+              Manage and track all candidates in your recruiting pipeline
+            </p>
+          </div>
+        </div>
+        <button
           onClick={() => setAddCandidateModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-all"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Candidate
-        </Button>
-      </PageHeader>
-
-      {/* Search and Quick Filters - Responsive */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search candidates, jobs, skills..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            onFocus={() => setShowSuggestions(searchQuery.length > 0 && searchSuggestions.length > 0)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow suggestion clicks
-            className="pl-10 w-full text-sm sm:text-base"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={() => {
-                setSearchQuery('');
-                setDebouncedSearchQuery('');
-                setShowSuggestions(false);
-                setSearchSuggestions([]);
-              }}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-
-          {/* Search Suggestions Dropdown */}
-          {showSuggestions && searchSuggestions.length > 0 && (
-            <div className={`absolute top-full left-0 right-0 mt-1 ${shadows.dropdown} z-50 max-h-64 overflow-y-auto`}>
-              <div className="p-2">
-                <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                  <Zap className="h-3 w-3" />
-                  Quick suggestions
-                </div>
-                {searchSuggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-md flex items-center gap-2"
-                    onClick={() => handleSuggestionSelect(suggestion)}
-                  >
-                    {/* Determine suggestion type and show appropriate icon */}
-                    {candidates.some(c => c.name === suggestion) && (
-                      <Users className="h-3 w-3 text-ats-blue" />
-                    )}
-                    {candidates.some(c => c.position === suggestion) && (
-                      <Briefcase className="h-3 w-3 text-ats-purple" />
-                    )}
-                    {candidates.some(c => c.tags?.includes(suggestion)) && (
-                      <Star className="h-3 w-3 text-yellow-500" />
-                    )}
-                    {stages.some(s => s.name === suggestion) && (
-                      <Clock className="h-3 w-3 text-green-500" />
-                    )}
-                    <span>{suggestion}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="flex gap-3">
-          <Select value={selectedJob} onValueChange={setSelectedJob}>
-            <SelectTrigger className="w-full sm:w-[200px] lg:w-[220px]">
-              <SelectValue placeholder="All Jobs" />
-            </SelectTrigger>
-            <SelectContent>
-              {jobs.map((job) => (
-                <SelectItem key={job.id} value={job.id}>
-                  {job.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <Plus size={15} />
+          <span style={{ fontSize: 13, fontWeight: 500 }}>Add Candidate</span>
+        </button>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <LoadingUI message="Loading candidates..." />
+      {/* ── Search + Filter bar ── */}
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            placeholder="Search candidates..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-64 pl-9 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            style={{ fontSize: 13 }}
+          />
+        </div>
+        <button
+          onClick={() => setFilterModalOpen(true)}
+          className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-700 transition-all"
+          style={{ fontSize: 13 }}
+        >
+          <Filter size={14} />
+          Filter
+          {activeFiltersCount > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white" style={{ fontSize: 10, fontWeight: 700 }}>
+              {activeFiltersCount}
+            </span>
+          )}
+        </button>
+        <div className="flex-1" />
+        <span className="text-gray-500" style={{ fontSize: 13 }}>
+          {tableRows.length} candidate{tableRows.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {/* ── Stage pill tabs ── */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {STAGE_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setStageTabFilter(tab.value)}
+            className={`px-3 py-1.5 rounded-full font-medium transition-all ${
+              stageTabFilter === tab.value
+                ? "bg-indigo-600 text-white"
+                : "border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+            }`}
+            style={{ fontSize: 12 }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Loading ── */}
+      {loading && <LoadingUI message="Loading candidates..." />}
+
+      {/* ── Error banner ── */}
+      {error && !loading && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center gap-3">
+          <span className="text-amber-700 flex-1" style={{ fontSize: 13 }}>
+            {error.includes('Backend') ? 'Demo mode — backend not available.' : `Error: ${error}`}
+          </span>
+          <button onClick={refetch} className="text-amber-700 underline shrink-0" style={{ fontSize: 12 }}>
+            Retry
+          </button>
+        </div>
       )}
 
-      {/* Error State / Demo Mode */}
-      {error && (
-        <div className="mb-8">
-          {error.includes('Backend server not available') ? (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center">
-                <svg className="h-6 w-6 text-blue-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-lg font-inter font-semibold text-blue-900">Demo Mode Active</h3>
-                  <p className="text-sm font-inter text-blue-700 mt-1">
-                    Backend server not available. Showing demo data with limited functionality.
-                  </p>
-                  <p className="text-xs font-inter text-blue-600 mt-2">
-                    Error: {error}
-                  </p>
-                </div>
-                <Button
-                  onClick={refetch}
-                  variant="outline"
-                  size="sm"
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  Retry Connection
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-              <div className="text-red-600 mb-2">
-                <svg className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="text-lg font-medium">Error loading candidates</h3>
-              </div>
-              <p className="text-red-600 mb-4">{error}</p>
-              <Button
-                onClick={refetch}
-                variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50"
+      {/* ── Table ── */}
+      {!loading && (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          {/* Table header */}
+          <div
+            className="grid px-6 py-3 border-b border-gray-100 bg-gray-50/80"
+            style={{ gridTemplateColumns: "2fr 2fr 1.5fr 1fr 1fr 1fr" }}
+          >
+            {["Candidate", "Contact", "Location", "Stage", "Source", "Applied"].map((h) => (
+              <span
+                key={h}
+                className="text-gray-500 font-medium"
+                style={{ fontSize: 11, letterSpacing: "0.04em", textTransform: "uppercase" }}
               >
-                Try Again
-              </Button>
-            </div>
-          )}
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {/* Rows */}
+          <div className="divide-y divide-gray-100">
+            {tableRows.length > 0 ? (
+              tableRows.map((c) => (
+                <CandidateRow
+                  key={c.id}
+                  candidate={c}
+                  getStageBadge={getStageBadge}
+                  onView={() => handleViewCandidate(c.id)}
+                />
+              ))
+            ) : (
+              <div className="py-12 text-center">
+                <Users size={32} className="mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-500" style={{ fontSize: 14 }}>
+                  No candidates match your current filters
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Main Content - Show candidates even in demo mode (when error exists but pipeline is available) */}
-      {!loading && filteredStages.length > 0 && (
-        <>
-          {viewMode === 'board' ? (
-            <KanbanBoard
-              initialStages={filteredStages}
-              onViewCandidate={handleViewCandidate}
-              onAddCandidate={() => setAddCandidateModalOpen(true)}
-              onCandidateStatusChange={handleCandidateStatusChange}
-            />
-          ) : (
-            <div>List view placeholder</div>
-          )}
-        </>
-      )}
-
-      {/* Empty State */}
-      {!loading && !error && filteredStages.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Candidates Found</h3>
-          <p className="text-gray-600 mb-4">No candidates match your current filters</p>
-          <Button onClick={() => setAddCandidateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Candidate
-          </Button>
-        </div>
-      )}
-
-      {/* Modals */}
+      {/* ── Modals ── */}
       <CandidateFilterModal
         open={filterModalOpen}
         onOpenChange={setFilterModalOpen}
@@ -902,12 +911,10 @@ const Candidates = () => {
         onFiltersChange={setFilters}
         onClearFilters={handleClearFilters}
       />
-
       <AddCandidateModal
         open={addCandidateModalOpen}
         onOpenChange={setAddCandidateModalOpen}
       />
-      </div>
     </div>
   );
 };

@@ -2,29 +2,28 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-/**
- * Enhanced Card components for TalentSol ATS application
- * Supports ATS-specific styling and variants
- */
-
-// Card variant types
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "ats-blue" | "ats-purple" | "ats-outline" | "ats-hover"
+  variant?: "default" | "hover" | "accent" | "ats-blue" | "ats-purple" | "ats-outline" | "ats-hover"
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", ...props }, ref) => {
-    // Apply variant-specific styling
     const getVariantStyles = () => {
       switch (variant) {
+        // New variants
+        case "hover":
+          return "bg-card text-card-foreground hover:shadow-md transition-shadow duration-200"
+        case "accent":
+          return "bg-accent border-primary/20"
+        // Legacy variants — remapped to new tokens (backward compat for unmigrated pages)
         case "ats-blue":
-          return "border-ats-blue/20 bg-ats-blue/5 hover:border-ats-blue/30 hover:bg-ats-blue/10"
+          return "border-primary/20 bg-primary/5 hover:border-primary/30 hover:bg-primary/10"
         case "ats-purple":
           return "border-ats-purple/20 bg-ats-purple/5 hover:border-ats-purple/30 hover:bg-ats-purple/10"
         case "ats-outline":
           return "bg-transparent hover:bg-accent/50"
         case "ats-hover":
-          return "hover:shadow-md transition-all duration-200 hover:border-ats-blue/30"
+          return "hover:shadow-md transition-shadow duration-200 hover:border-primary/30"
         default:
           return "bg-card text-card-foreground"
       }
@@ -34,7 +33,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-lg border shadow-sm",
+          "rounded-xl border border-gray-100",
           getVariantStyles(),
           className
         )}

@@ -186,7 +186,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({ open, onOp
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5 text-ats-blue" />
+            <Download className="h-5 w-5 text-primary" />
             Export Report
           </DialogTitle>
           <DialogDescription>
@@ -394,7 +394,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({ open, onOp
           <Button 
             onClick={handleGenerateReport} 
             disabled={isGenerating}
-            className="bg-ats-blue hover:bg-ats-dark-blue"
+            className="bg-primary hover:bg-primary/90"
           >
             {isGenerating ? (
               <>

@@ -84,7 +84,7 @@ const ABTestPanel: React.FC = () => {
           onClick={() => setIsVisible(true)}
           variant="outline"
           size="sm"
-          className="bg-white shadow-lg border-2 border-ats-blue/20 hover:border-ats-blue/40"
+          className="bg-white shadow-lg border-2 border-primary/20 hover:border-ats-blue/40"
         >
           <Settings className="h-4 w-4 mr-2" />
           A/B Tests
@@ -95,12 +95,12 @@ const ABTestPanel: React.FC = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 max-h-[80vh] overflow-hidden">
-      <Card className="shadow-xl border-2 border-ats-blue/20">
+      <Card className="shadow-xl border-2 border-primary/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-ats-blue" />
+                <BarChart3 className="h-5 w-5 text-primary" />
                 A/B Test Control Panel
               </CardTitle>
               <CardDescription>

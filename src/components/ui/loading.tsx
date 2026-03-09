@@ -33,7 +33,7 @@ export const LoadingUI: React.FC<LoadingUIProps> = ({
   return (
     <div className={`flex items-center justify-center py-12 ${className}`}>
       <div className="text-center">
-        <div className={`${sizeClasses[size]} animate-spin rounded-full border-b-2 border-blue-600 mx-auto mb-4`}></div>
+        <div className={`${sizeClasses[size]} animate-spin rounded-full border-b-2 border-indigo-600 mx-auto mb-4`}></div>
         <p className={`${textSizeClasses[size]} text-gray-500 font-inter`}>{message}</p>
       </div>
     </div>

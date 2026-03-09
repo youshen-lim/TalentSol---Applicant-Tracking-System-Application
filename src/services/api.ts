@@ -156,10 +156,8 @@ export interface JobData {
 
 // Helper function to get auth token
 const getAuthToken = () => {
-  // Use demo token for development/testing
-  const demoToken = 'demo-token-for-development';
-  localStorage.setItem('authToken', demoToken);
-  return demoToken;
+  return localStorage.getItem('authToken') ||
+    (import.meta.env.DEV ? 'demo-token-for-development' : null);
 };
 
 // Helper function to make authenticated requests
@@ -682,6 +680,18 @@ export const interviewsApi = {
   getUpcoming: async () => {
     return makeRequest('/interviews/upcoming');
   },
+
+  // Bulk operations on interviews
+  bulkOperations: async (data: {
+    operation: 'reschedule' | 'cancel' | 'send_reminder' | 'delete' | 'update_status' | 'assign_interviewer';
+    interviewIds: string[];
+    data?: Record<string, unknown>;
+  }) => {
+    return makeRequest('/interviews/bulk-operations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // Analytics API
@@ -713,7 +723,7 @@ export const analyticsApi = {
       searchParams.append('jobId', jobId);
     }
 
-    return makeRequest(`/analytics/conversion?${searchParams.toString()}`);
+    return makeRequest(`/analytics/funnel?${searchParams.toString()}`);
   },
 
   // Get time to hire metrics

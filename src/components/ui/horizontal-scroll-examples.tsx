@@ -92,7 +92,7 @@ const HorizontalScrollExamples: React.FC = () => {
                     <Card key={index} className="min-w-[240px] flex-shrink-0">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                          <IconComponent className="h-8 w-8 text-ats-blue" />
+                          <IconComponent className="h-8 w-8 text-primary" />
                           <div>
                             <p className="text-sm text-gray-600">{metric.title}</p>
                             <p className="text-xl font-bold">{metric.value}</p>
@@ -152,7 +152,7 @@ const HorizontalScrollExamples: React.FC = () => {
               <Card key={index} className="h-full">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <IconComponent className="h-5 w-5 text-ats-blue" />
+                    <IconComponent className="h-5 w-5 text-primary" />
                     <Badge variant="secondary" className="text-xs">
                       {metric.change}
                     </Badge>

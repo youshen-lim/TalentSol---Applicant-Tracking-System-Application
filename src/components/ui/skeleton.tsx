@@ -9,7 +9,7 @@ const skeletonVariants = cva("animate-pulse rounded-md", {
   variants: {
     variant: {
       default: "bg-muted",
-      "ats-blue": "bg-ats-blue/10",
+      "ats-blue": "bg-primary/10",
       "ats-purple": "bg-ats-purple/10",
       "ats-gray": "bg-ats-border-gray",
       subtle: "bg-muted/50",

@@ -1,82 +1,48 @@
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, Download, Save } from "lucide-react";
+import { ChevronRight, Download, Save } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ReportHeaderProps {
   title: string;
-  subtitle?: string;
   backLink?: string;
   showSave?: boolean;
   showExport?: boolean;
-  showLocationFilter?: boolean;
-  showUnsavedBadge?: boolean;
+  saveLabel?: string;
 }
 
-/**
- * ReportHeader component
- * Consistent header for report pages with navigation and actions
- */
 const ReportHeader = ({
   title,
-  subtitle,
   backLink = "/analytics",
   showSave = true,
   showExport = true,
-  showLocationFilter = false,
-  showUnsavedBadge = false,
+  saveLabel = "Save",
 }: ReportHeaderProps) => {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center text-sm text-gray-500">
-        <Link to={backLink} className="flex items-center hover:text-ats-blue">
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          <span>Report Home</span>
+    <div>
+      <div className="flex items-center gap-1.5 mb-1">
+        <Link
+          to={backLink}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+          style={{ fontSize: 12 }}
+        >
+          Report Home
         </Link>
-        {subtitle && (
-          <>
-            <span className="mx-2">•</span>
-            <span>{subtitle}</span>
-          </>
-        )}
+        <ChevronRight size={12} className="text-gray-300" />
+        <span className="text-gray-400" style={{ fontSize: 12 }}>Zone Report</span>
       </div>
-
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          {showUnsavedBadge && (
-            <Badge variant="outline" className="text-xs">Unsaved</Badge>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          {showLocationFilter && (
-            <Select defaultValue="america">
-              <SelectTrigger className="w-[180px] h-9 text-sm">
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="america">America/Los Angeles</SelectItem>
-                <SelectItem value="europe">Europe/London</SelectItem>
-                <SelectItem value="asia">Asia/Singapore</SelectItem>
-                <SelectItem value="australia">Australia/Sydney</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-
+      <div className="flex items-center justify-between">
+        <h1 className="text-gray-900" style={{ fontSize: 22, fontWeight: 700 }}>{title}</h1>
+        <div className="flex items-center gap-2">
           {showExport && (
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+            <button className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-700 transition-all">
+              <Download size={14} />
+              <span style={{ fontSize: 13 }}>Export</span>
+            </button>
           )}
-
           {showSave && (
-            <Button size="sm" variant="ats-blue">
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </Button>
+            <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all">
+              <Save size={14} />
+              <span style={{ fontSize: 13 }}>{saveLabel}</span>
+            </button>
           )}
         </div>
       </div>

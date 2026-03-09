@@ -209,7 +209,7 @@ const ApplicationKanbanBoard: React.FC<ApplicationKanbanBoardProps> = ({
         <div className="flex gap-1">
           <Button 
             size="sm" 
-            className="flex-1 h-7 text-xs bg-ats-blue hover:bg-ats-dark-blue"
+            className="flex-1 h-7 text-xs bg-primary hover:bg-primary/90"
             onClick={() => onApplicationAction(application.id, 'view')}
           >
             <Eye className="h-3 w-3 mr-1" />

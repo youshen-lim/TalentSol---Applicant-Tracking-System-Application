@@ -63,7 +63,7 @@ const variantStyles = {
   },
   blue: {
     scrollbar: 'scrollbar-thumb-ats-light-blue/60 hover:scrollbar-thumb-ats-blue',
-    buttons: 'bg-white/90 border-ats-light-blue/20 hover:bg-ats-blue/5 hover:border-ats-blue/30 text-ats-blue',
+    buttons: 'bg-white/90 border-ats-light-blue/20 hover:bg-primary/5 hover:border-ats-blue/30 text-primary',
     indicators: 'bg-ats-light-blue/40 data-[active=true]:bg-ats-blue',
     fade: 'from-ats-blue/10 to-transparent',
   },

@@ -18,8 +18,8 @@ const tabsListVariants = cva(
     variants: {
       variant: {
         default: "bg-muted",
-        "ats-blue": "bg-ats-blue/10 border border-ats-blue/20",
-        "ats-purple": "bg-ats-purple/10 border border-ats-purple/20",
+        "ats-blue": "bg-primary/10 border border-primary/20",
+        "ats-purple": "bg-primary/10 border border-primary/20",
         "ats-gray": "bg-ats-gray border border-ats-border-gray",
         outline: "border border-input bg-transparent",
       },
@@ -64,13 +64,13 @@ const tabsTriggerVariants = cva(
     variants: {
       variant: {
         default: "focus-visible:ring-ring data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-        "ats-blue": "focus-visible:ring-ats-blue data-[state=active]:bg-ats-blue data-[state=active]:text-white data-[state=active]:shadow-sm",
-        "ats-purple": "focus-visible:ring-ats-purple data-[state=active]:bg-ats-purple data-[state=active]:text-white data-[state=active]:shadow-sm",
-        "ats-blue-subtle": "focus-visible:ring-ats-blue data-[state=active]:bg-ats-blue/20 data-[state=active]:text-ats-dark-blue data-[state=active]:shadow-sm",
-        "ats-purple-subtle": "focus-visible:ring-ats-purple data-[state=active]:bg-ats-purple/20 data-[state=active]:text-ats-dark-purple data-[state=active]:shadow-sm",
+        "ats-blue": "focus-visible:ring-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm",
+        "ats-purple": "focus-visible:ring-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm",
+        "ats-blue-subtle": "focus-visible:ring-primary data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-sm",
+        "ats-purple-subtle": "focus-visible:ring-primary data-[state=active]:bg-accent data-[state=active]:text-primary data-[state=active]:shadow-sm",
         "ats-underline": "rounded-none border-b-2 border-b-transparent px-4 pb-3 pt-2 focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none",
-        "ats-blue-underline": "rounded-none border-b-2 border-b-transparent px-4 pb-3 pt-2 focus-visible:ring-0 data-[state=active]:border-b-ats-blue data-[state=active]:text-ats-dark-blue data-[state=active]:shadow-none",
-        "ats-purple-underline": "rounded-none border-b-2 border-b-transparent px-4 pb-3 pt-2 focus-visible:ring-0 data-[state=active]:border-b-ats-purple data-[state=active]:text-ats-dark-purple data-[state=active]:shadow-none",
+        "ats-blue-underline": "rounded-none border-b-2 border-b-transparent px-4 pb-3 pt-2 focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none",
+        "ats-purple-underline": "rounded-none border-b-2 border-b-transparent px-4 pb-3 pt-2 focus-visible:ring-0 data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:shadow-none",
       },
       size: {
         default: "",
@@ -113,8 +113,8 @@ const tabsContentVariants = cva(
     variants: {
       variant: {
         default: "focus-visible:ring-ring",
-        "ats-blue": "focus-visible:ring-ats-blue",
-        "ats-purple": "focus-visible:ring-ats-purple",
+        "ats-blue": "focus-visible:ring-primary",
+        "ats-purple": "focus-visible:ring-primary",
       },
       padding: {
         default: "",

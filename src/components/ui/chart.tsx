@@ -85,7 +85,7 @@ const ChartContainer = React.forwardRef<
   const getVariantStyles = () => {
     switch (variant) {
       case "ats-blue":
-        return "border border-ats-blue/20 rounded-lg p-1 [&_.recharts-cartesian-axis-tick_text]:fill-ats-blue [&_.recharts-line]:stroke-ats-blue"
+        return "border border-primary/20 rounded-lg p-1 [&_.recharts-cartesian-axis-tick_text]:fill-ats-blue [&_.recharts-line]:stroke-ats-blue"
       case "ats-purple":
         return "border border-ats-purple/20 rounded-lg p-1 [&_.recharts-cartesian-axis-tick_text]:fill-ats-purple [&_.recharts-line]:stroke-ats-purple"
       default:
@@ -187,7 +187,7 @@ const ChartTooltipContent = React.forwardRef<
     const getVariantStyles = () => {
       switch (variant) {
         case "ats-blue":
-          return "border-ats-blue/20 bg-ats-blue/5 text-ats-blue"
+          return "border-primary/20 bg-primary/5 text-primary"
         case "ats-purple":
           return "border-ats-purple/20 bg-ats-purple/5 text-ats-purple"
         default:
@@ -340,7 +340,7 @@ const ChartLegendContent = React.forwardRef<
     const getVariantStyles = () => {
       switch (variant) {
         case "ats-blue":
-          return "text-ats-blue"
+          return "text-primary"
         case "ats-purple":
           return "text-ats-purple"
         default:
@@ -512,7 +512,7 @@ export function Chart({
                     return (
                       <div className={cn(
                         "rounded-lg border p-2 shadow-sm",
-                        variant === "ats-blue" ? "border-ats-blue/20 bg-ats-blue/5" :
+                        variant === "ats-blue" ? "border-primary/20 bg-primary/5" :
                         variant === "ats-purple" ? "border-ats-purple/20 bg-ats-purple/5" :
                         "bg-background"
                       )}>
@@ -523,7 +523,7 @@ export function Chart({
                             </span>
                             <span className={cn(
                               "font-bold",
-                              variant === "ats-blue" ? "text-ats-blue" :
+                              variant === "ats-blue" ? "text-primary" :
                               variant === "ats-purple" ? "text-ats-purple" :
                               "text-muted-foreground"
                             )}>

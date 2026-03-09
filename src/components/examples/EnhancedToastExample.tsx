@@ -42,7 +42,7 @@ export function EnhancedToastExample() {
     <Card>
       <CardHeader className="bg-gradient-to-r from-ats-blue/10 to-ats-purple/10">
         <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-ats-blue" />
+          <Bell className="h-5 w-5 text-primary" />
           Enhanced Toast Notifications
         </CardTitle>
         <CardDescription>
@@ -66,7 +66,7 @@ export function EnhancedToastExample() {
                 });
               }}
             >
-              <Info className="h-4 w-4 mr-2 text-ats-blue" />
+              <Info className="h-4 w-4 mr-2 text-primary" />
               Default Notification
             </Button>
 

@@ -109,11 +109,11 @@ const DocumentSignatureView: React.FC<DocumentSignatureViewProps> = ({
   const documentTypeInfo = getDocumentTypeInfo(document.type);
 
   return (
-    <Card className="border-ats-blue/20">
-      <CardHeader className="bg-ats-blue/5 border-b border-ats-blue/10">
+    <Card className="border-primary/20">
+      <CardHeader className="bg-primary/5 border-b border-ats-blue/10">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-ats-blue/10 text-ats-blue">
+            <div className="p-2 rounded-full bg-primary/10 text-primary">
               {documentTypeInfo.icon}
             </div>
             <div>
@@ -162,8 +162,8 @@ const DocumentSignatureView: React.FC<DocumentSignatureViewProps> = ({
             <h4 className="font-medium mb-2">Document Timeline</h4>
             <div className="relative pl-6 border-l-2 border-gray-200 space-y-4">
               <div className="relative">
-                <div className="absolute -left-[25px] p-1 rounded-full bg-ats-blue/20 border-2 border-white">
-                  <FileText className="h-3 w-3 text-ats-blue" />
+                <div className="absolute -left-[25px] p-1 rounded-full bg-primary/20 border-2 border-white">
+                  <FileText className="h-3 w-3 text-primary" />
                 </div>
                 <p className="text-sm font-medium">Document Created</p>
                 <p className="text-xs text-gray-500">{formatDate(document.createdAt)}</p>
@@ -218,7 +218,7 @@ const DocumentSignatureView: React.FC<DocumentSignatureViewProps> = ({
           )}
 
           <Button
-            className="bg-ats-blue hover:bg-ats-dark-blue text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
             onClick={onDownload}
           >
             <Download className="h-4 w-4 mr-2" />

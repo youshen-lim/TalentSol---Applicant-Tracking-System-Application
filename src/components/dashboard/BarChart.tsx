@@ -52,7 +52,7 @@ export interface BarChartProps {
 }
 
 // Enhanced gradient color palette for better visual hierarchy
-const defaultColors = ['#1E40AF', '#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
+const defaultColors = ['#3730A3', '#4338CA', '#4F46E5', '#6366F1', '#818CF8', '#A5B4FC'];
 
 // Generate gradient colors based on data values
 const generateGradientColors = (data: BarChartData[], dataKey: string = 'value') => {
@@ -66,12 +66,12 @@ const generateGradientColors = (data: BarChartData[], dataKey: string = 'value')
     const value = item[dataKey] || 0;
     const intensity = maxValue > minValue ? (value - minValue) / (maxValue - minValue) : 0.5;
 
-    // Generate blue gradient from light to dark based on value
-    if (intensity > 0.8) return '#1E40AF'; // Dark blue for highest values
-    if (intensity > 0.6) return '#2563EB'; // Strong blue
-    if (intensity > 0.4) return '#3B82F6'; // Medium blue
-    if (intensity > 0.2) return '#60A5FA'; // Light blue
-    return '#93C5FD'; // Lightest blue for lowest values
+    // Generate indigo gradient from light to dark based on value
+    if (intensity > 0.8) return '#3730A3'; // Dark indigo for highest values
+    if (intensity > 0.6) return '#4338CA'; // Strong indigo
+    if (intensity > 0.4) return '#4F46E5'; // Medium indigo
+    if (intensity > 0.2) return '#6366F1'; // Light indigo
+    return '#818CF8'; // Lightest indigo for lowest values
   });
 };
 
@@ -191,7 +191,7 @@ export const BarChart: React.FC<BarChartProps> = ({
               {/* Progress bar showing relative value */}
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -217,7 +217,7 @@ export const BarChart: React.FC<BarChartProps> = ({
       <text
         x={x - 8}
         y={y}
-        fill="#475569"
+        fill="#9CA3AF"
         fontSize={config.fontSize}
         fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
         fontWeight="400"
@@ -344,24 +344,24 @@ export const BarChart: React.FC<BarChartProps> = ({
               }}
               barCategoryGap={vertical ? "15%" : "12%"} // Increased gap for better visual separation
             >
-              {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={!vertical} />}
+              {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={!vertical} />}
 
               {vertical ? (
                 <>
                   <XAxis
                     type="number"
-                    tick={{ fontSize: config.fontSize, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
-                    tickLine={{ stroke: '#e2e8f0' }}
-                    axisLine={{ stroke: '#e2e8f0' }}
+                    tick={{ fontSize: config.fontSize, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={valueFormatter}
                   />
                   <YAxis
                     dataKey="name"
                     type="category"
                     tick={<CustomYAxisTick />}
-                    tickLine={{ stroke: '#e2e8f0' }}
+                    tickLine={false}
                     width={config.yAxisWidth}
-                    axisLine={{ stroke: '#e2e8f0' }}
+                    axisLine={false}
                     interval={0}
                   />
                 </>
@@ -369,19 +369,19 @@ export const BarChart: React.FC<BarChartProps> = ({
                 <>
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
-                    tickLine={{ stroke: '#e2e8f0' }}
-                    axisLine={{ stroke: '#e2e8f0' }}
+                    tick={{ fontSize: 14, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
+                    tickLine={false}
+                    axisLine={false}
                     height={35}
-                    label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
+                    label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 14, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
                   />
                   <YAxis
-                    tick={{ fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
-                    tickLine={{ stroke: '#e2e8f0' }}
-                    axisLine={{ stroke: '#e2e8f0' }}
+                    tick={{ fontSize: 14, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={valueFormatter}
                     width={40}
-                    label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
+                    label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 14, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
                   />
                 </>
               )}
@@ -394,7 +394,7 @@ export const BarChart: React.FC<BarChartProps> = ({
                     fontSize: config.fontSize,
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                     fontWeight: 400,
-                    color: '#475569',
+                    color: '#9CA3AF',
                     display: 'flex',
                     justifyContent: 'center',
                     gap: '16px'

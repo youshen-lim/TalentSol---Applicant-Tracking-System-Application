@@ -194,12 +194,19 @@ const mockScheduledInterviews = [
 ];
 
 // Props for the component
+interface ApplicationOption {
+  id: string;
+  candidateName: string;
+  jobTitle: string;
+}
+
 interface InterviewSchedulerProps {
-  onInterviewScheduled?: (interview: any) => void;
+  onInterviewScheduled?: (interview: any) => Promise<void> | void;
   className?: string;
   interviewers?: Interviewer[];
   interviewTypes?: InterviewType[];
   availableTimeSlots?: Record<string, TimeSlot[]>;
+  applications?: ApplicationOption[];
 }
 
 export function InterviewScheduler({
@@ -207,7 +214,8 @@ export function InterviewScheduler({
   className,
   interviewers = mockInterviewers,
   interviewTypes = mockInterviewTypes,
-  availableTimeSlots = mockTimeSlots
+  availableTimeSlots = mockTimeSlots,
+  applications = [],
 }: InterviewSchedulerProps) {
   // State for the calendar view
   const [date, setDate] = useState<Date>(new Date());
@@ -219,6 +227,9 @@ export function InterviewScheduler({
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
   const [selectedInterviewers, setSelectedInterviewers] = useState<string[]>([]);
   const [selectedInterviewType, setSelectedInterviewType] = useState<string | undefined>();
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Initialize form with react-hook-form
   const form = useForm<InterviewFormValues>({
@@ -257,6 +268,14 @@ export function InterviewScheduler({
     return interviewTypes.find((type) => type.id === selectedInterviewType);
   };
 
+  const validateTabbedForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    if (!selectedDate) errors.date = 'Please select a date';
+    if (!selectedTimeSlot) errors.timeSlot = 'Please select a time slot';
+    if (!selectedInterviewType) errors.interviewType = 'Please select an interview type';
+    return errors;
+  };
+
   const isFormComplete = () => {
     return (
       selectedDate &&
@@ -266,44 +285,42 @@ export function InterviewScheduler({
     );
   };
 
-  const handleSchedule = () => {
+  const handleSchedule = async () => {
+    const errors = validateTabbedForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
+
     if (selectedDate && selectedTimeSlot && selectedInterviewType) {
       const selectedSlot = timeSlots.find(slot => slot.id === selectedTimeSlot);
+      if (!selectedSlot) return;
 
-      if (selectedSlot) {
-        const newInterview = {
-          id: `${scheduledInterviews.length + 1}`,
-          title: `${getSelectedInterviewType()?.name || "Interview"}`,
-          candidateId: "1", // Default candidate for now
-          candidateName: "New Candidate",
-          interviewers: selectedInterviewers,
-          date: selectedDate,
-          startTime: selectedSlot.start,
-          endTime: selectedSlot.end,
-          location: "To be determined",
-          type: "video",
-          notes: getSelectedInterviewType()?.description || "",
-        };
+      const interviewData = {
+        applicationId: selectedApplicationId,
+        title: getSelectedInterviewType()?.name || 'Interview',
+        type: selectedInterviewType,
+        scheduledDate: selectedDate.toISOString(),
+        startTime: selectedSlot.start,
+        endTime: selectedSlot.end,
+        interviewers: selectedInterviewers.map(id => interviewers.find(i => i.id === id)?.name || id),
+        notes: getSelectedInterviewType()?.description || '',
+      };
 
-        // Add to scheduled interviews
-        setScheduledInterviews([...scheduledInterviews, newInterview]);
-
-        // Call the callback if provided
-        if (onInterviewScheduled) {
-          onInterviewScheduled(newInterview);
+      if (onInterviewScheduled) {
+        setIsSubmitting(true);
+        try {
+          await onInterviewScheduled(interviewData);
+          // Reset form
+          setSelectedDate(new Date());
+          setSelectedTimeSlot(undefined);
+          setSelectedInterviewers([]);
+          setSelectedInterviewType(undefined);
+          setSelectedApplicationId(undefined);
+        } finally {
+          setIsSubmitting(false);
         }
-
-        // Show success toast
-        toast({
-          title: "Interview scheduled",
-          description: `${newInterview.title} has been scheduled for ${format(selectedDate, 'PPP')} at ${selectedSlot.start}.`,
-        });
-
-        // Reset form
-        setSelectedDate(new Date());
-        setSelectedTimeSlot(undefined);
-        setSelectedInterviewers([]);
-        setSelectedInterviewType(undefined);
       }
     }
   };
@@ -375,7 +392,7 @@ export function InterviewScheduler({
                           key={slot.id}
                           variant={selectedTimeSlot === slot.id ? "default" : "outline"}
                           className={cn("justify-start",
-                            selectedTimeSlot === slot.id ? "border-ats-blue bg-ats-blue text-white" : ""
+                            selectedTimeSlot === slot.id ? "border-ats-blue bg-primary text-white" : ""
                           )}
                           onClick={() => setSelectedTimeSlot(slot.id)}
                         >
@@ -406,7 +423,7 @@ export function InterviewScheduler({
                       className={cn(
                         "flex items-center space-x-3 p-3 border rounded-md cursor-pointer",
                         selectedInterviewers.includes(interviewer.id)
-                          ? "border-ats-blue bg-ats-blue/5"
+                          ? "border-ats-blue bg-primary/5"
                           : "hover:border-gray-300"
                       )}
                       onClick={() => handleInterviewerToggle(interviewer.id)}
@@ -419,7 +436,7 @@ export function InterviewScheduler({
                             className="h-10 w-10 rounded-full"
                           />
                         ) : (
-                          <div className="h-10 w-10 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center">
+                          <div className="h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
                             {interviewer.name.charAt(0)}
                           </div>
                         )}
@@ -470,6 +487,29 @@ export function InterviewScheduler({
             </TabsContent>
             <TabsContent value="details">
               <div className="space-y-4 pt-4">
+                {applications.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Candidate / Application</h3>
+                    <Select
+                      value={selectedApplicationId}
+                      onValueChange={setSelectedApplicationId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select candidate application" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {applications.map((app) => (
+                          <SelectItem key={app.id} value={app.id}>
+                            {app.candidateName} — {app.jobTitle}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {validationErrors.applicationId && (
+                      <p className="mt-1 text-xs text-red-500">{validationErrors.applicationId}</p>
+                    )}
+                  </div>
+                )}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Interview Type</h3>
                   <Select
@@ -555,10 +595,10 @@ export function InterviewScheduler({
           <div className="mt-6 flex justify-end">
             <Button
               onClick={handleSchedule}
-              disabled={!isFormComplete()}
-              className="bg-ats-blue hover:bg-ats-dark-blue"
+              disabled={!isFormComplete() || isSubmitting}
+              className="bg-primary hover:bg-primary/90"
             >
-              Schedule Interview
+              {isSubmitting ? 'Scheduling...' : 'Schedule Interview'}
             </Button>
           </div>
         </CardContent>
@@ -792,7 +832,7 @@ export function InterviewScheduler({
                   <Button type="button" variant="outline" onClick={() => setIsAddingInterview(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-ats-blue hover:bg-ats-dark-blue">Schedule Interview</Button>
+                  <Button type="submit" className="bg-primary hover:bg-primary/90">Schedule Interview</Button>
                 </DialogFooter>
               </form>
             </Form>

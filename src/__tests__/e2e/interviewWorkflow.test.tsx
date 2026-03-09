@@ -20,15 +20,10 @@ vi.mock('@/utils/apiClient', () => ({
 
 // Mock hooks
 vi.mock('@/hooks/useInterviews', () => ({
-  useInterviews: () => ({
-    interviews: mockInterviews,
-    loading: false,
-    error: null,
-    createInterview: vi.fn().mockResolvedValue({}),
-    updateInterview: vi.fn().mockResolvedValue({}),
-    deleteInterview: vi.fn().mockResolvedValue({}),
-    refetch: vi.fn(),
-  }),
+  useInterviews: () => ({ interviews: mockInterviews, loading: false, error: null, refetch: vi.fn() }),
+  useCreateInterview: () => ({ createInterview: vi.fn().mockResolvedValue({}), loading: false }),
+  useUpdateInterview: () => ({ updateInterview: vi.fn().mockResolvedValue({}), loading: false }),
+  useDeleteInterview: () => ({ deleteInterview: vi.fn().mockResolvedValue({}), loading: false }),
 }));
 
 vi.mock('@/hooks/useCandidates', () => ({

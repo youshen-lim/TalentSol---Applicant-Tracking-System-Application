@@ -1,13 +1,17 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useUI } from "@/store";
 // import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // import { ABTestProvider } from "@/hooks/useABTest";
 // import ABTestPanel from "@/components/admin/ABTestPanel";
 // import { StoreProvider } from "@/store/StoreProvider";
 import Layout from "./components/layout/Layout";
+import PrivateRoute from "./components/auth/PrivateRoute";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Candidates from "./pages/Candidates";
 import Interviews from "./pages/Interviews";
@@ -42,10 +46,16 @@ import { ToggleGroupExample } from '@/components/examples/ToggleGroupExample';
 import { MobileDetectionExample } from '@/components/examples/MobileDetectionExample';
 import { EnhancedToastExample } from '@/components/examples/EnhancedToastExample';
 import { UtilsExample } from '@/components/examples/UtilsExample';
-import TestApplicationSources from './pages/TestApplicationSources';
 
-
-
+// Re-applies the persisted theme class on initial page load
+function ThemeInitializer() {
+  const { theme, setTheme } = useUI();
+  useEffect(() => {
+    setTheme(theme);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -76,13 +86,17 @@ const App = () => (
     {/* <StoreProvider> */}
       {/* <ABTestProvider> */}
         <TooltipProvider>
+          <ThemeInitializer />
           <Toaster variant="ats-blue" />
           <Sonner />
           <BrowserRouter>
           <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/apply/:formSlug" element={<PublicApplicationPage />} />
+          <Route element={<PrivateRoute />}>
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/candidates" element={<Candidates />} />
@@ -105,9 +119,8 @@ const App = () => (
             <Route path="/profile/management" element={<ProfileManagement />} />
             <Route path="/help" element={<Help />} />
           </Route>
+          </Route>
           <Route path="/examples" element={<ExamplesPage />} />
-          <Route path="/test-sources" element={<TestApplicationSources />} />
-
           <Route path="*" element={<NotFound />} />
         </Routes>
           {/* <ABTestPanel /> */}

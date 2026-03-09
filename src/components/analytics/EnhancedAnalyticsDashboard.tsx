@@ -95,7 +95,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
         change: 12.5,
         trend: 'up',
         icon: <Users className="h-5 w-5" />,
-        color: 'text-blue-600'
+        color: 'text-indigo-600'
       },
       {
         title: 'Average AI Score',
@@ -158,7 +158,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
     }, {} as Record<string, number>);
 
     const pipelineData = [
-      { stage: 'Applied', count: statusCounts.applied || 0, color: '#3B82F6' },
+      { stage: 'Applied', count: statusCounts.applied || 0, color: '#4F46E5' },
       { stage: 'Screening', count: statusCounts.screening || 0, color: '#8B5CF6' },
       { stage: 'Interview', count: statusCounts.interview || 0, color: '#F59E0B' },
       { stage: 'Assessment', count: statusCounts.assessment || 0, color: '#EF4444' },
@@ -307,7 +307,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
           <Card className={shadows.card}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <TrendingUp className="h-5 w-5 text-indigo-600" />
                 Applications Trend Over Time
               </CardTitle>
             </CardHeader>
@@ -319,7 +319,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="applications" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
+                  <Area type="monotone" dataKey="applications" stackId="1" stroke="#4F46E5" fill="#4F46E5" fillOpacity={0.6} />
                   <Area type="monotone" dataKey="interviews" stackId="1" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.6} />
                   <Area type="monotone" dataKey="offers" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
                 </AreaChart>
@@ -376,7 +376,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="count" fill="#3B82F6" name="Total Applications" />
+                  <Bar dataKey="count" fill="#4F46E5" name="Total Applications" />
                   <Bar dataKey="hired" fill="#10B981" name="Hired" />
                 </BarChart>
               </ResponsiveContainer>
@@ -389,7 +389,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-blue-600" />
+                  <Brain className="h-5 w-5 text-indigo-600" />
                   ML Model Performance
                 </CardTitle>
               </CardHeader>
@@ -424,7 +424,7 @@ export const EnhancedAnalyticsDashboard: React.FC<EnhancedAnalyticsDashboardProp
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 bg-slate-200 rounded-full">
                           <div 
-                            className="h-full bg-blue-600 rounded-full" 
+                            className="h-full bg-primary rounded-full"
                             style={{ width: `${100 - (index * 15)}%` }}
                           />
                         </div>

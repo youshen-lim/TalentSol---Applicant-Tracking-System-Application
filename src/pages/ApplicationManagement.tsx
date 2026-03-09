@@ -94,6 +94,89 @@ interface Application extends ApplicationWithML {
   candidateId?: string;
 }
 
+// ─── App Row ──────────────────────────────────────────────────────────────────
+
+const APP_AVATAR_COLORS = [
+  "bg-indigo-100 text-indigo-700",
+  "bg-violet-100 text-violet-700",
+  "bg-amber-100 text-amber-700",
+  "bg-rose-100 text-rose-700",
+  "bg-cyan-100 text-cyan-700",
+  "bg-emerald-100 text-emerald-700",
+];
+
+const APP_STATUS_BADGE: Record<string, string> = {
+  applied:    "bg-blue-100 text-blue-700",
+  screening:  "bg-yellow-100 text-yellow-700",
+  interview:  "bg-purple-100 text-purple-700",
+  assessment: "bg-orange-100 text-orange-700",
+  offer:      "bg-emerald-100 text-emerald-700",
+  hired:      "bg-emerald-100 text-emerald-700",
+  rejected:   "bg-red-100 text-red-700",
+};
+
+function AppRow({ app }: { app: any }) {
+  const firstName = app.candidateInfo?.firstName || app.candidateName?.split(" ")[0] || "";
+  const lastName  = app.candidateInfo?.lastName  || app.candidateName?.split(" ").slice(1).join(" ") || "";
+  const fullName  = `${firstName} ${lastName}`.trim() || "Unknown";
+  const ini       = ((firstName[0] ?? "") + (lastName[0] ?? "")).toUpperCase();
+  const colorIdx  = fullName.charCodeAt(0) % APP_AVATAR_COLORS.length;
+  const badgeCls  = APP_STATUS_BADGE[(app.status ?? "").toLowerCase()] ?? "bg-gray-100 text-gray-700";
+  const score     = typeof app.score === "number" ? app.score : null;
+  const applied   = app.submittedAt
+    ? new Date(app.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "—";
+  const source      = (app as any).source ?? app.candidateInfo?.source ?? "—";
+  const statusLabel = (app.status ?? "applied").charAt(0).toUpperCase() + (app.status ?? "applied").slice(1);
+
+  return (
+    <tr className="hover:bg-gray-50 transition-colors">
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-8 h-8 rounded-full ${APP_AVATAR_COLORS[colorIdx]} flex items-center justify-center shrink-0`}>
+            <span style={{ fontSize: 11, fontWeight: 700 }}>{ini}</span>
+          </div>
+          <div>
+            <p className="text-gray-900" style={{ fontSize: 13, fontWeight: 600 }}>{fullName}</p>
+            <p className="text-gray-400" style={{ fontSize: 11 }}>{app.candidateInfo?.email || app.candidateEmail || ""}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <p className="text-gray-700" style={{ fontSize: 13 }}>{app.jobTitle || "—"}</p>
+        {app.jobDepartment && (
+          <p className="text-gray-400 mt-0.5" style={{ fontSize: 11 }}>{app.jobDepartment}</p>
+        )}
+      </td>
+      <td className="px-6 py-4">
+        <p className="text-gray-500" style={{ fontSize: 13 }}>{applied}</p>
+      </td>
+      <td className="px-6 py-4">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full ${badgeCls}`} style={{ fontSize: 11, fontWeight: 600 }}>
+          {statusLabel}
+        </span>
+      </td>
+      <td className="px-6 py-4">
+        {score !== null ? (
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden" style={{ width: 80 }}>
+              <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(score, 100)}%` }} />
+            </div>
+            <span className="text-gray-700 shrink-0" style={{ fontSize: 12, fontWeight: 600 }}>{score}</span>
+          </div>
+        ) : (
+          <span className="text-gray-400" style={{ fontSize: 13 }}>—</span>
+        )}
+      </td>
+      <td className="px-6 py-4">
+        <p className="text-gray-500" style={{ fontSize: 13 }}>{source}</p>
+      </td>
+    </tr>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
 /**
  * Application Management page component
  * Consolidated from ApplicationsTest.tsx to be the primary application management interface
@@ -122,7 +205,7 @@ const ApplicationManagement = () => {
   const { data: formStatusData, loading: formStatusLoading } = useFormStatusData();
 
   // Enhanced state management for improved UX
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('applications');
   const [selectedTimeframe, setSelectedTimeframe] = useState('30d');
   const [applicationStats, setApplicationStats] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
@@ -268,6 +351,7 @@ const ApplicationManagement = () => {
             candidateEmail: app.candidate?.email || '',
             candidateId: app.candidate?.id || '',
             jobTitle: app.job?.title || 'Unknown Position',
+            jobDepartment: app.job?.department || '',
             status: app.status || 'applied',
             score: app.score || null,
             submittedAt: app.submittedAt || new Date().toISOString(),
@@ -733,877 +817,136 @@ const ApplicationManagement = () => {
   }
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Application Management"
-        subtitle="Monitor applications, manage forms, and track performance"
-        icon={FileText}
-      >
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="border-gray-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={async () => {
-            try {
-              const exportData = await applicationApi.exportApplications();
-              toast({
-                title: 'Export Started',
-                description: `Exporting ${exportData.count} applications...`,
-              });
-            } catch (error) {
-              toast({
-                title: 'Export Failed',
-                description: 'Failed to export data. Please try again.',
-                variant: 'destructive',
-              });
-            }
-          }}
-          className="border-gray-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export Data
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => navigate('/jobs')}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all duration-200"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Create Job
-        </Button>
-      </PageHeader>
+    <div className="p-6 space-y-4">
 
-      {/* Main Content Container - Using TalentSol Design System */}
-      <div className="ats-content-container">
-        {/* Tab Navigation - Using design system classes */}
-        <div className="ats-tab-navigation">
-          <nav className="ats-tab-nav-container" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`ats-tab-button ${
-                activeTab === 'dashboard'
-                  ? 'ats-tab-button-active'
-                  : 'ats-tab-button-inactive'
-              }`}
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span>Overview</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('applications')}
-              className={`ats-tab-button ${
-                activeTab === 'applications'
-                  ? 'ats-tab-button-active'
-                  : 'ats-tab-button-inactive'
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              <span>Applications</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('forms')}
-              className={`ats-tab-button ${
-                activeTab === 'forms'
-                  ? 'ats-tab-button-active'
-                  : 'ats-tab-button-inactive'
-              }`}
-            >
-              <Edit className="h-4 w-4" />
-              <span>Forms</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('performance')}
-              className={`ats-tab-button ${
-                activeTab === 'performance'
-                  ? 'ats-tab-button-active'
-                  : 'ats-tab-button-inactive'
-              }`}
-            >
-              <TrendingUp className="h-4 w-4" />
-              <span>Performance</span>
-            </button>
-          </nav>
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+            <FileText size={16} className="text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-gray-900" style={{ fontSize: 20, fontWeight: 600 }}>Application Management</h1>
+            <p className="text-gray-500 mt-0.5" style={{ fontSize: 13 }}>
+              Review and manage all incoming job applications
+            </p>
+          </div>
         </div>
-
-        {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-            {/* Main Dashboard Content - Using design system */}
-            <div className="ats-content-section-enhanced">
-          {/* Key Metrics - Using design system grid */}
-          <div className="ats-metric-cards-grid">
-            {/* Total Applications - Using design system */}
-            <div className="ats-metric-card">
-              <div className="ats-metric-header">
-                <p className="ats-metric-label">Total Applications</p>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full cursor-help" aria-label="Total applications indicator"></div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Total Applications - Blue indicator</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <div className="ats-metric-content">
-                <p className="ats-metric-value">
-                  {loading ? (
-                    <Skeleton className="h-8 w-16 bg-gray-100" />
-                  ) : (
-                    applicationStats?.totalApplications || 0
-                  )}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {selectedTimeframe === '7d' ? 'Last 7 days' :
-                   selectedTimeframe === '30d' ? 'Last 30 days' :
-                   selectedTimeframe === '90d' ? 'Last 90 days' : 'Last year'}
-                </p>
-              </div>
-            </div>
-
-            {/* New Applications - Using design system */}
-            <div className="ats-metric-card hover:border-green-300">
-              <div className="ats-metric-header">
-                <p className="ats-metric-label">New Applications</p>
-                <div className="flex items-center space-x-1">
-                  {(applicationStats?.growthRate || 0) >= 0 ? (
-                    <TrendingUp className="w-3 h-3 text-green-500" />
-                  ) : (
-                    <TrendingUp className="w-3 h-3 text-red-500 rotate-180" />
-                  )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-2 h-2 bg-green-500 rounded-full cursor-help" aria-label="New applications growth indicator"></div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>New Applications Growth - Green indicator</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </div>
-              <div className="ats-metric-content">
-                <p className="ats-metric-value">
-                  {loading ? (
-                    <Skeleton className="h-8 w-16 bg-gray-100" />
-                  ) : (
-                    applicationStats?.newApplications || 0
-                  )}
-                </p>
-                <p className={`text-xs font-medium ${
-                  (applicationStats?.growthRate || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {(applicationStats?.growthRate || 0) >= 0 ? '+' : ''}{applicationStats?.growthRate || 0}% from last period
-                </p>
-              </div>
-            </div>
-
-            {/* Conversion Rate - Using design system */}
-            <div className="ats-metric-card hover:border-purple-300">
-              <div className="ats-metric-header">
-                <p className="ats-metric-label">Conversion Rate</p>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-2 h-2 bg-purple-500 rounded-full cursor-help" aria-label="Conversion rate indicator"></div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Conversion Rate - Purple indicator</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <div className="ats-metric-content">
-                {(applicationStats?.conversionRate || 0) > 0 ? (
-                  <>
-                    <p className="ats-metric-value">
-                      {loading ? (
-                        <Skeleton className="h-8 w-16 bg-gray-100" />
-                      ) : (
-                        `${applicationStats?.conversionRate || 0}%`
-                      )}
-                    </p>
-                    <p className="text-xs text-gray-400">Applications to hires</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-3xl font-bold text-gray-400 leading-none">0%</p>
-                    <p className="text-xs text-gray-400">No hires yet</p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Average Score - Using design system */}
-            <div className="ats-metric-card hover:border-orange-300">
-              <div className="ats-metric-header">
-                <p className="ats-metric-label">Avg. Score</p>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-2 h-2 bg-orange-500 rounded-full cursor-help" aria-label="Average score quality indicator"></div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Average Score Quality - Orange indicator</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <div className="ats-metric-content">
-                {(applicationStats?.averageScore || 0) > 0 ? (
-                  <>
-                    <p className="ats-metric-value">
-                      {loading ? (
-                        <Skeleton className="h-8 w-16 bg-gray-100" />
-                      ) : (
-                        applicationStats?.averageScore || 0
-                      )}
-                    </p>
-                    <p className="text-xs text-gray-400">Application quality</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-3xl font-bold text-gray-400 leading-none">—</p>
-                    <p className="text-xs text-gray-400">No scores yet</p>
-                  </>
-                )}
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          {/* List / Kanban toggle */}
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              style={{ fontSize: 13, fontWeight: 500 }}
+            >
+              <List size={14} />
+              List
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              style={{ fontSize: 13, fontWeight: 500 }}
+            >
+              <Grid size={14} />
+              Kanban
+            </button>
           </div>
-
-          {/* Secondary Analytics - Using design system */}
-          <div className="ats-content-section">
-            <div className="ats-section-header">
-              <div>
-                <h3 className="ats-section-title">Analytics Overview</h3>
-                <p className="ats-section-subtitle">Form performance and candidate source insights</p>
-              </div>
-              <Button variant="outline" size="sm" className="text-xs border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600">
-                <BarChart3 className="h-3 w-3 mr-1" />
-                View Details
-              </Button>
-            </div>
-
-            <div className="ats-content-grid">
-              {/* Form Status Chart - Reduced Height */}
-              {formStatusLoading ? (
-                <div className="ats-chart-container-enhanced">
-                  <div className="space-y-4">
-                    <Skeleton className="h-4 w-40 bg-gray-100" />
-                    <Skeleton className="h-3 w-28 bg-gray-50" />
-                    <div className="space-y-3 mt-6">
-                      <Skeleton className="h-6 w-full bg-gray-100" />
-                      <Skeleton className="h-4 w-3/4 bg-gray-100" />
-                      <Skeleton className="h-3 w-1/2 bg-gray-100" />
-                    </div>
-                  </div>
-                </div>
-              ) : formStatusData && formStatusData.length > 0 ? (
-                <div className="ats-chart-container-enhanced">
-                  <BarChart
-                    title="Form Status Distribution"
-                    description="Number of forms in different statuses"
-                    data={formStatusData.map(item => ({
-                      name: item.status,
-                      forms: item.count,
-                      value: item.count
-                    }))}
-                    bars={[{ dataKey: "forms", fill: "#6366F1", name: "Forms" }]}
-                    vertical={true}
-                    height={280} // Increased height for better label spacing
-                    valueFormatter={(value) => value === 1 ? `${value} form` : `${value} forms`} // Proper singular/plural handling
-                    showTooltip={true}
-                    showLegend={false}
-                  />
-                </div>
-              ) : (
-                <div className="ats-empty-state h-[360px]">
-                  <div className="text-center">
-                    <BarChart3 className="h-8 w-8 mx-auto mb-3 text-gray-300" />
-                    <p className="text-sm text-gray-500 mb-2">No form data available</p>
-                    <Button variant="default" size="sm" className="text-xs bg-blue-600 hover:bg-blue-700 text-white">
-                      <Plus className="h-3 w-3 mr-1" />
-                      Create First Form
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Candidate Sources Chart - Improved Empty State */}
-              {sourceLoading ? (
-                <div className="bg-white rounded-lg border border-gray-200 p-8 h-[360px]">
-                  <div className="space-y-6">
-                    <Skeleton className="h-4 w-36 bg-gray-100" />
-                    <Skeleton className="h-3 w-24 bg-gray-50" />
-                    <div className="space-y-3 mt-6">
-                      <Skeleton className="h-6 w-full bg-gray-100" />
-                      <Skeleton className="h-4 w-4/5 bg-gray-100" />
-                      <Skeleton className="h-3 w-2/3 bg-gray-100" />
-                    </div>
-                  </div>
-                </div>
-              ) : sourceData?.sourceEffectiveness && sourceData.sourceEffectiveness.length > 0 ? (
-                <div className="ats-chart-container-enhanced">
-                  <BarChart
-                    title="Candidate Sources"
-                    description="Breakdown of candidates by source"
-                    data={(() => {
-                      const transformedData = sourceData.sourceEffectiveness
-                        .map(item => ({
-                          ...item,
-                          name: item.source,
-                          value: item.applications // Map applications to value for gradient coloring
-                        }))
-                        .sort((a, b) => (b.applications || 0) - (a.applications || 0)); // Sort by value descending
-
-                      console.log('🔍 Source Data for Chart:', transformedData);
-                      return transformedData;
-                    })()}
-                    bars={[{ dataKey: "applications", fill: "#6366F1", name: "Applications" }]}
-                    vertical={true}
-                    height={240}
-                    valueFormatter={(value) => `${value} candidates`}
-                    showTooltip={true}
-                    showLegend={false}
-                  />
-                </div>
-              ) : (
-                <div className="ats-empty-state h-[360px]">
-                  <div className="text-center">
-                    <Users className="h-8 w-8 mx-auto mb-3 text-gray-300" />
-                    <p className="text-sm text-gray-500 mb-2">No source data available</p>
-                    <Button
-                      onClick={async () => {
-                        try {
-                          await analyticsApi.initializeCandidateSources();
-                          // Refresh source data
-                          window.location.reload();
-                        } catch (error) {
-                          console.error('Failed to initialize sources:', error);
-                        }
-                      }}
-                      variant="default"
-                      size="sm"
-                      className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Database className="h-3 w-3 mr-1" />
-                      Initialize Data
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Timeframe Selector - Enhanced spacing */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 px-8 py-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-              <div>
-                <h4 className="text-sm font-medium text-gray-700">Data Timeframe</h4>
-                <p className="text-xs text-gray-500 mt-2">Adjust the time period for metrics displayed above</p>
-              </div>
-              <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
-                <SelectTrigger className="w-44 h-9 text-sm border-gray-300">
-                  <SelectValue placeholder="Select timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                  <SelectItem value="90d">Last 90 days</SelectItem>
-                  <SelectItem value="1y">Last year</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* AI-Powered Recommendations - Enhanced spacing to match other sections */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-8">
-            <InteractiveMLRecommendationPanel
-              applications={applications || []}
-              availableJobs={availableJobs}
-              onCandidateSelect={(candidateId) => {
-                navigate(`/candidates/${candidateId}`);
-              }}
-              onScheduleInterview={(candidateId) => {
-                navigate(`/interviews/schedule?candidateId=${candidateId}`);
-              }}
-              className="bg-white rounded-lg border border-gray-200"
-            />
-          </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'applications' && (
-          <div className="ats-content-section-enhanced">
-          {/* Phase 3: Advanced Filtering */}
-          <AdvancedApplicationFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            availableStatuses={availableStatuses}
-            availableJobPositions={availableJobPositions}
-            className="mx-6 md:mx-8 lg:mx-10"
-          />
-
-          {/* Phase 3: Bulk Actions Toolbar */}
-          <BulkActionsToolbar
-            selectedCount={selectedApplications.length}
-            onBulkAction={handleBulkAction}
-            onClearSelection={() => setSelectedApplications([])}
-            availableStatuses={availableStatuses}
-            className="mx-6 md:mx-8 lg:mx-10"
-          />
-
-          <div className={`${shadows.card} px-8 md:px-10 lg:px-12 py-8`}>
-            <div className="flex flex-col gap-8">
-              <div className="flex flex-col sm:flex-row gap-6">
-                <div className="relative flex-1 min-w-0">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search applications..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 pr-4 py-3 w-full text-base"
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Select value={positionFilter} onValueChange={setPositionFilter}>
-                    <SelectTrigger className="w-full sm:w-52 h-12">
-                      <SelectValue placeholder="All Positions" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Positions</SelectItem>
-                      <SelectItem value="product-manager">Product Manager</SelectItem>
-                      <SelectItem value="ux-designer">UX Designer</SelectItem>
-                      <SelectItem value="software-engineer">Software Engineer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-44 h-12">
-                      <SelectValue placeholder="All Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="applied">Applied</SelectItem>
-                      <SelectItem value="review">Review</SelectItem>
-                      <SelectItem value="screening">Screening</SelectItem>
-                      <SelectItem value="interview">Interview</SelectItem>
-                      <SelectItem value="offer">Offer</SelectItem>
-                      <SelectItem value="hired">Hired</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* ML Controls */}
-              <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <Brain className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">AI-Powered Screening</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="ml-sort"
-                      checked={mlSortEnabled}
-                      onCheckedChange={setMlSortEnabled}
-                    />
-                    <label htmlFor="ml-sort" className="text-sm text-gray-600">
-                      Sort by AI Score
-                    </label>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
-                  >
-                    {viewMode === 'table' ? 'Card View' : 'Table View'}
-                  </Button>
-
-                  {/* Phase 3: Performance Controls */}
-                  {viewMode === 'table' && filteredApplications.length > 50 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setUseVirtualization(!useVirtualization)}
-                      className="text-xs"
-                    >
-                      {useVirtualization ? 'Standard Table' : 'Virtual Scrolling'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Applications List - Clean Design */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                    <Brain className="h-4 w-4 text-blue-600" />
-                    AI-Enhanced Applications ({applications?.length || 0})
-                  </h3>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Applications ranked by AI-powered candidate screening
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-1">
-                    <Zap className="h-3 w-3 mr-1" />
-                    Decision Tree
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            {/* Conditional Rendering: Table vs Cards with Performance Optimization */}
-            {viewMode === 'table' ? (
-              useVirtualization && filteredApplications.length > 50 ? (
-                <VirtualizedApplicationsTable
-                  applications={filteredApplications || []}
-                  selectedApplications={selectedApplications}
-                  onSelectApplication={(id) => {
-                    setSelectedApplications(prev =>
-                      prev.includes(id)
-                        ? prev.filter(appId => appId !== id)
-                        : [...prev, id]
-                    );
-                  }}
-                  onSelectAll={(selected) => {
-                    setSelectedApplications(selected ? filteredApplications.map(app => app.id) : []);
-                  }}
-                  onViewDetails={(id) => navigate(`/candidates/${filteredApplications.find(app => app.id === id)?.candidateId}`)}
-                  onStatusChange={async (id, status) => {
-                    try {
-                      await applicationApi.updateApplication(id, { status });
-                      await loadData(activeTab);
-                      toast({
-                        title: 'Status Updated',
-                        description: `Application status changed to ${status}`,
-                      });
-                    } catch (error) {
-                      console.error('Failed to update status:', error);
-                      toast({
-                        title: 'Update Failed',
-                        description: 'Failed to update application status',
-                        variant: 'destructive',
-                      });
-                    }
-                  }}
-                  onScheduleInterview={(id) => {
-                    navigate(`/interviews/schedule?applicationId=${id}`);
-                  }}
-                  loading={loading}
-                  height={600}
-                  className="border-0"
-                />
-              ) : (
-                <MLEnhancedApplicationsTable
-                  applications={filteredApplications || []}
-                  selectedApplications={selectedApplications}
-                  onSelectApplication={(id) => {
-                    setSelectedApplications(prev =>
-                      prev.includes(id)
-                        ? prev.filter(appId => appId !== id)
-                        : [...prev, id]
-                    );
-                  }}
-                  onSelectAll={(selected) => {
-                    setSelectedApplications(selected ? filteredApplications.map(app => app.id) : []);
-                  }}
-                  onViewDetails={(id) => navigate(`/candidates/${filteredApplications.find(app => app.id === id)?.candidateId}`)}
-                  onStatusChange={async (id, status) => {
-                  try {
-                    await applicationApi.updateApplication(id, { status });
-                    await loadData(activeTab);
-                    toast({
-                      title: 'Status Updated',
-                      description: `Application status changed to ${status}`,
-                    });
-                  } catch (error) {
-                    console.error('Failed to update status:', error);
-                    toast({
-                      title: 'Update Failed',
-                      description: 'Failed to update application status',
-                      variant: 'destructive',
-                    });
-                  }
-                }}
-                  onScheduleInterview={(id) => {
-                    navigate(`/interviews/schedule?applicationId=${id}`);
-                  }}
-                  loading={loading}
-                  className="border-0"
-                />
-              )
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-                {filteredApplications && filteredApplications.length > 0 ? (
-                  filteredApplications.map((app) => (
-                    <EnhancedApplicationCard
-                      key={app.id}
-                      application={app}
-                      onViewDetails={(id) => navigate(`/candidates/${app.candidateId}`)}
-                      onStatusChange={async (id, status) => {
-                        try {
-                          await applicationApi.updateApplication(id, { status });
-                          await loadData(activeTab);
-                          toast({
-                            title: 'Status Updated',
-                            description: `Application status changed to ${status}`,
-                          });
-                        } catch (error) {
-                          console.error('Failed to update status:', error);
-                          toast({
-                            title: 'Update Failed',
-                            description: 'Failed to update application status',
-                            variant: 'destructive',
-                          });
-                        }
-                      }}
-                      onScheduleInterview={(id) => {
-                        navigate(`/interviews/schedule?applicationId=${id}`);
-                      }}
-                      showMLInsights={true}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-16">
-                    <Brain className="h-16 w-16 mx-auto mb-6 text-gray-300" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 leading-relaxed">No Applications Found</h3>
-                    <p className="text-gray-600 leading-relaxed">Applications will appear here once candidates apply</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Loading State */}
-            {loading && (
-              <div className="p-10">
-                <LoadingUI message="Loading AI-enhanced applications..." />
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && !loading && (
-              <div className="p-6">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-                  <div className="text-red-600 mb-2">
-                    <Brain className="h-8 w-8 mx-auto mb-2" />
-                    <h3 className="text-lg font-medium">Error loading applications</h3>
-                  </div>
-                  <p className="text-red-600 mb-4">{error}</p>
-                  <Button
-                    onClick={() => loadData('applications')}
-                    variant="outline"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-          </div>
-        )}
-
-        {activeTab === 'forms' && (
-          <div className="ats-content-section-enhanced">
-          {/* Forms Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold text-gray-900 leading-relaxed">Application Forms</h2>
-              <p className="text-base text-gray-600 leading-relaxed">Manage and track your job application forms</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={async () => {
-                  try {
-                    await formApi.initSampleData();
-                    loadData('forms'); // Reload forms data
-                  } catch (error) {
-                    console.error('Failed to initialize sample data:', error);
-                  }
-                }}
-                variant="outline"
-                className="text-sm px-4 py-2"
-              >
-                <Database className="h-4 w-4 mr-2" />
-                Init Sample Data
-              </Button>
-              <Button onClick={() => navigate('/jobs')} className="bg-blue-600 hover:bg-blue-700 px-4 py-2">
-                <Plus className="h-4 w-4 mr-2" />
-                Create New Form
-              </Button>
-            </div>
-          </div>
-
-          {/* Forms List */}
-          {formsLoading ? (
-            <div className={`${shadows.card} p-10`}>
-              <LoadingUI message="Loading forms..." />
-            </div>
-          ) : forms.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {forms.map((form) => (
-                <div key={form.id} className={`${shadows.card} p-8`}>
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex-1 space-y-2">
-                      <h3 className="text-lg font-semibold text-gray-900 leading-relaxed">{form.title}</h3>
-                      <p className="text-base text-gray-600 leading-relaxed">{form.jobTitle}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getFormStatusBadge(form.status)}
-                    </div>
-                  </div>
-
-                  {/* Form Statistics */}
-                  <div className="grid grid-cols-3 gap-6 mb-6">
-                    <div className="text-center space-y-2">
-                      <div className="text-metric text-gray-900">{form.views}</div>
-                      <div className="text-sm text-gray-500 leading-relaxed">Views</div>
-                    </div>
-                    <div className="text-center space-y-2">
-                      <div className="text-metric text-gray-900">{form.submissions}</div>
-                      <div className="text-sm text-gray-500 leading-relaxed">Submissions</div>
-                    </div>
-                    <div className="text-center space-y-2">
-                      <div className="text-metric text-gray-900">{form.conversionRate}%</div>
-                      <div className="text-sm text-gray-500 leading-relaxed">Conversion</div>
-                    </div>
-                  </div>
-
-                  {/* Form Actions */}
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                    <div className="text-sm text-gray-500 leading-relaxed">
-                      Created {new Date(form.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button variant="outline" size="sm" className="px-3 py-2">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm" className="px-3 py-2">
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                      <Button variant="outline" size="sm" className="px-3 py-2">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Share
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className={`${shadows.card} p-6`}>
-              <div className="text-center py-8">
-                <Edit className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Forms Found</h3>
-                <p className="text-slate-600 mb-4">Create application forms for your job postings to start collecting applications</p>
-                <div className="flex items-center justify-center gap-3">
-                  <Button
-                    onClick={async () => {
-                      try {
-                        await formApi.initSampleData();
-                        loadData('forms');
-                      } catch (error) {
-                        console.error('Failed to initialize sample data:', error);
-                      }
-                    }}
-                    variant="outline"
-                    className="border-gray-300 hover:border-blue-500 text-gray-700 hover:text-blue-600"
-                  >
-                    <Database className="h-4 w-4 mr-2" />
-                    Add Sample Forms
-                  </Button>
-                  <Button onClick={() => navigate('/jobs')} className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New Form
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-          </div>
-        )}
-
-        {activeTab === 'performance' && (
-          <div className="ats-content-section-enhanced">
-          {/* Phase 3: Enhanced Analytics Dashboard */}
-          <EnhancedAnalyticsDashboard
-            applications={applications || []}
-            timeframe={selectedTimeframe}
-            onTimeframeChange={setSelectedTimeframe}
-            className="mx-4 md:mx-6 lg:mx-8"
-          />
-
-          {/* Cache Performance Stats */}
-          {enableCaching && (
-            <div className="mx-4 md:mx-6 lg:mx-8">
-              <Card className={shadows.card}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-purple-600" />
-                    Performance Optimization Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-slate-700">Application Cache</h4>
-                      <div className="text-xs text-slate-600">
-                        <div>Total: {cacheStats.applications.total}</div>
-                        <div>Valid: {cacheStats.applications.valid}</div>
-                        <div>Expired: {cacheStats.applications.expired}</div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-slate-700">ML Predictions</h4>
-                      <div className="text-xs text-slate-600">
-                        <div>Total: {cacheStats.mlPredictions.total}</div>
-                        <div>Valid: {cacheStats.mlPredictions.valid}</div>
-                        <div>Expired: {cacheStats.mlPredictions.expired}</div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-slate-700">Analytics Data</h4>
-                      <div className="text-xs text-slate-600">
-                        <div>Total: {cacheStats.analytics.total}</div>
-                        <div>Valid: {cacheStats.analytics.valid}</div>
-                        <div>Expired: {cacheStats.analytics.expired}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">
-                        Virtual Scrolling: {useVirtualization ? 'Enabled' : 'Disabled'}
-                      </span>
-                      <Badge variant={useVirtualization ? 'ats-green' : 'outline'}>
-                        {filteredApplications.length > 50 ? 'Recommended' : 'Optional'}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          </div>
-        )}
+          <button
+            onClick={() => navigate('/jobs')}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-all"
+          >
+            <Plus size={15} />
+            <span style={{ fontSize: 13, fontWeight: 500 }}>New Application</span>
+          </button>
+        </div>
       </div>
+
+      {/* ── Filter bar ── */}
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search applications..."
+            value={filters.search}
+            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            className="pl-8 pr-3 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 w-64"
+            style={{ fontSize: 13 }}
+          />
+        </div>
+        <div className="relative">
+          <select
+            value={filters.jobPositions[0] ?? "all"}
+            onChange={(e) => setFilters(prev => ({ ...prev, jobPositions: e.target.value === "all" ? [] : [e.target.value] }))}
+            className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            style={{ fontSize: 13 }}
+          >
+            <option value="all">All Departments</option>
+            {availableJobPositions.map((pos) => (
+              <option key={pos} value={pos}>{pos}</option>
+            ))}
+          </select>
+          <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+        <div className="relative">
+          <select
+            value={filters.status[0] ?? "all"}
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value === "all" ? [] : [e.target.value] }))}
+            className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            style={{ fontSize: 13 }}
+          >
+            <option value="all">All Stages</option>
+            <option value="applied">Applied</option>
+            <option value="screening">Screening</option>
+            <option value="interview">Interview</option>
+            <option value="assessment">Assessment</option>
+            <option value="offer">Offer</option>
+            <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+        <span className="ml-auto text-gray-500" style={{ fontSize: 13 }}>
+          {filteredApplications.length} application{filteredApplications.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {/* ── Table ── */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <LoadingUI message="Loading applications..." />
+        </div>
+      ) : filteredApplications.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-100">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <FileText size={28} className="text-gray-400" />
+          </div>
+          <p className="text-gray-900" style={{ fontSize: 16, fontWeight: 600 }}>No applications found</p>
+          <p className="text-gray-500 mt-1" style={{ fontSize: 13 }}>Try adjusting your search or filters</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {["Candidate", "Position", "Applied", "Stage", "Score", "Source"].map((col) => (
+                  <th key={col} className="px-6 py-3 text-left text-gray-500" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredApplications.map((app) => (
+                <AppRow key={app.id} app={app} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
     </div>
-    </TooltipProvider>
   );
 };
 

@@ -128,22 +128,22 @@ export const getRelativeTime = (dateString: string): string => {
 const getStatusBadge = (status: Job['status']) => {
   switch (status) {
     case 'open':
-      return <Badge className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-sm">Open</Badge>;
+      return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0">Open</Badge>;
     case 'draft':
-      return <Badge className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white border-0 shadow-sm">Draft</Badge>;
+      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100 border-0">Draft</Badge>;
     case 'closed':
-      return <Badge className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-sm">Closed</Badge>;
+      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0">Closed</Badge>;
     case 'archived':
-      return <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-0 shadow-sm">Archived</Badge>;
+      return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-0">Archived</Badge>;
     default:
-      return <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm">{status}</Badge>;
+      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0">{status}</Badge>;
   }
 };
 
 // Pipeline Progress Component
 const PipelineProgress = ({ pipeline, total }: { pipeline: JobPipeline; total: number }) => {
   const stages = [
-    { key: 'screening', label: 'Screening', color: 'bg-blue-500', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
+    { key: 'screening', label: 'Screening', color: 'bg-indigo-600', bgColor: 'bg-indigo-50', textColor: 'text-indigo-700' },
     { key: 'interview', label: 'Interview', color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
     { key: 'assessment', label: 'Assessment', color: 'bg-indigo-500', bgColor: 'bg-indigo-50', textColor: 'text-indigo-700' },
     { key: 'offer', label: 'Offer', color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
@@ -161,7 +161,7 @@ const PipelineProgress = ({ pipeline, total }: { pipeline: JobPipeline; total: n
       </div>
       <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 transition-all duration-500"
+          className="h-full bg-indigo-600 transition-all duration-500"
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
@@ -386,7 +386,7 @@ const JobCard = ({
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onSelect(job.id)}
-                className="mt-1 border-gray-400 data-[state=checked]:bg-blue-600"
+                className="mt-1 data-[state=checked]:bg-indigo-600"
               />
             )}
             <div className="flex-1">
@@ -398,7 +398,7 @@ const JobCard = ({
                   variant="outline"
                   className={`text-xs font-inter flex items-center gap-1 ${
                     job.currentApplicants >= 10
-                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      ? 'bg-indigo-50 text-indigo-700 border-indigo-100'
                       : 'bg-gray-50 text-gray-700 border-gray-200'
                   }`}
                 >
@@ -407,7 +407,7 @@ const JobCard = ({
                 </Badge>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Badge variant="outline" className="text-xs font-inter bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-xs font-inter bg-indigo-50 text-indigo-700 border-indigo-100">
                   {job.department}
                 </Badge>
                 <span className="text-gray-400">•</span>
@@ -426,7 +426,7 @@ const JobCard = ({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -481,7 +481,7 @@ const JobCard = ({
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-50">
-              <MapPin className="h-4 w-4 text-blue-600" />
+              <MapPin className="h-4 w-4 text-indigo-600" />
             </div>
             <span className="text-sm text-gray-600 font-inter">{formatLocation(job.location)}</span>
           </div>
@@ -512,8 +512,8 @@ const JobCard = ({
               <div
                 className={`h-2 rounded-full transition-all duration-500 ${
                   (job.currentApplicants / job.maxApplicants) >= 0.9
-                    ? 'bg-gradient-to-r from-red-500 to-red-600'
-                    : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                    ? 'bg-red-500'
+                    : 'bg-amber-500'
                 }`}
                 style={{ width: `${Math.min((job.currentApplicants / job.maxApplicants) * 100, 100)}%` }}
               />
@@ -540,7 +540,7 @@ const JobCard = ({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 border-gray-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+            className="flex-1 border-gray-300 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200"
             onClick={() => handleAction('view-job')}
           >
             <Eye className="h-4 w-4 mr-2" />
@@ -558,6 +558,56 @@ const JobCard = ({
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+// ─── Flat job row (screenshot layout) ────────────────────────────────────────
+const JobRow = ({ job }: { job: Job }) => {
+  const daysOpen = Math.floor((Date.now() - new Date(job.postedDate).getTime()) / (1000 * 60 * 60 * 24));
+
+  const deptColors: Record<string, string> = {
+    Engineering:       "bg-indigo-100 text-indigo-700",
+    Design:            "bg-pink-100 text-pink-700",
+    Product:           "bg-violet-100 text-violet-700",
+    Marketing:         "bg-amber-100 text-amber-700",
+    Sales:             "bg-emerald-100 text-emerald-700",
+    Analytics:         "bg-cyan-100 text-cyan-700",
+    "Human Resources": "bg-rose-100 text-rose-700",
+    "Customer Success":"bg-teal-100 text-teal-700",
+  };
+  const deptCls = deptColors[job.department] ?? "bg-gray-100 text-gray-700";
+
+  const statusMap: Record<string, { label: string; cls: string }> = {
+    open:     { label: "Active",   cls: "bg-emerald-100 text-emerald-700" },
+    paused:   { label: "Paused",   cls: "bg-yellow-100 text-yellow-700" },
+    draft:    { label: "Draft",    cls: "bg-gray-100 text-gray-700" },
+    closed:   { label: "Closed",   cls: "bg-red-100 text-red-700" },
+    archived: { label: "Archived", cls: "bg-orange-100 text-orange-700" },
+  };
+  const statusInfo = statusMap[job.status] ?? { label: job.status, cls: "bg-gray-100 text-gray-700" };
+  const typeLabel = (job.employmentType ?? "full-time").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+  return (
+    <div
+      onClick={() => { window.location.href = `/jobs/${job.id}`; }}
+      className="flex items-start justify-between px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+    >
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+          <p className="text-gray-900" style={{ fontSize: 13, fontWeight: 600 }}>{job.title}</p>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${deptCls}`} style={{ fontSize: 11 }}>{job.department}</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700" style={{ fontSize: 11 }}>{typeLabel}</span>
+        </div>
+        <div className="flex items-center gap-4 text-gray-500" style={{ fontSize: 12 }}>
+          <span className="flex items-center gap-1"><MapPin size={11} />{formatLocation(job.location)}</span>
+          <span className="flex items-center gap-1"><Users size={11} />{job.currentApplicants} applicants</span>
+          <span className="flex items-center gap-1"><Clock size={11} />{daysOpen}d open</span>
+        </div>
+      </div>
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full font-medium shrink-0 ml-3 ${statusInfo.cls}`} style={{ fontSize: 11 }}>
+        {statusInfo.label}
+      </span>
+    </div>
   );
 };
 
@@ -849,6 +899,18 @@ const Jobs = () => {
     return count;
   })();
 
+  // Stat card computations
+  const activeJobs = useMemo(() => jobs.filter(j => j.status === 'open').length, [jobs]);
+  const totalApplicants = useMemo(() => jobs.reduce((acc, j) => acc + (j.currentApplicants || 0), 0), [jobs]);
+  const avgTimeOpen = useMemo(() => {
+    if (jobs.length === 0) return 0;
+    const totalDays = jobs.reduce((acc, j) => {
+      const days = Math.floor((Date.now() - new Date(j.postedDate).getTime()) / (1000 * 60 * 60 * 24));
+      return acc + Math.max(0, days);
+    }, 0);
+    return Math.round(totalDays / jobs.length);
+  }, [jobs]);
+
   // Show bulk actions when jobs are selected
   useEffect(() => {
     setShowBulkActions(selectedJobs.length > 0);
@@ -938,353 +1000,105 @@ const Jobs = () => {
   };
 
   return (
-    <div className="ats-page-layout">
-      <div className="ats-content-container">
-      <PageHeader
-        title="Job Management"
-        subtitle={`Manage your open positions • ${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''} found`}
-        icon={Briefcase}
-      >
-        <Button
+    <div className="p-6 space-y-4">
+
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+            <Briefcase size={16} className="text-amber-600" />
+          </div>
+          <div>
+            <h1 className="text-gray-900" style={{ fontSize: 20, fontWeight: 600 }}>Job Management</h1>
+            <p className="text-gray-500 mt-0.5" style={{ fontSize: 13 }}>
+              Create and manage all open positions and job requisitions
+            </p>
+          </div>
+        </div>
+        <button
           onClick={() => setShowCreateDialog(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all duration-200"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-all"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Job
-        </Button>
-      </PageHeader>
+          <Plus size={15} />
+          <span style={{ fontSize: 13, fontWeight: 500 }}>New Job Posting</span>
+        </button>
+      </div>
 
-      {/* Enhanced Search and Filter Bar */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-          {/* Search Bar */}
-          <div className="relative w-full lg:w-96">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <Input
-              type="text"
-              placeholder="Search jobs, departments, skills..."
-              className="pl-11 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-gray-100"
-                onClick={() => setSearchQuery("")}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          {/* Filter Controls */}
-          <div className="flex gap-3 w-full lg:w-auto justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilterDialog(true)}
-              className="relative border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
-            >
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
-              {activeFilterCount > 0 && (
-                <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-blue-600 hover:bg-blue-700 flex items-center justify-center">
-                  {activeFilterCount}
-                </Badge>
-              )}
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">
-                  Department <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                {['Engineering', 'Design', 'Product', 'Sales', 'Marketing'].map((dept) => (
-                  <DropdownMenuItem key={dept} className="hover:bg-blue-50">
-                    <Checkbox
-                      checked={filters.departments.includes(dept)}
-                      onCheckedChange={(checked) => {
-                        setFilters(prev => ({
-                          ...prev,
-                          departments: checked
-                            ? [...prev.departments, dept]
-                            : prev.departments.filter(d => d !== dept)
-                        }));
-                      }}
-                      className="mr-3"
-                    />
-                    {dept}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">
-                  Location <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                {['Remote', 'San Francisco, CA', 'New York, NY', 'Chicago, IL', 'Austin, TX'].map((location) => (
-                  <DropdownMenuItem key={location} className="hover:bg-blue-50">
-                    <Checkbox
-                      checked={filters.locations.includes(location)}
-                      onCheckedChange={(checked) => {
-                        setFilters(prev => ({
-                          ...prev,
-                          locations: checked
-                            ? [...prev.locations, location]
-                            : prev.locations.filter(l => l !== location)
-                        }));
-                      }}
-                      className="mr-3"
-                    />
-                    {location}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+      {/* ── Inline stats bar ── */}
+      <div className="bg-white rounded-xl border border-gray-100">
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-gray-100">
+          {[
+            { label: "Total Openings",   desc: "across all departments",          value: loading ? "…" : (total?.toString() ?? filteredJobs.length.toString()) },
+            { label: "Active Jobs",      desc: "currently accepting applications", value: loading ? "…" : activeJobs.toString() },
+            { label: "Total Applicants", desc: "this quarter",                     value: loading ? "…" : totalApplicants.toString() },
+            { label: "Avg. Time Open",   desc: "to fill a position",               value: loading ? "…" : `${avgTimeOpen} days` },
+          ].map(({ label, desc, value }) => (
+            <div key={label} className="px-6 py-5">
+              <p className="text-gray-900" style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.1 }}>{value}</p>
+              <p className="text-gray-500 mt-1" style={{ fontSize: 12, fontWeight: 500 }}>{label}</p>
+              <p className="text-gray-400 mt-0.5" style={{ fontSize: 11 }}>{desc}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Active Filters Display */}
-      {activeFilterCount > 0 && (
-        <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-inter font-medium text-gray-700">Active filters:</span>
-            {filters.status.map(status => (
-              <Badge key={status} variant="secondary" className="gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 font-inter text-xs">
-                Status: {status}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-blue-900"
-                  onClick={() => setFilters(prev => ({
-                    ...prev,
-                    status: prev.status.filter(s => s !== status)
-                  }))}
-                />
-              </Badge>
-            ))}
-            {filters.departments.map(dept => (
-              <Badge key={dept} variant="secondary" className="gap-2 bg-green-100 text-green-800 hover:bg-green-200 font-inter text-xs">
-                {dept}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-green-900"
-                  onClick={() => setFilters(prev => ({
-                    ...prev,
-                    departments: prev.departments.filter(d => d !== dept)
-                  }))}
-                />
-              </Badge>
-            ))}
-            {filters.locations.map(location => (
-              <Badge key={location} variant="secondary" className="gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200 font-inter text-xs">
-                {location}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-purple-900"
-                  onClick={() => setFilters(prev => ({
-                    ...prev,
-                    locations: prev.locations.filter(l => l !== location)
-                  }))}
-                />
-              </Badge>
-            ))}
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-sm font-inter text-gray-600 hover:text-gray-800">
-              Clear all
-            </Button>
-          </div>
+      {/* ── Search bar ── */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            placeholder="Search jobs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            style={{ fontSize: 13 }}
+          />
+        </div>
+        <span className="text-gray-500 shrink-0" style={{ fontSize: 13 }}>
+          {filteredJobs.length} job{filteredJobs.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {/* ── Loading ── */}
+      {loading && <LoadingUI message="Loading jobs..." />}
+
+      {/* ── Error banner ── */}
+      {error && !loading && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center gap-3">
+          <span className="text-amber-700 flex-1" style={{ fontSize: 13 }}>
+            {error.includes('Backend') ? 'Demo mode — backend not available.' : `Error: ${error}`}
+          </span>
+          <button onClick={refetch} className="text-amber-700 underline shrink-0" style={{ fontSize: 12 }}>Retry</button>
         </div>
       )}
 
-      {/* Bulk Actions Bar */}
-      {showBulkActions && (
-        <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Checkbox
-                checked={selectedJobs.length === filteredJobs.length}
-                onCheckedChange={handleSelectAll}
-                className="border-blue-400 data-[state=checked]:bg-blue-600"
-              />
-              <span className="text-sm font-inter font-semibold text-blue-900">
-                {selectedJobs.length} job{selectedJobs.length !== 1 ? 's' : ''} selected
-              </span>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Close')} className="border-gray-300 hover:border-orange-500 hover:text-orange-600">
-                <Archive className="h-4 w-4 mr-2" />
-                Close
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Archive')} className="border-gray-300 hover:border-purple-500 hover:text-purple-600">
-                <Archive className="h-4 w-4 mr-2" />
-                Archive
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Reopen')} className="border-gray-300 hover:border-green-500 hover:text-green-600">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reopen
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleBulkAction('Export')} className="border-gray-300 hover:border-green-500 hover:text-green-600">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulkAction('Delete')}
-                className="border-gray-300 hover:border-red-500 text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <LoadingUI message="Loading jobs..." />
-      )}
-
-      {/* Error State / Demo Mode */}
-      {error && (
-        <div className="mb-8">
-          {error.includes('Backend server not available') ? (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center">
-                <AlertCircle className="h-6 w-6 text-blue-500 mr-4" />
-                <div className="flex-1">
-                  <h3 className="text-lg font-inter font-semibold text-blue-900">Demo Mode Active</h3>
-                  <p className="text-sm font-inter text-blue-700 mt-1">
-                    Backend server not available. Showing demo data with limited functionality.
-                  </p>
-                  <p className="text-xs font-inter text-blue-600 mt-2">
-                    Error: {error}
-                  </p>
-                </div>
-                <Button
-                  onClick={refetch}
-                  variant="outline"
-                  size="sm"
-                  className="ml-auto text-blue-600 border-blue-300 hover:bg-blue-100 shadow-sm"
-                >
-                  Retry Connection
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center">
-                <AlertCircle className="h-6 w-6 text-red-500 mr-4" />
-                <div className="flex-1">
-                  <h3 className="text-lg font-inter font-semibold text-red-900">Error Loading Jobs</h3>
-                  <p className="text-sm font-inter text-red-700 mt-1">{error}</p>
-                </div>
-                <Button
-                  onClick={refetch}
-                  variant="outline"
-                  size="sm"
-                  className="ml-auto text-red-600 border-red-300 hover:bg-red-100 shadow-sm"
-                >
-                  Try Again
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && filteredJobs.length === 0 && (
-        <div className="flex items-center justify-center py-16">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-12 text-center max-w-md">
-            <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-6" />
-            <h3 className="text-xl font-inter font-semibold text-gray-900 mb-3">No Jobs Found</h3>
-            <p className="text-sm font-inter text-gray-600 mb-6 leading-relaxed">
-              {searchQuery || activeFilterCount > 0
-                ? "No jobs match your current search and filters."
-                : "Get started by creating your first job posting."
-              }
-            </p>
-            {searchQuery || activeFilterCount > 0 ? (
-              <Button onClick={clearFilters} variant="outline" className="border-gray-300 hover:border-blue-500 hover:text-blue-600">
-                Clear Filters
-              </Button>
-            ) : (
-              <Button onClick={() => setShowCreateDialog(true)} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Your First Job
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Job Cards Grid - Show jobs even in demo mode (when error exists but jobs are available) */}
+      {/* ── 2-column job rows ── */}
       {!loading && filteredJobs.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 gap-4">
           {filteredJobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              isSelected={selectedJobs.includes(job.id)}
-              onSelect={handleJobSelect}
-              onUpdate={handleUpdateJob}
-              onCreate={handleCreateJob}
-              onDelete={handleDeleteJob}
-              onRefetch={refetch}
-            />
+            <div key={job.id} className="bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all">
+              <JobRow job={job} />
+            </div>
           ))}
         </div>
       )}
 
-      {/* Pagination - Show even in demo mode */}
-      {!loading && totalPages > 1 && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 shadow-lg p-6 mt-8">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-inter font-medium text-gray-700">
-              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} jobs
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 font-inter"
-              >
-                Previous
-              </Button>
-              <span className="text-sm font-inter font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="border-gray-300 hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 font-inter"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+      {/* ── Empty state ── */}
+      {!loading && filteredJobs.length === 0 && (
+        <div className="py-12 text-center">
+          <Briefcase size={32} className="mx-auto mb-3 text-gray-300" />
+          <p className="text-gray-500" style={{ fontSize: 14 }}>
+            {searchQuery || activeFilterCount > 0 ? "No jobs match your current filters." : "No job postings yet."}
+          </p>
         </div>
       )}
-
-
 
       {/* Enhanced Job Creation Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-ats-blue" />
+              <Plus className="h-5 w-5 text-indigo-600" />
               Create New Job
             </DialogTitle>
             <DialogDescription>
@@ -1491,7 +1305,7 @@ const Jobs = () => {
               Cancel
             </Button>
             <Button
-              className="bg-ats-blue hover:bg-ats-dark-blue"
+              className="bg-indigo-600 hover:bg-indigo-700"
               onClick={handleCreateJobFromDialog}
               disabled={createLoading}
             >
@@ -1513,7 +1327,7 @@ const Jobs = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <SlidersHorizontal className="h-5 w-5 text-ats-blue" />
+              <SlidersHorizontal className="h-5 w-5 text-indigo-600" />
               Advanced Filters
             </DialogTitle>
             <DialogDescription>
@@ -1677,7 +1491,7 @@ const Jobs = () => {
               Cancel
             </Button>
             <Button
-              className="bg-ats-blue hover:bg-ats-dark-blue"
+              className="bg-indigo-600 hover:bg-indigo-700"
               onClick={() => {
                 setShowFilterDialog(false);
                 toast.atsBlue({
@@ -1691,7 +1505,6 @@ const Jobs = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </div>
     </div>
   );
 };

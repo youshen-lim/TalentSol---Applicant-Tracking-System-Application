@@ -1,10 +1,34 @@
-import express from 'express';
+import express, { Response, NextFunction } from 'express';
 import { prisma } from '../index.js';
 import { candidateInfoSchema } from '../types/validation.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
-import { AuthenticatedRequest } from '../middleware/auth.js';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Development authentication bypass — falls back to real DB admin user
+const devAuthBypass = async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token === 'demo-token-for-development' || process.env.NODE_ENV === 'development') {
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'admin' },
+      select: { id: true, email: true, role: true, companyId: true },
+    });
+    req.user = adminUser ?? {
+      id: 'dev-fallback',
+      email: 'admin@talentsol-demo.com',
+      role: 'admin',
+      companyId: 'comp_1',
+    };
+    next();
+  } else {
+    authenticateToken(req, _res, next);
+  }
+};
+
+router.use(devAuthBypass);
 
 // Get all candidates for user's company
 router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -20,7 +44,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const skip = (pageNum - 1) * limitNum;
 
   // Use default company for testing when auth is disabled
-  const companyId = req.user?.companyId || 'comp_1';
+  const companyId = req.user!.companyId;
 
   const where: any = {
     applications: {
@@ -97,7 +121,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 // Get candidate pipeline/stages summary
 router.get('/pipeline/summary', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user?.companyId || 'comp_1';
+  const companyId = req.user!.companyId;
   const stages = ['applied', 'screening', 'interview', 'assessment', 'offer', 'hired', 'rejected'];
 
   const stageCounts = await Promise.all(
@@ -157,7 +181,7 @@ router.get('/pipeline/summary', asyncHandler(async (req: AuthenticatedRequest, r
 
 // Get candidate pipeline with full candidate data organized by stages
 router.get('/pipeline', asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const companyId = req.user?.companyId || 'comp_1';
+  const companyId = req.user!.companyId;
   const stages = ['applied', 'screening', 'interview', 'assessment', 'offer', 'hired', 'rejected'];
 
   // Get all applications with candidate data for the company
@@ -289,7 +313,7 @@ router.get('/pipeline', asyncHandler(async (req: AuthenticatedRequest, res) => {
 router.put('/:id/stage', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
   const { stage } = req.body;
-  const companyId = req.user?.companyId || 'comp_1';
+  const companyId = req.user!.companyId;
 
   if (!stage) {
     throw new AppError('Stage is required', 400);
@@ -353,7 +377,7 @@ router.put('/:id/stage', asyncHandler(async (req: AuthenticatedRequest, res) => 
 // Get single candidate
 router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
-  const companyId = req.user?.companyId || 'comp_1';
+  const companyId = req.user!.companyId;
 
   const candidate = await prisma.candidate.findFirst({
     where: {
@@ -416,7 +440,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 // Update candidate information
 router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
-  const companyId = req.user?.companyId || 'comp_1';
+  const companyId = req.user!.companyId;
   const validatedData = candidateInfoSchema.partial().parse(req.body);
 
   // Check if candidate exists and has applications to user's company

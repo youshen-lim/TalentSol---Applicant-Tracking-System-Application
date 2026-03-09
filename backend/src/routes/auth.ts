@@ -1,12 +1,22 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { prisma } from '../index.js';
 import { loginSchema, registerSchema } from '../types/validation.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { rateLimitMiddleware } from '../middleware/rateLimiting.js';
 import { mobileApiService } from '../services/MobileApiService.js';
 import { mobileApiMiddleware } from '../middleware/mobileApi.js';
+
+// Helper: convert company name to a URL-safe slug
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
 const router = express.Router();
 
@@ -38,15 +48,27 @@ router.post('/register',
   const passwordHash = await bcrypt.hash(validatedData.password, saltRounds);
 
   // Create company and user in a transaction
+  const emailVerificationToken = crypto.randomUUID();
+  const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
+
   const result = await prisma.$transaction(async (tx) => {
-    // Create company
+    // Build unique slug from company name
+    const baseSlug = slugify(validatedData.companyName);
+    const existingSlug = await tx.company.findFirst({ where: { slug: baseSlug } });
+    const companySlug = existingSlug ? `${baseSlug}-${Date.now()}` : baseSlug;
+
+    // Create company with trial settings
     const company = await tx.company.create({
       data: {
         name: validatedData.companyName,
+        slug: companySlug,
+        plan: 'trial',
+        planStatus: 'active',
+        trialEndsAt,
       },
     });
 
-    // Create user
+    // Create user with email verification token
     const user = await tx.user.create({
       data: {
         email: validatedData.email,
@@ -55,6 +77,8 @@ router.post('/register',
         lastName: validatedData.lastName,
         role: validatedData.role,
         companyId: company.id,
+        emailVerificationToken,
+        emailVerified: false,
       },
       select: {
         id: true,
@@ -91,11 +115,93 @@ router.post('/register',
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
   );
 
+  // Log verification URL (Phase G will replace with real email send)
+  const verifyUrl = `${process.env.APP_URL || 'http://localhost:5173'}/api/auth/verify-email?token=${emailVerificationToken}`;
+  console.log(`📧 Email verification link for ${validatedData.email}: ${verifyUrl}`);
+
   res.status(201).json({
     message: 'User registered successfully',
     user: result.user,
     token,
+    trialEndsAt: trialEndsAt.toISOString(),
   });
+}));
+
+// Verify email
+router.get('/verify-email', asyncHandler(async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== 'string') {
+    throw new AppError('Invalid verification token', 400);
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { emailVerificationToken: token },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired verification token', 400);
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerified: true, emailVerificationToken: null },
+  });
+
+  res.json({ message: 'Email verified successfully' });
+}));
+
+// Accept team invite
+router.post('/accept-invite', asyncHandler(async (req, res) => {
+  const { token, password, firstName, lastName } = req.body;
+
+  if (!token || !password) {
+    throw new AppError('Token and password are required', 400);
+  }
+
+  const invitedUser = await prisma.user.findFirst({
+    where: {
+      inviteToken: token,
+      inviteTokenExpiresAt: { gte: new Date() },
+    },
+    include: { company: { select: { id: true, name: true } } },
+  });
+
+  if (!invitedUser) {
+    throw new AppError('Invalid or expired invite token', 400);
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const updatedUser = await prisma.user.update({
+    where: { id: invitedUser.id },
+    data: {
+      passwordHash,
+      firstName: firstName || invitedUser.firstName,
+      lastName: lastName || invitedUser.lastName,
+      emailVerified: true,
+      inviteToken: null,
+      inviteTokenExpiresAt: null,
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      companyId: true,
+      company: { select: { id: true, name: true } },
+    },
+  });
+
+  if (!JWT_SECRET) throw new AppError('JWT configuration error', 500);
+  const jwtToken = jwt.sign(
+    { userId: updatedUser.id, email: updatedUser.email, role: updatedUser.role, companyId: updatedUser.companyId } as any,
+    JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+  );
+
+  res.json({ message: 'Invite accepted successfully', user: updatedUser, token: jwtToken });
 }));
 
 // Login user with rate limiting
@@ -151,6 +257,11 @@ router.post('/login',
     user: userWithoutPassword,
     token,
   });
+}));
+
+// Logout (client-side token clearing; server-side is a no-op for JWT)
+router.post('/logout', asyncHandler(async (_req, res) => {
+  res.json({ message: 'Logged out successfully' });
 }));
 
 // Verify token (for frontend to check if token is still valid)

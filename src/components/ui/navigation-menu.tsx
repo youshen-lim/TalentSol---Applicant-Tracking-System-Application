@@ -55,7 +55,7 @@ const NavigationMenuTrigger = React.forwardRef<
   >
     {children}{" "}
     <ChevronDown
-      className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180 text-ats-blue group-data-[state=open]:text-white"
+      className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180 text-primary group-data-[state=open]:text-white"
       aria-hidden="true"
     />
   </NavigationMenuPrimitive.Trigger>
@@ -135,7 +135,7 @@ const NavigationMenuLinkItem = React.forwardRef<
     {...props}
   >
     <div className="flex items-center gap-2 text-sm font-medium leading-none text-ats-dark-blue">
-      {icon && <span className="text-ats-blue">{icon}</span>}
+      {icon && <span className="text-primary">{icon}</span>}
       {title}
     </div>
     {description && (

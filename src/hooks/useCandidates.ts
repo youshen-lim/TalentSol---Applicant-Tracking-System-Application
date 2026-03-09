@@ -1,6 +1,35 @@
 import { useState, useEffect } from 'react';
 import { candidatesApi } from '@/services/api';
 
+const safeJsonParse = <T>(str: unknown, fallback: T): T => {
+  if (typeof str !== 'string') return (str as T) ?? fallback;
+  try { return JSON.parse(str); } catch { return fallback; }
+};
+
+const transformCandidate = (raw: any): Candidate => ({
+  id: raw.id,
+  name: `${raw.firstName} ${raw.lastName}`,
+  email: raw.email,
+  phone: raw.phone,
+  position: raw.position || raw.applications?.[0]?.job?.title || 'Unknown',
+  stage: raw.applications?.[0]?.status ?? 'applied',
+  tags: safeJsonParse(raw.tags, []),
+  lastActivity: raw.lastActivityAt || raw.updatedAt,
+  rating: raw.rating || 3,
+  location: safeJsonParse(raw.location, undefined),
+  workAuthorization: raw.workAuthorization,
+  linkedinUrl: raw.linkedinUrl,
+  applications: (raw.applications || []).map((a: any) => ({
+    id: a.id,
+    jobTitle: a.job?.title || '',
+    status: a.status,
+    submittedAt: a.submittedAt,
+    score: a.score,
+  })),
+  createdAt: raw.createdAt,
+  updatedAt: raw.updatedAt,
+});
+
 export interface Candidate {
   id: string;
   name: string;
@@ -62,10 +91,11 @@ export const useCandidates = (params?: UseCandidatesParams): UseCandidatesReturn
       setError(null);
       
       const response = await candidatesApi.getCandidates(params);
-      
-      if (response.data) {
-        setCandidates(response.data);
-        setTotalPages(response.pagination?.totalPages || 1);
+
+      if (response.candidates) {
+        const transformed = response.candidates.map(transformCandidate);
+        setCandidates(transformed);
+        setTotalPages(response.pagination?.pages || response.pagination?.totalPages || 1);
         setCurrentPage(response.pagination?.page || 1);
         setTotal(response.pagination?.total || 0);
       }
@@ -103,7 +133,7 @@ export const useCandidate = (id: string) => {
       setError(null);
       
       const response = await candidatesApi.getCandidate(id);
-      setCandidate(response.data);
+      setCandidate(transformCandidate(response.data || response));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch candidate');
       console.error('Error fetching candidate:', err);
@@ -156,86 +186,8 @@ export const useCandidatePipeline = () => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch candidate pipeline';
       console.error('Error fetching pipeline:', err);
-
-      // Check if it's a connection error
-      const isConnectionError = errorMessage.includes('Failed to fetch') ||
-                               errorMessage.includes('Network error') ||
-                               errorMessage.includes('Could not connect') ||
-                               errorMessage.includes('ECONNREFUSED');
-
-      if (isConnectionError) {
-        console.warn('Connection error detected, using fallback mock data:', err);
-
-        // Use fallback mock data when API is not available
-        const mockPipeline = {
-          stages: [
-            {
-              id: 'applied',
-              name: 'Applied',
-              candidates: [
-                {
-                  id: 'mock_1',
-                  name: 'John Doe',
-                  email: 'john.doe@email.com',
-                  phone: '+1-555-0001',
-                  position: 'Software Engineer',
-                  stage: 'applied',
-                  tags: ['JavaScript', 'React'],
-                  lastActivity: new Date().toISOString(),
-                  rating: 4,
-                  location: { city: 'San Francisco', state: 'CA', country: 'USA' },
-                  applications: [{
-                    id: 'app_1',
-                    jobTitle: 'Senior Software Engineer',
-                    status: 'applied',
-                    submittedAt: new Date().toISOString(),
-                    score: 85
-                  }],
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
-                }
-              ]
-            },
-            {
-              id: 'screening',
-              name: 'Screening',
-              candidates: []
-            },
-            {
-              id: 'interview',
-              name: 'Interview',
-              candidates: []
-            },
-            {
-              id: 'assessment',
-              name: 'Assessment',
-              candidates: []
-            },
-            {
-              id: 'offer',
-              name: 'Offer',
-              candidates: []
-            },
-            {
-              id: 'hired',
-              name: 'Hired',
-              candidates: []
-            },
-            {
-              id: 'rejected',
-              name: 'Rejected',
-              candidates: []
-            }
-          ]
-        };
-
-        setPipeline(mockPipeline);
-        setError('Backend server not available - showing demo data');
-      } else {
-        // For other errors (like 404, 500, etc.), show the actual error
-        setError(errorMessage);
-        setPipeline(null);
-      }
+      setError(errorMessage);
+      setPipeline(null);
     } finally {
       setLoading(false);
     }

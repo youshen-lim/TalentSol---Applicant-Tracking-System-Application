@@ -88,7 +88,7 @@ const CandidateSourcesChart: React.FC<CandidateSourcesChartProps> = ({ loading, 
                 console.error('Failed to initialize sources:', error);
               }
             }}
-            className="bg-blue-600 hover:bg-blue-700 mx-auto"
+            className="bg-primary hover:bg-primary/90 mx-auto"
           >
             Initialize Source Data
           </Button>

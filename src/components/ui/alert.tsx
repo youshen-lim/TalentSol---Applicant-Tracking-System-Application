@@ -18,7 +18,7 @@ const alertVariants = cva(
         info:
           "border-blue-500/50 bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 [&>svg]:text-blue-500",
         ats:
-          "border-ats-blue/50 bg-ats-blue/10 text-ats-blue dark:bg-ats-blue/20 dark:text-ats-light-blue [&>svg]:text-ats-blue",
+          "border-ats-blue/50 bg-primary/10 text-primary dark:bg-primary/20 dark:text-ats-light-blue [&>svg]:text-primary",
         atsSecondary:
           "border-ats-purple/50 bg-ats-purple/10 text-ats-purple dark:bg-ats-purple/20 dark:text-ats-light-purple [&>svg]:text-ats-purple",
       },
@@ -58,7 +58,7 @@ const AlertTitle = React.forwardRef<HTMLParagraphElement, AlertTitleProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variantStyles = {
       default: "mb-1 font-medium leading-none tracking-tight",
-      ats: "mb-1 font-semibold leading-none tracking-tight text-ats-blue",
+      ats: "mb-1 font-semibold leading-none tracking-tight text-primary",
       atsSecondary: "mb-1 font-semibold leading-none tracking-tight text-ats-purple"
     }
 
@@ -82,7 +82,7 @@ const AlertDescription = React.forwardRef<HTMLParagraphElement, AlertDescription
   ({ className, variant = 'default', hasIcon = false, ...props }, ref) => {
     const variantStyles = {
       default: "text-sm [&_p]:leading-relaxed",
-      ats: "text-sm [&_p]:leading-relaxed text-ats-blue/80",
+      ats: "text-sm [&_p]:leading-relaxed text-primary/80",
       atsSecondary: "text-sm [&_p]:leading-relaxed text-ats-purple/80"
     }
 

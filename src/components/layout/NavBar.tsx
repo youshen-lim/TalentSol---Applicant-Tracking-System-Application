@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Search, Bell, User, ChevronDown, Settings, Check, X } from 'lucide-react';
+import React from 'react';
+import { Search, Bell, ChevronRight, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -69,49 +68,37 @@ const NavBar = ({ className }: NavBarProps) => {
   };
 
   return (
-    <header className={cn("h-16 border-b bg-white sticky top-0 z-30 flex items-center justify-between px-6", className)}>
-      {/* Left side - Logo */}
-      <div className="flex items-center">
-        {/* Logo */}
-        <Link to="/dashboard">
-          <div className="h-8 w-8 bg-ats-purple text-white rounded flex items-center justify-center font-bold">
-            T
-          </div>
-        </Link>
-
-        {/* App Name - visible on larger screens */}
-        <div className="ml-3 hidden md:block">
-          <h1 className="text-lg font-semibold text-gray-900">TalentSol</h1>
-          <p className="text-xs text-gray-500">Applicant Tracking System</p>
-        </div>
-      </div>
-
-      {/* Right side - Search, Notifications, User */}
-      <div className="flex items-center space-x-4">
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+    <header
+      className={cn(
+        'h-14 bg-white border-b flex items-center px-6 gap-4 shrink-0 z-10',
+        className
+      )}
+      style={{ borderColor: 'var(--color-border)' }}
+    >
+      {/* Search — left side, flex-1 */}
+      <div className="flex-1 max-w-md hidden md:block">
+        <div className="relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search candidates, jobs..."
-            className="pl-10 py-2 pr-4 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ats-blue/20 focus:border-ats-blue w-64"
+            className="w-full pl-9 pr-4 py-2 bg-input-background border border-sidebar-border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 text-foreground placeholder:text-muted-foreground"
+            style={{ fontSize: 13 }}
           />
         </div>
+      </div>
 
+      {/* Right side — Notifications, Settings, User */}
+      <div className="flex items-center gap-2 ml-auto">
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5 text-gray-600 hover:text-ats-blue" />
+            <button className="relative w-9 h-9 rounded-lg hover:bg-muted flex items-center justify-center transition-all">
+              <Bell size={18} className="text-muted-foreground" />
               {unreadCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {unreadCount}
-                </Badge>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
               )}
-            </Button>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="flex items-center justify-between p-2">
@@ -121,7 +108,7 @@ const NavBar = ({ className }: NavBarProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="text-xs text-ats-blue hover:text-ats-dark-blue"
+                  className="text-xs text-indigo-600 hover:text-indigo-500"
                 >
                   Mark all read
                 </Button>
@@ -130,11 +117,11 @@ const NavBar = ({ className }: NavBarProps) => {
             <DropdownMenuSeparator />
             <div className="max-h-96 overflow-y-auto">
               {notificationsLoading ? (
-                <div className="p-4 text-center text-gray-500 text-sm">
+                <div className="p-4 text-center text-muted-foreground text-sm">
                   Loading notifications...
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="p-4 text-center text-gray-500 text-sm">
+                <div className="p-4 text-center text-muted-foreground text-sm">
                   No notifications
                 </div>
               ) : (
@@ -143,7 +130,7 @@ const NavBar = ({ className }: NavBarProps) => {
                     key={notification.id}
                     className={cn(
                       "flex flex-col items-start p-3 cursor-pointer",
-                      !notification.isRead && "bg-ats-blue/5"
+                      !notification.isRead && "bg-indigo-50/50"
                     )}
                     onClick={() => markAsRead(notification.id)}
                   >
@@ -152,11 +139,11 @@ const NavBar = ({ className }: NavBarProps) => {
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm">{notification.title}</p>
                           {!notification.isRead && (
-                            <div className="h-2 w-2 bg-ats-blue rounded-full" />
+                            <div className="h-2 w-2 bg-indigo-600 rounded-full" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                        <p className="text-xs text-gray-400 mt-1">{formatTimestamp(notification.createdAt)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">{formatTimestamp(notification.createdAt)}</p>
                       </div>
                     </div>
                   </DropdownMenuItem>
@@ -164,7 +151,7 @@ const NavBar = ({ className }: NavBarProps) => {
               )}
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center text-ats-blue hover:text-ats-dark-blue">
+            <DropdownMenuItem className="text-center text-indigo-600 hover:text-indigo-500">
               View all notifications
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -173,9 +160,9 @@ const NavBar = ({ className }: NavBarProps) => {
         {/* Settings Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-gray-600 hover:text-ats-blue">
-              <Settings className="h-5 w-5" />
-            </Button>
+            <button className="w-9 h-9 rounded-lg hover:bg-muted flex items-center justify-center transition-all">
+              <Settings size={18} className="text-muted-foreground" />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Settings</DropdownMenuLabel>
@@ -205,23 +192,27 @@ const NavBar = ({ className }: NavBarProps) => {
         {/* User Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center space-x-2 p-1 rounded-full">
+            <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg hover:bg-muted transition-all">
               {user?.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
                   alt={`${user.firstName} ${user.lastName}`}
-                  className="h-8 w-8 rounded-full object-cover"
+                  className="w-7 h-7 rounded-full object-cover"
                 />
               ) : (
-                <div className="h-8 w-8 bg-ats-blue/10 text-ats-blue rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4" />
+                <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center">
+                  <span style={{ fontSize: 11, fontWeight: 700 }} className="text-white">
+                    {user
+                      ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}` || 'U'
+                      : 'U'}
+                  </span>
                 </div>
               )}
-              <span className="hidden md:inline text-sm font-medium">
+              <span className="hidden md:inline text-foreground" style={{ fontSize: 13, fontWeight: 500 }}>
                 {userLoading ? '...' : user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email : 'User'}
               </span>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
-            </Button>
+              <ChevronRight size={13} className="text-muted-foreground" />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>

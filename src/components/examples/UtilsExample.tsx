@@ -85,7 +85,7 @@ export function UtilsExample() {
                   
                   <div className="text-sm font-medium text-muted-foreground mt-3 mb-1">Initials:</div>
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-ats-blue/10 text-ats-blue font-medium">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-medium">
                       {getInitials(name)}
                     </div>
                     <div className="text-sm">{getInitials(name)}</div>
@@ -281,7 +281,7 @@ export function UtilsExample() {
                     "p-3 rounded-md border",
                     "bg-white",
                     "hover:bg-gray-50",
-                    true && "text-ats-blue",
+                    true && "text-primary",
                     false && "text-red-500"
                   )}>
                     Conditional Classes

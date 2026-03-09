@@ -128,10 +128,11 @@ const devAuthBypass = async (req: AuthenticatedRequest, res: any, next: any) => 
     const firstCompany = await prisma.company.findFirst();
     const companyId = firstCompany ? firstCompany.id : 'comp_1';
 
-    // Set a default admin user for development
-    req.user = {
-      id: 'dev-admin-user',
-      email: 'admin@talentsol.com',
+    // Set the real admin user for development
+    const adminUser = await prisma.user.findFirst({ where: { role: 'admin' }, select: { id: true, email: true, role: true, companyId: true } });
+    req.user = adminUser ?? {
+      id: 'dev-fallback',
+      email: 'admin@talentsol-demo.com',
       role: 'admin',
       companyId: companyId,
     };
@@ -141,6 +142,9 @@ const devAuthBypass = async (req: AuthenticatedRequest, res: any, next: any) => 
     authenticateToken(req, res, next);
   }
 };
+
+// Apply devAuthBypass to all analytics routes so req.user.companyId is always set in development
+router.use(devAuthBypass);
 
 // Get unified dashboard analytics (candidate-centric) with Redis caching and rate limiting
 router.get('/dashboard',
@@ -359,8 +363,9 @@ router.get('/recruitment', asyncHandler(async (req: AuthenticatedRequest, res: R
       },
       trends: transformedData.map(item => ({
         date: item.date,
-        value: item.applications,
-        metric: 'applications'
+        applications: item.applications,
+        interviews: item.interviews,
+        offers: item.offers,
       })),
       comparisons: {
         previousPeriod: {

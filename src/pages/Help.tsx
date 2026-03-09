@@ -107,7 +107,7 @@ const Help = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <HelpCircle className="h-6 w-6 text-ats-blue" />
+            <HelpCircle className="h-6 w-6 text-indigo-600" />
             Help & Support
           </h1>
           <p className="text-sm text-gray-500">
@@ -146,7 +146,7 @@ const Help = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{faq.question}</CardTitle>
-                    <Badge variant="secondary" className="bg-ats-blue/10 text-ats-blue">
+                    <Badge variant="secondary" className="bg-indigo-50 text-indigo-600">
                       {faq.category}
                     </Badge>
                   </div>
@@ -167,7 +167,7 @@ const Help = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-ats-blue/10 rounded-md text-ats-blue">
+                      <div className="p-2 bg-indigo-50 rounded-md text-indigo-600">
                         {link.icon}
                       </div>
                       <div>
@@ -190,7 +190,7 @@ const Help = () => {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Briefcase className="h-4 w-4 text-ats-blue" />
+                    <Briefcase className="h-4 w-4 text-indigo-600" />
                     <span className="font-medium">Job Management</span>
                   </div>
                   <p className="text-sm text-gray-600">Learn how to create, manage, and track job postings</p>
@@ -199,7 +199,7 @@ const Help = () => {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-4 w-4 text-ats-blue" />
+                    <Users className="h-4 w-4 text-indigo-600" />
                     <span className="font-medium">Candidate Pipeline</span>
                   </div>
                   <p className="text-sm text-gray-600">Master the candidate review and pipeline management</p>
@@ -208,7 +208,7 @@ const Help = () => {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <BarChart2 className="h-4 w-4 text-ats-blue" />
+                    <BarChart2 className="h-4 w-4 text-indigo-600" />
                     <span className="font-medium">Analytics & Reports</span>
                   </div>
                   <p className="text-sm text-gray-600">Generate insights and track recruitment metrics</p>
@@ -226,7 +226,7 @@ const Help = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-ats-blue/10 rounded-md text-ats-blue">
+                      <div className="p-3 bg-indigo-50 rounded-md text-indigo-600">
                         {option.icon}
                       </div>
                       <div>
@@ -237,7 +237,7 @@ const Help = () => {
                     <Button 
                       variant={option.available ? "default" : "outline"} 
                       disabled={!option.available}
-                      className={option.available ? "bg-ats-blue hover:bg-ats-dark-blue" : ""}
+                      className={option.available ? "bg-indigo-600 hover:bg-indigo-700" : ""}
                     >
                       {option.action}
                     </Button>

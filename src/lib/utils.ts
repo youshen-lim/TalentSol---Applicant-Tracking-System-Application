@@ -186,18 +186,20 @@ export function formatPhoneNumber(phone: string): string {
 }
 
 /**
- * ATS-specific color utilities
+ * ATS-specific color utilities — updated for indigo primary brand
  */
 export const atsColors = {
-  blue: {
-    light: 'bg-ats-blue/10 text-ats-dark-blue border-ats-blue/20',
-    medium: 'bg-ats-blue/20 text-ats-dark-blue border-ats-blue/30',
-    solid: 'bg-ats-blue text-white',
+  // Primary (indigo) — new brand color
+  primary: {
+    light: 'bg-primary/10 text-primary border-primary/20',
+    medium: 'bg-primary/20 text-primary border-primary/30',
+    solid: 'bg-primary text-primary-foreground',
   },
-  purple: {
-    light: 'bg-ats-purple/10 text-ats-dark-purple border-ats-purple/20',
-    medium: 'bg-ats-purple/20 text-ats-dark-purple border-ats-purple/30',
-    solid: 'bg-ats-purple text-white',
+  // Accent (light indigo tint)
+  accent: {
+    light: 'bg-accent text-accent-foreground border-primary/20',
+    medium: 'bg-accent text-primary border-primary/30',
+    solid: 'bg-primary text-primary-foreground',
   },
   status: {
     active: 'bg-green-100 text-green-800 border-green-200',

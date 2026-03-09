@@ -118,9 +118,9 @@ const DocumentChat: React.FC<DocumentChatProps> = ({ selectedDocument }) => {
   return (
     <>
       {/* Chat header */}
-      <div className="p-4 border-b bg-ats-blue/10">
+      <div className="p-4 border-b bg-primary/10">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-ats-blue" />
+          <Bot className="h-5 w-5 text-primary" />
           <h3 className="font-medium">Document Assistant</h3>
         </div>
         <p className="text-sm text-gray-500 mt-1">
@@ -143,7 +143,7 @@ const DocumentChat: React.FC<DocumentChatProps> = ({ selectedDocument }) => {
                 className={cn(
                   "max-w-[80%] rounded-lg p-3",
                   message.sender === 'user'
-                    ? "bg-ats-blue text-white"
+                    ? "bg-primary text-white"
                     : "bg-gray-100 text-gray-800"
                 )}
               >
@@ -177,7 +177,7 @@ const DocumentChat: React.FC<DocumentChatProps> = ({ selectedDocument }) => {
           />
           <Button
             onClick={handleSendMessage}
-            className="bg-ats-blue hover:bg-ats-dark-blue"
+            className="bg-primary hover:bg-primary/90"
             size="icon"
           >
             <Send className="h-4 w-4" />

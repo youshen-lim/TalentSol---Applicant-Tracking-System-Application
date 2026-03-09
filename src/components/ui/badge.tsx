@@ -4,53 +4,39 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "border-transparent bg-indigo-600 text-white hover:bg-indigo-700",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
-        // ATS-specific variants
-        "ats-blue":
-          "border-transparent bg-ats-blue text-white hover:bg-ats-dark-blue",
-        "ats-light-blue":
-          "border-transparent bg-ats-light-blue text-white hover:bg-ats-blue",
-        "ats-purple":
-          "border-transparent bg-ats-purple text-white hover:bg-ats-dark-purple",
-        "ats-light-purple":
-          "border-transparent bg-ats-light-purple text-white hover:bg-ats-purple",
-        // Subtle variants with transparent backgrounds
-        "ats-blue-subtle":
-          "border border-ats-blue/30 bg-ats-blue/10 text-ats-blue hover:bg-ats-blue/20",
-        "ats-purple-subtle":
-          "border border-ats-purple/30 bg-ats-purple/10 text-ats-purple hover:bg-ats-purple/20",
-        // Standardized status badges using Tailwind config gradients
+        outline: "text-gray-900",
+        // Pipeline status badges — flat design system style
         "status-applied":
-          "border-0 bg-ats-status-applied text-white shadow-sm hover:shadow-md",
+          "border-0 bg-blue-100 text-blue-700",
         "status-screening":
-          "border-0 bg-ats-status-screening text-white shadow-sm hover:shadow-md",
+          "border-0 bg-yellow-100 text-yellow-700",
         "status-interview":
-          "border-0 bg-ats-status-interview text-white shadow-sm hover:shadow-md",
+          "border-0 bg-purple-100 text-purple-700",
         "status-assessment":
-          "border-0 bg-ats-status-interview text-white shadow-sm hover:shadow-md",
+          "border-0 bg-orange-100 text-orange-700",
         "status-offer":
-          "border-0 bg-ats-status-offer text-white shadow-sm hover:shadow-md",
+          "border-0 bg-emerald-100 text-emerald-700",
         "status-hired":
-          "border-0 bg-ats-status-hired text-white shadow-sm hover:shadow-md",
+          "border-0 bg-emerald-100 text-emerald-700",
         "status-rejected":
-          "border-0 bg-ats-status-rejected text-white shadow-sm hover:shadow-md",
+          "border-0 bg-red-100 text-red-700",
         // Job status badges
         "job-live":
-          "border-0 bg-ats-status-offer text-white shadow-sm hover:shadow-md",
+          "border-0 bg-emerald-100 text-emerald-700",
         "job-draft":
-          "border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200",
+          "border border-gray-200 bg-gray-100 text-gray-700",
         "job-archived":
-          "border border-yellow-300 bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
+          "border border-yellow-200 bg-yellow-100 text-yellow-700",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",
@@ -75,17 +61,16 @@ function Badge({ className, variant, size, ...props }: BadgeProps) {
   )
 }
 
-// Legacy status badge helper functions (control group)
 export const getLegacyApplicationStatusBadge = (status: string) => {
   const statusMap: Record<string, { className: string; label: string }> = {
-    applied: { className: "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-sm", label: "Applied" },
-    review: { className: "bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-sm", label: "Screening" },
-    screening: { className: "bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-sm", label: "Screening" },
-    interview: { className: "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-sm", label: "Interview" },
-    assessment: { className: "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-sm", label: "Assessment" },
-    offer: { className: "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-sm", label: "Offer" },
-    hired: { className: "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-sm", label: "Hired" },
-    rejected: { className: "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-sm", label: "Rejected" },
+    applied: { className: "bg-blue-100 text-blue-700 hover:bg-blue-100 border-0", label: "Applied" },
+    review: { className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0", label: "Screening" },
+    screening: { className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0", label: "Screening" },
+    interview: { className: "bg-purple-100 text-purple-700 hover:bg-purple-100 border-0", label: "Interview" },
+    assessment: { className: "bg-orange-100 text-orange-700 hover:bg-orange-100 border-0", label: "Assessment" },
+    offer: { className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0", label: "Offer" },
+    hired: { className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0", label: "Hired" },
+    rejected: { className: "bg-red-100 text-red-700 hover:bg-red-100 border-0", label: "Rejected" },
   };
 
   const config = statusMap[status] || statusMap.applied;
@@ -111,8 +96,7 @@ export const getStandardizedApplicationStatusBadge = (status: string) => {
 
 // A/B tested status badge helper function
 export const getApplicationStatusBadge = (status: string) => {
-  // This will be used by components to automatically get the right variant
-  return { status, useStandardized: true }; // Components will handle the A/B logic
+  return { status, useStandardized: true };
 };
 
 export const getJobStatusBadge = (status: string) => {

@@ -20,7 +20,7 @@ const collapsibleTriggerVariants = cva(
     variants: {
       variant: {
         default: "text-foreground",
-        "ats-blue": "text-ats-blue hover:text-ats-dark-blue",
+        "ats-blue": "text-primary hover:text-ats-dark-blue",
         "ats-purple": "text-ats-purple hover:text-ats-dark-purple",
       },
       size: {
@@ -69,7 +69,7 @@ const collapsibleContentVariants = cva(
     variants: {
       variant: {
         default: "text-foreground",
-        "ats-blue": "text-ats-blue/80",
+        "ats-blue": "text-primary/80",
         "ats-purple": "text-ats-purple/80",
       },
       padding: {

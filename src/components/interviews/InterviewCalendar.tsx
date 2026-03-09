@@ -69,7 +69,7 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
     if (status === 'completed') return '#10b981';
 
     switch (type.toLowerCase()) {
-      case 'technical': return '#3b82f6';
+      case 'technical': return '#4F46E5';
       case 'behavioral': return '#8b5cf6';
       case 'cultural fit': return '#f59e0b';
       case 'final': return '#06b6d4';
@@ -286,6 +286,18 @@ const InterviewCalendar: React.FC<InterviewCalendarProps> = ({
                 Day
               </Button>
             </div>
+
+            {/* Create Interview */}
+            {onInterviewCreate && (
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={() => onInterviewCreate({ startStr: new Date().toISOString() } as any)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Create Interview
+              </Button>
+            )}
           </div>
         </div>
 

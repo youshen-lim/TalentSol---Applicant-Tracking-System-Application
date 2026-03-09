@@ -205,25 +205,25 @@ export const LineChart: React.FC<LineChartProps> = ({
                 bottom: 40,
               }}
             >
-            {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />}
+            {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />}
             <XAxis
               dataKey="name"
-              tick={{ fill: '#475569', fontSize: 14, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
-              tickLine={{ stroke: '#e2e8f0' }}
-              axisLine={{ stroke: '#e2e8f0' }}
+              tick={{ fill: '#9CA3AF', fontSize: 14, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
+              tickLine={false}
+              axisLine={false}
               tickFormatter={dateFormatter}
               height={35}
-              label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
+              label={xAxisLabel ? { value: xAxisLabel, position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: 14, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
             />
             <YAxis
-              tick={{ fill: '#475569', fontSize: 14, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
-              tickLine={{ stroke: '#e2e8f0' }}
-              axisLine={{ stroke: '#e2e8f0' }}
+              tick={{ fill: '#9CA3AF', fontSize: 14, fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 }}
+              tickLine={false}
+              axisLine={false}
               tickFormatter={(value) => Math.round(value).toString()} // Force whole numbers
               width={40}
               domain={[0, 'dataMax + 1']} // Start from 0, add padding at top
               allowDecimals={false} // Prevent decimal values
-              label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 14, fill: '#475569', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
+              label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: 14, fill: '#9CA3AF', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontWeight: 400 } } : undefined}
             />
             {showTooltip && <Tooltip content={<CustomTooltip />} />}
             {showLegend && (
@@ -233,7 +233,7 @@ export const LineChart: React.FC<LineChartProps> = ({
                   fontSize: 14,
                   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
                   fontWeight: 400,
-                  color: '#475569',
+                  color: '#9CA3AF',
                   display: 'flex',
                   justifyContent: 'center',
                   gap: '16px'

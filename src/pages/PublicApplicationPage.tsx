@@ -95,7 +95,7 @@ const PublicApplicationPage: React.FC = () => {
       console.log('📤 Submitting application:', applicationData);
 
       // Submit application
-      const response = await applicationApi.create({
+      const response = await applicationApi.submitApplication({
         jobId: jobInfo.id,
         candidateInfo: {
           firstName: applicationData.candidateInfo?.firstName || '',
@@ -132,7 +132,7 @@ const PublicApplicationPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-indigo-600" />
           <p className="text-gray-600">Loading application form...</p>
         </div>
       </div>
@@ -194,9 +194,9 @@ const PublicApplicationPage: React.FC = () => {
                 Your application has been submitted successfully. Our team will review your 
                 application and get back to you soon.
               </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">What happens next?</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+                <h4 className="font-medium text-indigo-600 mb-2">What happens next?</h4>
+                <ul className="text-sm text-indigo-500 space-y-1">
                   <li>• You'll receive a confirmation email shortly</li>
                   <li>• Our team will review your application</li>
                   <li>• We'll contact you within 1-2 weeks if there's a match</li>

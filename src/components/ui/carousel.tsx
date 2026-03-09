@@ -78,7 +78,7 @@ const Carousel = React.forwardRef<
     const getVariantStyles = () => {
       switch (variant) {
         case "ats-blue":
-          return "border border-ats-blue/20 rounded-lg p-1"
+          return "border border-primary/20 rounded-lg p-1"
         case "ats-purple":
           return "border border-ats-purple/20 rounded-lg p-1"
         default:
@@ -179,7 +179,7 @@ const CarouselContent = React.forwardRef<
   const getVariantStyles = () => {
     switch (variant) {
       case "ats-blue":
-        return "bg-ats-blue/5 rounded-md"
+        return "bg-primary/5 rounded-md"
       case "ats-purple":
         return "bg-ats-purple/5 rounded-md"
       default:

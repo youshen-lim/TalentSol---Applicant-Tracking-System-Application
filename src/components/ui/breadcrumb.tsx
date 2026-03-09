@@ -19,7 +19,7 @@ const Breadcrumb = React.forwardRef<
   const getVariantStyles = () => {
     switch (variant) {
       case "ats-blue":
-        return "text-ats-blue [&_a:hover]:text-ats-dark-blue [&_[aria-current=page]]:text-ats-dark-blue"
+        return "text-primary [&_a:hover]:text-ats-dark-blue [&_[aria-current=page]]:text-ats-dark-blue"
       case "ats-purple":
         return "text-ats-purple [&_a:hover]:text-ats-dark-purple [&_[aria-current=page]]:text-ats-dark-purple"
       default:

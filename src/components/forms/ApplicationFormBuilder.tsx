@@ -463,8 +463,8 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
                         >
                           <CardContent className="p-3">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 bg-ats-blue/10 rounded-md">
-                                <IconComponent className="h-4 w-4 text-ats-blue" />
+                              <div className="p-2 bg-primary/10 rounded-md">
+                                <IconComponent className="h-4 w-4 text-primary" />
                               </div>
                               <div className="flex-1">
                                 <h3 className="font-medium text-sm text-gray-900">{template.label}</h3>
@@ -503,7 +503,7 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
-                <Button onClick={handleSave} className="bg-ats-blue hover:bg-ats-dark-blue">
+                <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
                   <Save className="h-4 w-4 mr-2" />
                   Save Form
                 </Button>
@@ -560,7 +560,7 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
                       {...provided.droppableProps}
                       className={`min-h-[100px] ${
                         snapshot.isDraggingOver
-                          ? 'bg-ats-blue/10 border-2 border-dashed border-ats-blue rounded-lg'
+                          ? 'bg-primary/10 border-2 border-dashed border-ats-blue rounded-lg'
                           : ''
                       }`}
                     >
@@ -581,7 +581,7 @@ const ApplicationFormBuilder: React.FC<ApplicationFormBuilderProps> = ({
                                     {...provided.draggableProps}
                                     className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                                       selectedField === field.id
-                                        ? 'border-ats-blue bg-ats-blue/5'
+                                        ? 'border-ats-blue bg-primary/5'
                                         : 'border-gray-200 hover:border-gray-300'
                                     } ${
                                       snapshot.isDragging ? 'shadow-lg rotate-1' : ''

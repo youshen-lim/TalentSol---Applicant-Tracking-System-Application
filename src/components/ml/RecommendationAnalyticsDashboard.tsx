@@ -164,7 +164,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Brain className="h-6 w-6 text-ats-blue" />
+            <Brain className="h-6 w-6 text-indigo-600" />
             ML Recommendation Analytics
           </h2>
           <p className="text-gray-600 mt-1">
@@ -259,7 +259,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <LineChartIcon className="h-5 w-5 text-ats-blue" />
+                  <LineChartIcon className="h-5 w-5 text-indigo-600" />
                   Recommendation Trends
                 </CardTitle>
               </CardHeader>
@@ -267,7 +267,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
                 <LineChart
                   data={analyticsData.recommendationTrends}
                   lines={[
-                    { dataKey: "recommendations", stroke: "#3B82F6", name: "Recommendations" },
+                    { dataKey: "recommendations", stroke: "#4F46E5", name: "Recommendations" },
                     { dataKey: "interactions", stroke: "#10B981", name: "Interactions" },
                     { dataKey: "conversions", stroke: "#F59E0B", name: "Conversions" }
                   ]}
@@ -281,7 +281,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-ats-blue" />
+                  <BarChart3 className="h-5 w-5 text-indigo-600" />
                   Conversion Funnel
                 </CardTitle>
               </CardHeader>
@@ -294,7 +294,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
                     { stage: "Interview", rate: analyticsData.conversionMetrics.interviewToHire * 100 }
                   ]}
                   categories={["rate"]}
-                  colors={["#3B82F6"]}
+                  colors={["#4F46E5"]}
                   height={300}
                   valueFormatter={(value) => `${value.toFixed(1)}%`}
                 />
@@ -309,7 +309,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-ats-blue" />
+                  <Target className="h-5 w-5 text-indigo-600" />
                   Model Performance
                 </CardTitle>
               </CardHeader>
@@ -333,7 +333,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="bg-indigo-600 h-2 rounded-full"
                       style={{ width: `${analyticsData.modelPerformance.precision * 100}%` }}
                     />
                   </div>
@@ -369,7 +369,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
             <Card className={cn(shadows.card, "lg:col-span-2")}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-ats-blue" />
+                  <TrendingUp className="h-5 w-5 text-indigo-600" />
                   Performance Over Time
                 </CardTitle>
               </CardHeader>
@@ -378,7 +378,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
                   data={generatePerformanceTrends()}
                   lines={[
                     { dataKey: "accuracy", stroke: "#10B981", name: "Accuracy" },
-                    { dataKey: "precision", stroke: "#3B82F6", name: "Precision" },
+                    { dataKey: "precision", stroke: "#4F46E5", name: "Precision" },
                     { dataKey: "recall", stroke: "#8B5CF6", name: "Recall" }
                   ]}
                   height={300}
@@ -396,7 +396,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MousePointer className="h-5 w-5 text-ats-blue" />
+                  <MousePointer className="h-5 w-5 text-indigo-600" />
                   Interaction Types
                 </CardTitle>
               </CardHeader>
@@ -404,7 +404,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
                 <BarChart
                   data={getInteractionTypeData(analyticsData.userInteractions)}
                   categories={["count"]}
-                  colors={["#3B82F6"]}
+                  colors={["#4F46E5"]}
                   height={300}
                   valueFormatter={(value) => value.toString()}
                 />
@@ -415,7 +415,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
             <Card className={shadows.card}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-ats-blue" />
+                  <Calendar className="h-5 w-5 text-indigo-600" />
                   Daily Interactions
                 </CardTitle>
               </CardHeader>
@@ -423,7 +423,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
                 <LineChart
                   data={getDailyInteractionData(analyticsData.userInteractions)}
                   lines={[
-                    { dataKey: "interactions", stroke: "#3B82F6", name: "Interactions" }
+                    { dataKey: "interactions", stroke: "#4F46E5", name: "Interactions" }
                   ]}
                   height={300}
                   showLegend={false}
@@ -491,7 +491,7 @@ export const RecommendationAnalyticsDashboard: React.FC<RecommendationAnalyticsD
           <Card className={shadows.card}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-ats-blue" />
+                <Zap className="h-5 w-5 text-indigo-600" />
                 A/B Test Results
               </CardTitle>
             </CardHeader>

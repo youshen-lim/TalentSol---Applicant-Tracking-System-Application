@@ -51,17 +51,17 @@ interface ScheduledInterview {
 
 interface DragDropInterviewSchedulerProps {
   candidates: Candidate[];
-  timeSlots: TimeSlot[];
+  timeSlots?: TimeSlot[];
   scheduledInterviews: ScheduledInterview[];
   onScheduleInterview: (candidateId: string, timeSlotId: string, type: string) => void;
   onRescheduleInterview: (interviewId: string, newTimeSlotId: string) => void;
-  onCancelInterview: (interviewId: string) => void;
+  onCancelInterview?: (interviewId: string) => void;
   loading?: boolean;
 }
 
 const DragDropInterviewScheduler: React.FC<DragDropInterviewSchedulerProps> = ({
   candidates,
-  timeSlots,
+  timeSlots = [],
   scheduledInterviews,
   onScheduleInterview,
   onRescheduleInterview,
