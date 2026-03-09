@@ -1,6 +1,6 @@
 # TalentSol — AI-Powered Applicant Tracking System
 
-A production-ready SaaS applicant tracking system with real JWT authentication, multi-tenant data isolation, Stripe subscription billing, and an integrated XGBoost ML model for automated candidate screening.
+A MVP production-ready SaaS applicant tracking system with real JWT authentication, multi-tenant data isolation, Stripe subscription billing, and an integrated XGBoost ML model for automated candidate screening.
 
 ---
 

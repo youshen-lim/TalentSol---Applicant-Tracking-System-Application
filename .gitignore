@@ -80,16 +80,6 @@ backend/ml-models/shared/venv/
 *.pyc
 *.pyo
 
-# AI assistant session data (never commit)
-.augment/
-.claude/
-
-# Private design/planning docs (kept in separate folder outside repo)
-CLAUDE.md
-OVERHAUL_PROGRESS.md
-ATTRIBUTIONS.md
-"Figma Make UI Code"/
-
 # Loose dev/debug scripts
 check-companies.js
 test-api-auth.js
