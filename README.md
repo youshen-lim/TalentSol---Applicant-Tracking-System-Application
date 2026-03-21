@@ -6,7 +6,7 @@ A MVP production-ready SaaS applicant tracking system with real JWT authenticati
 
 ## Recent Update — UI Overhaul & SaaS Productization with Claude Code
 
-I recently experimented with Anthropic's [Claude Code](https://docs.anthropic.com/en/docs/claude-code) terminal interface to direct a comprehensive UI overhaul and SaaS productization of my hobbyist TalentSol applicant tracking system application. Claude Code has emerged as one of the most discussed AI development tools in the industry. I wanted to evaluate its capabilities firsthand through a substantive, multi-phase project rather than isolated prompts. For full project context, including the original frontend build with [Augment Code](https://www.augmentcode.com/) Agent, see my earlier articles in this series.
+The TalentSol project was built as part of my learning reflections from Cornell University's [eCornell "Designing and Building AI Solutions"](https://www.ecornell.com/) program. The original application — including the ML pipeline, app logic design, and frontend — was built with [Augment Code](https://www.augmentcode.com/) Agent. The application worked, but the frontend had UI inconsistencies across pages that did not feel like a finished product. I recently experimented with Anthropic's [Claude Code](https://docs.anthropic.com/en/docs/claude-code) terminal interface to direct a comprehensive UI overhaul and SaaS productization. Claude Code has emerged as one of the most discussed AI development tools in the industry. I wanted to evaluate its capabilities firsthand through a substantive, multi-phase project rather than isolated prompts. For full project context, including the original build with Augment Code Agent, see my earlier articles in this series.
 
 My role throughout the user interface (UI) overhaul was **product owner, context engineer and system designer**, with Claude Code serving as pair programmer. Before any code generation began, I defined the overhaul objectives, UI guidelines, product requirements, architectural selection/preferences, and system design fundamentals. I maintained persistent project guidelines that served as behavioral scaffolding for Claude Code across sessions. The UI overhaul and rebuild of dependencies spanned **125 tasks across 24 phases, completed in three days**. The depth of technical preparation — from defining the system architecture and data schema upfront to maintaining structured guidelines across sessions — compressed what would otherwise require significantly longer development cycles. I completed this work on Anthropic's Claude Pro subscription tier, which imposes daily rate limits on usage. Anthropic's Claude Max tier would reduce these constraints for practitioners who require higher throughput.
 
@@ -23,6 +23,14 @@ The overhaul followed a structured but adaptive workflow:
 - **Final refactoring** — I directed the cleanup pass to remove redundant scripts and consolidate the codebase.
 
 Even though I am Agile Scrum certified, my workflow did not follow traditional Waterfall or Agile Scrum methodologies. The speed and flexibility of working with Claude Code enabled a tighter iteration loop than conventional sprint cycles would permit. Each phase concluded with a quality gate before replanning, creating a pragmatic cycle of **plan → implement → test → replan** that adapted organically to the project's needs.
+
+### Key Lessons
+
+Working with Claude Code as a pair programmer reinforced three hypotheses:
+
+1. **Precise direction produces clean implementation** — Directing an AI coding agent is its own skill. Vague direction produces vague output. Precise written requirements produce clean implementation.
+2. **Context management matters more than prompting** — You must maintain a clear mental model of what the agent knows and what it needs to be reminded of. That discipline mirrored my own architectural thinking. You need to update plans and nuanced instructions for every phase — not change guidelines based on intuition alone, or risk propagating unintended drift across your entire system design.
+3. **Speed compounds from domain knowledge** — Three days was only possible because I already understood the codebase, software architectures, and system-design fundamentals. I built the ML pipeline and designed the app logic using Augment Code before directing Claude Code. Knowing what good output looks like is a prerequisite for working at speed.
 
 ### XGBoost Integration
 
