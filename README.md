@@ -34,7 +34,7 @@ Working with Claude Code as a pair programmer reinforced three hypotheses:
 
 ### XGBoost Integration
 
-The TalentSol application now integrates the best-performing XGBoost model from my prior model building projects (16+ models) into a MVP production-ready interface with a comprehensive machine learning data pipeline. The adversarial robustness considerations explored in this article apply directly to any production AI system, including applicant tracking system applications that process external candidate data from sources the organization does not control.
+The TalentSol application now integrates the best-performing XGBoost model from my prior model building projects (22 models across two repositories — 16 decision tree and ensemble classifiers, 6 logistic regression classifiers) into a MVP production-ready interface with a comprehensive machine learning data pipeline. The adversarial robustness considerations explored in this article apply directly to any production AI system, including applicant tracking system applications that process external candidate data from sources the organization does not control.
 
 ### Related Repositories
 
