@@ -4,6 +4,38 @@ A MVP production-ready SaaS applicant tracking system with real JWT authenticati
 
 ---
 
+## Recent Update — UI Overhaul & SaaS Productization with Claude Code
+
+I recently experimented with Anthropic's [Claude Code](https://docs.anthropic.com/en/docs/claude-code) terminal interface to direct a comprehensive UI overhaul and SaaS productization of my hobbyist TalentSol applicant tracking system application. Claude Code has emerged as one of the most discussed AI development tools in the industry. I wanted to evaluate its capabilities firsthand through a substantive, multi-phase project rather than isolated prompts. For full project context, including the original frontend build with [Augment Code](https://www.augmentcode.com/) Agent, see my earlier articles in this series.
+
+My role throughout the user interface (UI) overhaul was **product owner, context engineer and system designer**, with Claude Code serving as pair programmer. Before any code generation began, I defined the overhaul objectives, UI guidelines, product requirements, architectural selection/preferences, and system design fundamentals. I maintained persistent project guidelines that served as behavioral scaffolding for Claude Code across sessions. The UI overhaul and rebuild of dependencies spanned **125 tasks across 24 phases, completed in three days**. The depth of technical preparation — from defining the system architecture and data schema upfront to maintaining structured guidelines across sessions — compressed what would otherwise require significantly longer development cycles. I completed this work on Anthropic's Claude Pro subscription tier, which imposes daily rate limits on usage. Anthropic's Claude Max tier would reduce these constraints for practitioners who require higher throughput.
+
+### Workflow
+
+The overhaul followed a structured but adaptive workflow:
+
+- **UI and frontend implementation** — I directed and reviewed all interface changes that Claude Code generated against my architectural vision and product requirements.
+- **Backlog documentation** — After each phase, I updated a dedicated overhaul document with full details of completed tasks to maintain a traceable record of progress.
+- **Quality assurance and context management** — Between each major phase, I ran multiple test types, updated error handling, refined the project guidelines as harnesses, and compacted context to maintain Claude Code's coherence for the next phase.
+- **Replanning** — I built a new plan for each subsequent phase based on test results and remaining objectives.
+- **Unified data schema with synthetic data generation** — I directed the data layer redesign with seeded synthetic data to ensure reproducibility across development environments.
+- **Business logic, functions, webhooks and other dependencies** — I reviewed and approved updates to application business logic, backend functions, and webhook handlers that Claude Code proposed against my system design.
+- **Final refactoring** — I directed the cleanup pass to remove redundant scripts and consolidate the codebase.
+
+Even though I am Agile Scrum certified, my workflow did not follow traditional Waterfall or Agile Scrum methodologies. The speed and flexibility of working with Claude Code enabled a tighter iteration loop than conventional sprint cycles would permit. Each phase concluded with a quality gate before replanning, creating a pragmatic cycle of **plan → implement → test → replan** that adapted organically to the project's needs.
+
+### XGBoost Integration
+
+The TalentSol application now integrates the best-performing XGBoost model from my prior model building projects (16+ models) into a MVP production-ready interface with a comprehensive machine learning data pipeline. The adversarial robustness considerations explored in this article apply directly to any production AI system, including applicant tracking system applications that process external candidate data from sources the organization does not control.
+
+### Related Repositories
+
+- [TalentSol Applicant Tracking System Application](https://github.com/youshen-lim/TalentSol---Applicant-Tracking-System-Application) — this repository
+- [TalentSol Supervised Classifier for Initial Candidate Screening with Decision Trees](https://github.com/youshen-lim/TalentSol_Supervised-Classifier-for-Initial-Candidate-Screening-Decision-Trees)
+- [TalentSol Supervised Classifier for Initial Candidate Screening with Regression](https://github.com/youshen-lim/TalentSol-ATS-Supervised-Classifier-for-Initial-Candidate-Screening-and-Prioritization-Regression)
+
+---
+
 ## Features
 
 ### Core ATS
