@@ -386,6 +386,7 @@ On **November 20, 2026**, I checked the statements below against the code, train
 | eCornell link | eCornell homepage | eCornell program page | The homepage did not name the program. |
 | Earlier articles | Unlinked "earlier articles in this series" | Linked to the Core AI newsletter | Missing link |
 | XGBoost implementation guide | "a production-ready integration" | An MVP integration that is not production ready | The guide contradicted the MVP status. Corrected on November 20, 2026. |
+| XGBoost implementation guide, Ethnicity mapping (November 21, 2026) | "Ethnicity normalization to training categories" | Normalization to six labels, none of which is a training category | `normalizeEthnicity` in `backend/src/services/xgboostDataMappingService.ts` maps to six labels. The Limitations section already said so. |
 
 The 22 model count, the 16 and 6 model split, the 13 routed pages, the demo logins, the 14 day trial, the WebSocket and retry features, and the package versions in the stack table were rechecked against the code and notebooks and are accurate as stated.
 
