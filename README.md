@@ -292,7 +292,7 @@ The integrated XGBoost model (`backend/ml-models/decision-tree/best_performing_m
 
 **How to read the metrics.** The out of fold recall 0.700 and precision 0.569 come from the Kaggle training data. The notebook tuned the threshold of 0.5027 on out of fold predictions from the training split. On the 20 percent test split, the notebook reports recall 0.703 and precision 0.567. I drew that test split after oversampling, so some test rows duplicate training rows. The test results are likely optimistic. The numbers were not measured on TalentSol application data. The metrics must be measured again after retraining without Ethnicity.
 
-See [`docs/XGBOOST_IMPLEMENTATION_GUIDE.md`](docs/XGBOOST_IMPLEMENTATION_GUIDE.md) for full integration details. That guide has not been corrected yet. It still describes Ethnicity as a model input and calls the integration production ready.
+See [`docs/XGBOOST_IMPLEMENTATION_GUIDE.md`](docs/XGBOOST_IMPLEMENTATION_GUIDE.md) for full integration details. That guide still describes Ethnicity as a model input. Its production ready claim was corrected on November 20, 2026.
 
 ### Why I am removing protected attributes from the model
 
@@ -385,6 +385,7 @@ On **November 20, 2026**, I checked the statements below against the code, train
 | Article reference | Unlinked "this article" | Linked to the Core AI article on adversarial attacks | Missing link |
 | eCornell link | eCornell homepage | eCornell program page | The homepage did not name the program. |
 | Earlier articles | Unlinked "earlier articles in this series" | Linked to the Core AI newsletter | Missing link |
+| XGBoost implementation guide | "a production-ready integration" | An MVP integration that is not production ready | The guide contradicted the MVP status. Corrected on November 20, 2026. |
 
 The 22 model count, the 16 and 6 model split, the 13 routed pages, the demo logins, the 14 day trial, the WebSocket and retry features, and the package versions in the stack table were rechecked against the code and notebooks and are accurate as stated.
 
