@@ -54,13 +54,13 @@ TalentSol Schema → XGBoost Input Format
 ├── job.description + requirements → 'Job Description'
 ├── candidate.resume + professionalInfo → 'Resume'  
 ├── job.title + department → 'Job Roles'
-└── candidate.ethnicity (normalized) → 'Ethnicity'
+└── candidate.ethnicity (normalized to six labels that the model does not know) → 'Ethnicity'
 ```
 
 **Data Quality Validation:**
 - Job description: minimum 50 characters
 - Resume: minimum 100 characters
-- Ethnicity normalization to training categories
+- Ethnicity normalization to six labels (Asian, Black, Hispanic, White, Other, Not Specified). None of these labels is one of the 21 Ethnicity values the model learned, so the encoder sets every Ethnicity column to zero. See the README Limitations section.
 - Automatic fallback values for missing data
 
 #### **1.3 Database Schema Enhancements**
