@@ -1,6 +1,6 @@
 # TalentSol — AI-Powered Applicant Tracking System
 
-MVP SaaS applicant tracking system, built as a learning project, not deployed for real hiring. It has JWT authentication, multi-tenant data isolation, Stripe subscription billing, and an integrated XGBoost model for candidate screening.
+MVP SaaS applicant tracking system, built as a learning project and not deployed for real hiring. It has JWT authentication, company scoped data for normal JWT requests, Stripe subscription billing, and an integrated XGBoost model for candidate screening. A fixed demo token bypasses normal authentication and company scoping.
 
 > **Important: the screening model uses Ethnicity.** The saved XGBoost model one hot encodes an Ethnicity column as an input. The Ethnicity values in its training data are mostly national origin labels, such as Chinese, Irish and Nigerian. Using this input to screen candidates is not acceptable for real hiring. I plan to retrain the model without Ethnicity, Race1 and Race2. Race1 and Race2 are already excluded from the saved model. The reported metrics must be measured again after retraining. See [ML Model Details](#ml-model-details) and [Fairness](#fairness).
 
@@ -8,9 +8,9 @@ MVP SaaS applicant tracking system, built as a learning project, not deployed fo
 
 ## Recent Update — UI Overhaul & SaaS Productization with Claude Code
 
-The TalentSol project was built as part of my learning reflections from Cornell University's [eCornell "Designing and Building AI Solutions"](https://ecornell.cornell.edu/certificates/ai/designing-and-building-ai-solutions/) program. The original application, including the ML pipeline, app logic design, and frontend, was built with [Augment Code](https://www.augmentcode.com/) Agent. The application worked, but the frontend had UI inconsistencies across pages that did not feel like a finished product. I recently experimented with Anthropic's [Claude Code](https://docs.anthropic.com/en/docs/claude-code) terminal interface to direct a comprehensive UI overhaul and SaaS productization. Claude Code has emerged as one of the most discussed AI development tools in the industry. I wanted to evaluate its capabilities firsthand through a substantive, multi-phase project rather than isolated prompts. For full project context, including the original build with Augment Code Agent, see my earlier articles in the [Core AI newsletter](https://www.linkedin.com/newsletters/7332966495557230592/).
+The TalentSol project grew from my learning reflections in Cornell University's [eCornell "Designing and Building AI Solutions"](https://ecornell.cornell.edu/certificates/ai/designing-and-building-ai-solutions/) program. I built the original application, including the ML pipeline, app logic, and frontend, with [Augment Code](https://www.augmentcode.com/) Agent. I later used Anthropic's [Claude Code](https://docs.anthropic.com/en/docs/claude-code) terminal interface to revise the user interface and SaaS features. For full project context, see my earlier articles in the [Core AI newsletter](https://www.linkedin.com/newsletters/7332966495557230592/).
 
-My role throughout the user interface (UI) overhaul was **product owner, context engineer and system designer**, with Claude Code serving as pair programmer. Before any code generation began, I defined the overhaul objectives, UI guidelines, product requirements, architectural selection/preferences, and system design fundamentals. I maintained persistent project guidelines that served as behavioral scaffolding for Claude Code across sessions. The UI overhaul and rebuild of dependencies spanned **125 tasks across 24 phases**. The depth of technical preparation (from defining the system architecture and data schema upfront to maintaining structured guidelines across sessions) compressed what would otherwise require significantly longer development cycles. I completed this work on Anthropic's Claude Pro subscription tier, which imposes daily rate limits on usage. Anthropic's Claude Max tier would reduce these constraints for practitioners who require higher throughput.
+My role during the user interface overhaul was **product owner, context engineer and system designer**, with Claude Code serving as pair programmer. I defined the objectives, interface guidelines, product requirements, architecture, and system design. I maintained project instructions across sessions. The message of commit `889cf25` records **125 tasks across 24 phases** for the user interface overhaul and SaaS productization.
 
 ### Workflow
 
@@ -36,7 +36,7 @@ Working with Claude Code as a pair programmer reinforced three hypotheses:
 
 ### XGBoost Integration
 
-The TalentSol application integrates the XGBoost model that I selected from my prior model building projects. Those projects compared 22 models across two repositories: 16 decision tree and ensemble classifiers, and 6 logistic regression classifiers. The application wraps the model in an MVP interface with a machine learning data pipeline. The model still uses Ethnicity as an input, as described in [ML Model Details](#ml-model-details). The adversarial robustness considerations in my Core AI article [Adversarial Attacks and the Interpretability Tradeoff](https://thecoreai.substack.com/p/neural-network-architectures-part3) apply to any AI system that processes external candidate data. This includes applicant tracking systems that take candidate data from sources the organization does not control.
+The TalentSol application integrates the XGBoost model that I selected from my prior model building projects. Those projects compared 22 models across two repositories: 16 decision tree and ensemble classifiers, and 6 logistic regression classifiers. The application wraps the model in an MVP interface with a machine learning data pipeline. The model still uses Ethnicity as an input, as described in [ML Model Details](#ml-model-details). My Core AI article [Adversarial Attacks and the Interpretability Tradeoff](https://thecoreai.substack.com/p/neural-network-architectures-part3) discusses adversarial robustness for systems that process external input.
 
 ### Related Repositories
 
@@ -63,7 +63,7 @@ The TalentSol application integrates the XGBoost model that I selected from my p
 - **Plan enforcement** — per-plan job and user limits enforced server-side across Trial, Starter, Growth, and Enterprise tiers
 
 ### AI / ML
-- **XGBoost candidate screening:** The app integrates `best_performing_model_pipeline.joblib`. The training notebook reports recall 0.70 and precision 0.57 at threshold 0.5027. These numbers come from the Kaggle training data, not from TalentSol applications. The model uses Ethnicity as an input. See [ML Model Details](#ml-model-details).
+- **XGBoost candidate screening:** The app integrates `best_performing_model_pipeline.joblib`. The training notebook reports out of fold recall 0.700 and precision 0.569 at threshold 0.5027. These numbers come from the Kaggle training data, not from TalentSol applications. The model uses Ethnicity as an input. See [ML Model Details](#ml-model-details).
 - **Feature engineering:** The saved pipeline applies HashingVectorizer and one hot encoding. The ATS Ethnicity and Job Roles values often fall outside the categories the model learned. See [Limitations](#limitations).
 - **Real-time predictions** — inference results delivered via WebSocket (Socket.io)
 - **Batch processing:** The app scores applications asynchronously with retry logic.
@@ -286,11 +286,11 @@ The integrated XGBoost model (`backend/ml-models/decision-tree/best_performing_m
 - **Input:** Job Description, Resume, Job Roles and Ethnicity.
 - **Preprocessing:** HashingVectorizer on Job Description and Resume. One hot encoding on Ethnicity and Job Roles.
 - **Dependencies:** `scikit-learn==1.6.1`, `joblib==1.3.2`
-- **Performance (from the training notebook):** recall 0.70 and precision 0.57 at threshold 0.5027.
+- **Performance (from the training notebook):** out of fold recall 0.700 and precision 0.569 at threshold 0.5027.
 
 **Ethnicity is an input to the current model.** The saved model one hot encodes Ethnicity. Its training data holds 21 Ethnicity values. Nineteen are national origin labels, such as Chinese, Irish and Nigerian. Two are regional labels: African and Caribbean. National origin is a protected characteristic in US hiring. Using this input to screen candidates is not acceptable for real hiring. I have not retrained the model yet. I plan to retrain it without Ethnicity, Race1 and Race2, and keep every other setting the same so the comparison is fair. Race1 and Race2 are already excluded from the saved model. I also plan to stop the ATS from sending Ethnicity to the model.
 
-**How to read the metrics.** The recall 0.70 and precision 0.57 come from the Kaggle training data. The threshold 0.5027 was tuned on out of fold predictions from the training split. On the 20 percent test split, the notebook reports recall 0.703 and precision 0.567. I drew that test split after oversampling, so some test rows duplicate training rows. The test results are likely optimistic. The numbers were not measured on TalentSol application data. The metrics must be measured again after retraining without Ethnicity.
+**How to read the metrics.** The out of fold recall 0.700 and precision 0.569 come from the Kaggle training data. The notebook tuned the threshold of 0.5027 on out of fold predictions from the training split. On the 20 percent test split, the notebook reports recall 0.703 and precision 0.567. I drew that test split after oversampling, so some test rows duplicate training rows. The test results are likely optimistic. The numbers were not measured on TalentSol application data. The metrics must be measured again after retraining without Ethnicity.
 
 See [`docs/XGBOOST_IMPLEMENTATION_GUIDE.md`](docs/XGBOOST_IMPLEMENTATION_GUIDE.md) for full integration details. That guide has not been corrected yet. It still describes Ethnicity as a model input and calls the integration production ready.
 
@@ -365,13 +365,13 @@ npx prisma studio    # DB GUI (port 5555)
 
 ## Corrections
 
-The following statements were corrected on **November 20, 2026** after a check against the code, the training notebooks and the saved model files in the TalentSol repositories. The model, the training code and the application code are unchanged. Only the README was wrong or incomplete.
+On **November 20, 2026**, I checked the statements below against the code, training notebooks, and saved model files in the TalentSol repositories and corrected them. I did not change the model, training code, or application code. The earlier README was wrong or incomplete.
 
 | Item | Previously stated | Corrected to | Cause |
 |------|-------------------|--------------|-------|
 | Product status | "A MVP production-ready SaaS applicant tracking system" | MVP SaaS learning project, not deployed for real hiring | Overclaim. The README listed Production Readiness as deferred. |
 | Model input | Listed Ethnicity without comment | States that the model uses Ethnicity, that this is not acceptable for real hiring, and that retraining is planned | A protected characteristic was not disclosed. |
-| Model metrics | "70% recall / 57% precision at threshold 0.5027" | Same numbers, labeled as notebook results on a test split drawn after oversampling, to be measured again after retraining | Missing evaluation context |
+| Model metrics | "70% recall / 57% precision at threshold 0.5027" | Out of fold recall 0.700 and precision 0.569 at threshold 0.5027. Test split recall was 0.703 and precision was 0.567. Both evaluations need a rerun after retraining. | The earlier wording rounded the figures and omitted the evaluation context. |
 | Feature pipeline | "HashingVectorizer + One-Hot Encoding matching the training pipeline" | ATS Ethnicity and Job Roles values often fall outside the training categories | Did not match `xgboostDataMappingService.ts` |
 | Multi-tenancy | "all endpoints scoped per organisation" and "devAuthBypass for local dev" | A fixed demo token bypasses authentication in any environment | Did not match the auth middleware and route files |
 | Predict endpoint | `GET /api/xgboost/predict` | `POST /api/xgboost/predict/:applicationId` | Did not match `xgboostRoutes.ts` |
@@ -381,7 +381,7 @@ The following statements were corrected on **November 20, 2026** after a check a
 | Node.js version | "Node.js 20" | Node.js 18 or later, from the backend `engines` field | Did not match `backend/package.json` |
 | PostgreSQL and Python versions | "PostgreSQL 14+" and "Python 3.9+" | Version floors removed. The ML requirements file lists Python 3.13 as tested. | No evidence in the repository |
 | UI overhaul | "all 13 pages pixel-matched to Figma specs" | Tailwind CSS v4 redesign of all 13 routed application pages | Pixel matching was not verifiable from the repository. |
-| Overhaul duration | "completed in three days" | Duration removed. The 125 tasks and 24 phases remain. | The commit history does not show the duration. |
+| Overhaul duration | "completed in three days" | Duration removed. The 125 tasks and 24 phases remain, attributed to the commit `889cf25` message. | The commit history does not show the duration. |
 | Article reference | Unlinked "this article" | Linked to the Core AI article on adversarial attacks | Missing link |
 | eCornell link | eCornell homepage | eCornell program page | The homepage did not name the program. |
 | Earlier articles | Unlinked "earlier articles in this series" | Linked to the Core AI newsletter | Missing link |
